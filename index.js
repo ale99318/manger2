@@ -5,6 +5,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   empezarBtn.addEventListener("click", () => {
     // Aquí decides a dónde llevar al usuario cuando empiece
-    window.location.href = "seleccion-equipo.html"; // Puedes cambiar la ruta si usas otra página inicial
+    window.location.href = "login.html"; // Puedes cambiar la ruta si usas otra página inicial
   });
 });
