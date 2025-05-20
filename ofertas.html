@@ -7,79 +7,15 @@
   <link rel="stylesheet" href="ofertas.css">
 </head>
 <body>
-
   <main>
     <h1>Ofertas de Clubes por Jugadores</h1>
     <div id="contenedor-ofertas"></div>
+    <div id="debug-info" class="debug-info"></div>
   </main>
-
-  <!-- Orden correcto de scripts -->
+  
+  <!-- Orden correcto de carga de scripts -->
   <script src="jugadores.js"></script>
   <script src="clubesCompradores.js"></script>
-
-  <!-- Este script contiene la lógica -->
-  <script>
-    function generarOfertasParaJugador(jugador) {
-      const ofertas = [];
-
-      clubesCompradores.forEach(club => {
-        if (club.presupuesto >= jugador.valor) {
-          const probabilidad = Math.min(club.reputacion / 100, 0.9);
-          if (Math.random() < probabilidad) {
-            const oferta = {
-              club: club.nombre,
-              pais: club.pais,
-              reputacion: club.reputacion,
-              ofertaEconomica: Math.floor(jugador.valor * (0.9 + Math.random() * 0.3)),
-            };
-            ofertas.push(oferta);
-          }
-        }
-      });
-
-      return ofertas;
-    }
-
-    function mostrarOfertas() {
-      const contenedor = document.getElementById("contenedor-ofertas");
-
-      if (!Array.isArray(jugadores)) {
-        console.error("❌ jugadores no está definido correctamente.");
-        return;
-      }
-
-      if (!Array.isArray(clubesCompradores)) {
-        console.error("❌ clubesCompradores no está definido correctamente.");
-        return;
-      }
-
-      jugadores.forEach(jugador => {
-        const ofertas = generarOfertasParaJugador(jugador);
-
-        const jugadorDiv = document.createElement("div");
-        jugadorDiv.classList.add("jugador-oferta");
-        jugadorDiv.innerHTML = `<h3>${jugador.nombre} (${jugador.club})</h3>`;
-
-        if (ofertas.length > 0) {
-          const lista = document.createElement("ul");
-          ofertas.forEach(oferta => {
-            const item = document.createElement("li");
-            item.textContent = `${oferta.club} (${oferta.pais}) ofrece $${oferta.ofertaEconomica.toLocaleString()}`;
-            lista.appendChild(item);
-          });
-          jugadorDiv.appendChild(lista);
-        } else {
-          const noOfertas = document.createElement("p");
-          noOfertas.textContent = "Sin ofertas disponibles por ahora.";
-          jugadorDiv.appendChild(noOfertas);
-        }
-
-        contenedor.appendChild(jugadorDiv);
-      });
-    }
-
-    window.addEventListener("DOMContentLoaded", mostrarOfertas);
-  </script>
-
+  <script src="ofertas_tranferencias.js"></script>
 </body>
 </html>
