@@ -1,4 +1,4 @@
-const jugadores = [
+const jugadores = [  
   // Alianza Lima
   {
     nombre: "Hernán Barcos",
