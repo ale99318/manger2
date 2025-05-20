@@ -1,169 +1,221 @@
- /* Estilos para la sección de clubes */
-#nombre-club {
-  font-size: 2rem;
-  font-weight: bold;
-  color: #003366;
-  margin-bottom: 0.5rem;
-  text-transform: uppercase;
+/* Estilos generales con tema oscuro */
+:root {
+    --color-bg-primary: #121212;
+    --color-bg-secondary: #1e1e1e;
+    --color-bg-card: #242424;
+    --color-text-primary: #e0e0e0;
+    --color-text-secondary: #b0b0b0;
+    --color-accent: #4CAF50;
+    --color-accent-hover: #66bb6a;
+    --color-border: #333333;
+    --color-button: #333333;
+    --color-button-hover: #444444;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    line-height: 1.6;
+}
+
+.contenedor {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 15px;
+}
+
+/* Encabezado */
+header {
+    background-color: var(--color-bg-secondary);
+    padding: 15px 0;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo {
+    max-width: 150px;
+}
+
+#logo-liga {
+    max-width: 100%;
+    height: auto;
+}
+
+nav select {
+    padding: 8px 12px;
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Secciones principales */
+main {
+    padding: 20px 0;
+}
+
+section {
+    margin-bottom: 30px;
+    background-color: var(--color-bg-secondary);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+h1, h2, h3 {
+    color: var(--color-text-primary);
+    margin-bottom: 15px;
+}
+
+/* Sección Club */
+.seccion-club {
+    text-align: center;
 }
 
 #info-club {
-  background-color: #f3f3f3;
-  padding: 15px;
-  border-radius: 6px;
-  border-left: 4px solid #003366;
-  margin-bottom: 20px;
+    margin-top: 10px;
+    color: var(--color-text-secondary);
+    line-height: 1.8;
 }
 
-/* Contenedor principal de jugadores */
+/* Estadísticas */
+.estadisticas-club {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+@media (max-width: 768px) {
+    .estadisticas-club {
+        grid-template-columns: 1fr;
+    }
+}
+
+.tabla-posiciones, .ultimos-partidos {
+    background-color: var(--color-bg-card);
+    padding: 15px;
+    border-radius: 6px;
+}
+
+/* Filtros */
+.filtros {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.filtros select {
+    padding: 8px 12px;
+    background-color: var(--color-bg-card);
+    color: var(--color-text-primary);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Contenedor de jugadores */
 #jugadores-container {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-  margin-top: 20px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
 }
 
-/* Estilos para las tarjetas de jugadores */
+/* Tarjeta de jugador */
 .jugador {
-  border: 1px solid #ddd;
-  padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-  position: relative;
-  overflow: hidden;
+    background-color: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 15px;
+    transition: transform 0.2s ease;
 }
 
 .jugador:hover {
-  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-  transform: translateY(-2px);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
 }
 
-.jugador h3 {
-  font-size: 1.2rem;
-  margin-bottom: 12px;
-  border-bottom: 1px solid #eaeaea;
-  padding-bottom: 8px;
+.jugador-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    flex-wrap: wrap;
 }
 
-/* Estados de lesión */
-.jugador-lesionado {
-  border-left: 5px solid #ff4d4d;
-  background-color: #fff5f5;
+.jugador-header h3 {
+    margin: 0;
+    color: var(--color-accent);
+    flex: 1;
 }
 
+.jugador-header p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    flex: 1;
+}
+
+.jugador-header button {
+    background-color: var(--color-button);
+    color: var(--color-text-primary);
+    border: none;
+    padding: 5px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s ease;
+}
+
+.jugador-header button:hover {
+    background-color: var(--color-button-hover);
+}
+
+.jugador-info {
+    border-top: 1px solid var(--color-border);
+    padding-top: 10px;
+    margin-top: 10px;
+    color: var(--color-text-secondary);
+}
+
+.jugador-info p {
+    margin-bottom: 5px;
+}
+
+/* Pie de página */
+footer {
+    text-align: center;
+    padding: 20px 0;
+    background-color: var(--color-bg-secondary);
+    color: var(--color-text-secondary);
+    border-top: 1px solid var(--color-border);
+    margin-top: 30px;
+}
+
+/* Estado de los jugadores */
 .lesionado {
-  color: #ff4d4d;
-  font-weight: bold;
+    color: #ff5252;
 }
 
 .disponible {
-  color: #4CAF50;
-  font-weight: bold;
+    color: #4caf50;
 }
 
-/* Niveles de cansancio */
-.cansancio-bajo {
-  color: #4CAF50;
-}
-
-.cansancio-medio {
-  color: #ff9800;
-}
-
-.cansancio-alto {
-  color: #ff4d4d;
-}
-
-/* Estados de ánimo */
-.animo-excelente {
-  border-top: 3px solid #4CAF50;
-}
-
-.animo-motivado {
-  border-top: 3px solid #8BC34A;
-}
-
-.animo-normal {
-  border-top: 3px solid #9E9E9E;
-}
-
-.animo-frustrado {
-  border-top: 3px solid #FF9800;
-}
-
-.animo-cansado {
-  border-top: 3px solid #FF5722;
-}
-
-/* Estilos para la información del jugador */
-.jugador p {
-  margin: 5px 0;
-  font-size: 0.95rem;
-}
-
-.jugador strong {
-  font-weight: 600;
-  display: inline-block;
-  min-width: 100px;
-}
-
-/* Indicadores de valores */
-.valor-alto {
-  color: #3949AB;
-}
-
-.sueldo-alto {
-  color: #6200EA;
-}
-
-/* Personalidades */
-.personalidad-badge {
-  display: inline-block;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-size: 0.85rem;
-  margin-left: 5px;
-  background-color: #e0e0e0;
-}
-
-.personalidad-lider {
-  background-color: #5C6BC0;
-  color: white;
-}
-
-.personalidad-ambicioso {
-  background-color: #FF7043;
-  color: white;
-}
-
-.personalidad-profesional {
-  background-color: #26A69A;
-  color: white;
-}
-
-.personalidad-problematico {
-  background-color: #EF5350;
-  color: white;
-}
-
-/* Indicador gráfico de cansancio */
-.barra-cansancio {
-  height: 6px;
-  background-color: #e0e0e0;
-  border-radius: 3px;
-  margin-top: 5px;
-}
-
-.nivel-cansancio {
-  height: 100%;
-  border-radius: 3px;
-  transition: width 0.3s ease;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  #jugadores-container {
-    grid-template-columns: 1fr;
-  }
+/* Responsividad adicional */
+@media (max-width: 600px) {
+    #jugadores-container {
+        grid-template-columns: 1fr;
+    }
+    
+    .filtros {
+        flex-direction: column;
+    }
 }
