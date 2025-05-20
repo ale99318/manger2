@@ -1,7 +1,7 @@
 // Obtener el jugador en transferencia del localStorage
 const jugadorEnTransferencia = localStorage.getItem("jugadorEnTransferencia");
 
-// Suponiendo que tienes acceso a jugadores[] y clubesCompradores[]
+// Función para generar ofertas usando los clubesCompradores existentes
 function generarOfertasTransferencias() {
   const ofertas = [];
   // Buscar el jugador en venta por su nombre
@@ -35,11 +35,11 @@ function generarOfertasTransferencias() {
   return ofertas;
 }
 
-// Mostrar ofertas en HTML
+// Mostrar ofertas en el div existente en tu HTML
 function mostrarOfertas() {
   const ofertas = generarOfertasTransferencias();
   
-  // Si deseas mostrarlas en HTML:
+  // Obtener el div donde se mostrarán las ofertas
   const div = document.getElementById("lista-ofertas");
   if (div) {
     div.innerHTML = "";
@@ -62,7 +62,6 @@ function mostrarOfertas() {
     
     ofertas.forEach(oferta => {
       const ofertaDiv = document.createElement("div");
-      ofertaDiv.className = "oferta";
       
       const p = document.createElement("p");
       p.textContent = `${oferta.clubInteresado} (${oferta.pais}) ofrece $${oferta.oferta.toLocaleString()} por ${oferta.jugador} (${oferta.posicion}, ${oferta.edad} años)`;
@@ -121,7 +120,7 @@ function rechazarOferta(oferta) {
   ofertaElement.remove();
   
   // Si ya no quedan ofertas, mostrar mensaje
-  if (document.querySelectorAll(".oferta").length === 0) {
+  if (document.querySelectorAll("#lista-ofertas > div").length === 0) {
     const div = document.getElementById("lista-ofertas");
     const p = document.createElement("p");
     p.textContent = "No hay más ofertas disponibles.";
