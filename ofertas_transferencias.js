@@ -1,4 +1,4 @@
-// Este JS debe cargarse después de jugadores.js y clubesCompradores.js
+// Este JS debe cargarse después de jugadores.js y clubesCompradores.js 
 
 // Simulación simple de negociación para un jugador dado
 function generarOfertasParaJugador(jugador) {
