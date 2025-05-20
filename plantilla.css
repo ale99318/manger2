@@ -1,221 +1,33 @@
-/* Estilos generales con tema oscuro */
-:root {
-    --color-bg-primary: #121212;
-    --color-bg-secondary: #1e1e1e;
-    --color-bg-card: #242424;
-    --color-text-primary: #e0e0e0;
-    --color-text-secondary: #b0b0b0;
-    --color-accent: #4CAF50;
-    --color-accent-hover: #66bb6a;
-    --color-border: #333333;
-    --color-button: #333333;
-    --color-button-hover: #444444;
-}
-
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--color-bg-primary);
-    color: var(--color-text-primary);
-    line-height: 1.6;
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f5f5f5;
 }
 
-.contenedor {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 15px;
-}
-
-/* Encabezado */
-header {
-    background-color: var(--color-bg-secondary);
-    padding: 15px 0;
-    border-bottom: 1px solid var(--color-border);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.logo {
-    max-width: 150px;
-}
-
-#logo-liga {
-    max-width: 100%;
-    height: auto;
-}
-
-nav select {
-    padding: 8px 12px;
-    background-color: var(--color-bg-card);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-/* Secciones principales */
 main {
-    padding: 20px 0;
-}
-
-section {
-    margin-bottom: 30px;
-    background-color: var(--color-bg-secondary);
+    max-width: 800px;
+    margin: 0 auto;
+    background-color: white;
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-h1, h2, h3 {
-    color: var(--color-text-primary);
-    margin-bottom: 15px;
-}
-
-/* Sección Club */
-.seccion-club {
+.seccion-club h1 {
     text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
 }
 
 #info-club {
-    margin-top: 10px;
-    color: var(--color-text-secondary);
-    line-height: 1.8;
-}
-
-/* Estadísticas */
-.estadisticas-club {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 20px;
-}
-
-@media (max-width: 768px) {
-    .estadisticas-club {
-        grid-template-columns: 1fr;
-    }
-}
-
-.tabla-posiciones, .ultimos-partidos {
-    background-color: var(--color-bg-card);
-    padding: 15px;
-    border-radius: 6px;
-}
-
-/* Filtros */
-.filtros {
-    margin-bottom: 20px;
     display: flex;
+    flex-direction: column;
     gap: 10px;
 }
 
-.filtros select {
-    padding: 8px 12px;
-    background-color: var(--color-bg-card);
-    color: var(--color-text-primary);
-    border: 1px solid var(--color-border);
-    border-radius: 4px;
-    font-size: 14px;
-}
-
-/* Contenedor de jugadores */
-#jugadores-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-}
-
-/* Tarjeta de jugador */
 .jugador {
-    background-color: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: 6px;
-    padding: 15px;
-    transition: transform 0.2s ease;
-}
-
-.jugador:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-}
-
-.jugador-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-}
-
-.jugador-header h3 {
-    margin: 0;
-    color: var(--color-accent);
-    flex: 1;
-}
-
-.jugador-header p {
-    margin: 0;
-    color: var(--color-text-secondary);
-    flex: 1;
-}
-
-.jugador-header button {
-    background-color: var(--color-button);
-    color: var(--color-text-primary);
-    border: none;
-    padding: 5px 12px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    background-color: #fafafa;
     border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: background-color 0.2s ease;
-}
-
-.jugador-header button:hover {
-    background-color: var(--color-button-hover);
-}
-
-.jugador-info {
-    border-top: 1px solid var(--color-border);
-    padding-top: 10px;
-    margin-top: 10px;
-    color: var(--color-text-secondary);
-}
-
-.jugador-info p {
-    margin-bottom: 5px;
-}
-
-/* Pie de página */
-footer {
-    text-align: center;
-    padding: 20px 0;
-    background-color: var(--color-bg-secondary);
-    color: var(--color-text-secondary);
-    border-top: 1px solid var(--color-border);
-    margin-top: 30px;
-}
-
-/* Estado de los jugadores */
-.lesionado {
-    color: #ff5252;
-}
-
-.disponible {
-    color: #4caf50;
-}
-
-/* Responsividad adicional */
-@media (max-width: 600px) {
-    #jugadores-container {
-        grid-template-columns: 1fr;
-    }
-    
-    .filtros {
-        flex-direction: column;
-    }
 }
