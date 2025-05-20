@@ -126,3 +126,5 @@ const clubes = [
     ciudad: "Cutervo"
   }
 ];
+
+window.clubes = clubes;
