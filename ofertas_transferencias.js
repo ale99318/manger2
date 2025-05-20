@@ -1,27 +1,29 @@
 // Este JS debe cargarse después de jugadores.js y clubesCompradores.js 
-
 // Simulación simple de negociación para un jugador dado
 function generarOfertasParaJugador(jugador) {
   const ofertas = [];
-
   clubesCompradores.forEach(club => {
     // El club solo ofertará si tiene suficiente presupuesto
     if (club.presupuesto >= jugador.valor) {
       // Probabilidad basada en reputación (simple)
       const probabilidad = Math.min(club.reputacion / 100, 0.9);
       if (Math.random() < probabilidad) {
-        // Generar una oferta con una posible ligera variación de precio
+        // Calcular la oferta deseada (entre 90% y 120% del valor)
+        const factorOferta = 0.9 + Math.random() * 0.3;
+        const ofertaDeseada = Math.floor(jugador.valor * factorOferta);
+        // Limitar la oferta al presupuesto disponible
+        const ofertaFinal = Math.min(ofertaDeseada, club.presupuesto);
+        
         const oferta = {
           club: club.nombre,
           pais: club.pais,
           reputacion: club.reputacion,
-          ofertaEconomica: Math.floor(jugador.valor * (0.9 + Math.random() * 0.3)), // entre 90% y 120%
+          ofertaEconomica: ofertaFinal,
         };
         ofertas.push(oferta);
       }
     }
   });
-
   return ofertas;
 }
 
