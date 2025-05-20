@@ -1,4 +1,4 @@
-const clubes = [
+const clubes = [ 
   {
     nombre: "Alianza Lima",
     presupuesto: 12000000,
