@@ -1,44 +1,49 @@
-body { 
+body {
   font-family: Arial, sans-serif;
-  margin: 20px;
-  background-color: #f8f9fa;
-  color: #333;
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 20px;
 }
 
 h1 {
+  color: #2c3e50;
   text-align: center;
   margin-bottom: 30px;
-  color: #222;
 }
 
-#contenedor-ofertas {
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-div.jugador-oferta {
-  background-color: #ffffff;
-  padding: 15px;
+.jugador-oferta {
   border: 1px solid #ddd;
-  border-radius: 8px;
+  border-radius: 5px;
+  padding: 15px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+  background-color: #fff;
 }
 
-div.jugador-oferta h3 {
+.jugador-oferta h3 {
   margin-top: 0;
-  color: #007bff;
+  color: #3498db;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 8px;
 }
 
-div.jugador-oferta ul {
+ul {
   padding-left: 20px;
 }
 
-div.jugador-oferta li {
-  margin: 6px 0;
+li {
+  margin-bottom: 8px;
 }
 
-div.jugador-oferta p {
+p {
+  color: #7f8c8d;
   font-style: italic;
-  color: #888;
+}
+
+.debug-info {
+  background-color: #f1f1f1;
+  padding: 10px;
+  margin-top: 20px;
+  border-radius: 5px;
+  display: none;
 }
