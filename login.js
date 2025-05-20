@@ -27,6 +27,6 @@ document.getElementById("empezarBtn").addEventListener("click", () => {
   localStorage.setItem("coachImage", imagenSeleccionada);
 
   // Redirigir a la página principal del simulador
-  window.location.href = "index.html";
+  window.location.href = "periodico.html";
 });
 
