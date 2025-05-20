@@ -1,181 +1,44 @@
-.info-jugador-transferencia {
-  background-color: #f0f0f0;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-}
-
-.info-jugador-transferencia h2 {
-  margin-top: 0;
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  background-color: #f8f9fa;
   color: #333;
 }
 
-.contenedor-ofertas {
-  display: flex;
-  flex-direction: column;
-  gap: 15px;
-  margin-bottom: 20px;
-}
-
-.oferta-transferencia {
-  display: flex;
-  background-color: white;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-  border-left: 5px solid #ccc;
-  transition: all 0.3s ease;
-}
-
-.oferta-venta {
-  border-left-color: #4CAF50;
-}
-
-.oferta-cesion {
-  border-left-color: #2196F3;
-}
-
-.oferta-rescision {
-  border-left-color: #f44336;
-}
-
-.oferta-transferencia:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
-}
-
-.club-logo {
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #e3e3e3;
-  color: #333;
-  font-weight: bold;
-  font-size: 24px;
-}
-
-.oferta-contenido {
-  flex: 1;
-  padding: 15px;
-}
-
-.oferta-encabezado {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 10px;
-}
-
-.oferta-encabezado h3 {
-  margin: 0;
-  color: #333;
-}
-
-.oferta-monto {
-  font-weight: bold;
-  font-size: 18px;
-  color: #4CAF50;
-}
-
-.club-info {
-  margin-bottom: 10px;
-  color: #555;
-}
-
-.oferta-detalles {
-  font-size: 14px;
-  color: #666;
-}
-
-.oferta-detalles p {
-  margin: 5px 0;
-}
-
-.oferta-botones {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 10px;
-  padding: 15px;
-  background-color: #f9f9f9;
-}
-
-.btn-aceptar, .btn-rechazar, .btn-volver {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.2s;
-}
-
-.btn-aceptar {
-  background-color: #4CAF50;
-  color: white;
-}
-
-.btn-aceptar:hover {
-  background-color: #3e8e41;
-}
-
-.btn-rechazar {
-  background-color: #f44336;
-  color: white;
-}
-
-.btn-rechazar:hover {
-  background-color: #d32f2f;
-}
-
-.btn-volver {
-  background-color: #607D8B;
-  color: white;
-  margin-top: 15px;
-}
-
-.btn-volver:hover {
-  background-color: #455A64;
-}
-
-.btn-volver-container {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-}
-
-.oferta-rechazada {
-  opacity: 0.5;
-  transform: translateX(100px);
-  transition: all 0.5s ease;
-}
-
-.no-ofertas {
-  background-color: #f9f9f9;
-  padding: 20px;
-  border-radius: 8px;
+h1 {
   text-align: center;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+  color: #222;
 }
 
-.notificacion {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: #4CAF50;
-  color: white;
-  padding: 15px 20px;
-  border-radius: 5px;
-  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-  z-index: 1000;
-  opacity: 0;
-  transform: translateY(-20px);
-  transition: all 0.3s ease;
+#contenedor-ofertas {
+  max-width: 800px;
+  margin: 0 auto;
 }
 
-.notificacion.mostrar {
-  opacity: 1;
-  transform: translateY(0);
+div.jugador-oferta {
+  background-color: #ffffff;
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+div.jugador-oferta h3 {
+  margin-top: 0;
+  color: #007bff;
+}
+
+div.jugador-oferta ul {
+  padding-left: 20px;
+}
+
+div.jugador-oferta li {
+  margin: 6px 0;
+}
+
+div.jugador-oferta p {
+  font-style: italic;
+  color: #888;
 }
