@@ -2,20 +2,20 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Negociaciones de Jugadores</title>
   <link rel="stylesheet" href="ventas.css">
-
 </head>
 <body>
 
-  <h1>Ofertas de Clubes por Jugadores</h1>
-  <div id="contenedor-ofertas"></div>
+  <main>
+    <h1>Ofertas de Clubes por Jugadores</h1>
+    <div id="contenedor-ofertas"></div>
+  </main>
 
-  <!-- Cargar scripts en orden correcto -->
   <script src="jugadores.js"></script>
   <script src="clubesCompradores.js"></script>
   <script>
-    // Simulación simple de negociación para un jugador dado
     function generarOfertasParaJugador(jugador) {
       const ofertas = [];
 
@@ -37,7 +37,6 @@
       return ofertas;
     }
 
-    // Mostrar las ofertas en pantalla
     function mostrarOfertas() {
       const contenedor = document.getElementById("contenedor-ofertas");
 
@@ -45,6 +44,7 @@
         const ofertas = generarOfertasParaJugador(jugador);
 
         const jugadorDiv = document.createElement("div");
+        jugadorDiv.classList.add("jugador-oferta");
         jugadorDiv.innerHTML = `<h3>${jugador.nombre} (${jugador.club})</h3>`;
 
         if (ofertas.length > 0) {
@@ -62,11 +62,9 @@
         }
 
         contenedor.appendChild(jugadorDiv);
-        contenedor.appendChild(document.createElement("hr"));
       });
     }
 
-    // Ejecutar al cargar
     window.addEventListener("DOMContentLoaded", mostrarOfertas);
   </script>
 </body>
