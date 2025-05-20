@@ -1,0 +1,25 @@
+body {
+  font-family: Arial, sans-serif;
+  padding: 20px;
+  background-color: #f0f0f5;
+}
+
+h1, h2 {
+  color: #003366;
+}
+
+#info-club {
+  margin-bottom: 20px;
+  background-color: #e6f0ff;
+  padding: 10px;
+  border-radius: 8px;
+}
+
+.jugador {
+  border: 1px solid #ccc;
+  background-color: #fff;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
