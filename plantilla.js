@@ -1,4 +1,4 @@
-// Obtener el nombre del club guardado en localStorage
+// Obtener el nombre del club guardado en localStorage 
 const selectedClub = localStorage.getItem("selectedClub");
 // Mostrar el nombre del club
 document.getElementById("nombre-club").textContent = selectedClub;
