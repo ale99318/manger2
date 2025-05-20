@@ -1,6 +1,7 @@
-const jugadores = [   
+const jugadores = [  
   // Alianza Lima
   {
+    id: 1,
     nombre: "Hernán Barcos",
     club: "Alianza Lima",
     edad: 39,
@@ -28,6 +29,7 @@ const jugadores = [
     contrato: 12
   },
   {
+    id: 2,
     nombre: "Pablo Sabbag",
     club: "Alianza Lima",
     edad: 30,
@@ -56,6 +58,7 @@ const jugadores = [
   },
   // Universitario
   {
+    id: 3,
     nombre: "Álex Valera",
     club: "Universitario",
     edad: 32,
@@ -83,6 +86,7 @@ const jugadores = [
     contrato: 24
   },
   {
+    id: 4,
     nombre: "Emanuel Herrera",
     club: "Universitario",
     edad: 36,
@@ -111,6 +115,7 @@ const jugadores = [
   },
   // Sporting Cristal
   {
+    id: 5,
     nombre: "Ignacio da Silva",
     club: "Sporting Cristal",
     edad: 29,
@@ -138,6 +143,7 @@ const jugadores = [
     contrato: 24
   },
   {
+    id: 6,
     nombre: "Brenner Marlos",
     club: "Sporting Cristal",
     edad: 27,
@@ -166,6 +172,7 @@ const jugadores = [
   },
   // Melgar
   {
+    id: 7,
     nombre: "Bernardo Cuesta",
     club: "Melgar",
     edad: 35,
@@ -193,6 +200,7 @@ const jugadores = [
     contrato: 12
   },
   {
+    id: 8,
     nombre: "Alec Deneumostier",
     club: "Melgar",
     edad: 31,
@@ -221,6 +229,7 @@ const jugadores = [
   },
   // Cienciano
   {
+    id: 9,
     nombre: "Danilo Carando",
     club: "Cienciano",
     edad: 33,
@@ -248,6 +257,7 @@ const jugadores = [
     contrato: 18
   },
   {
+    id: 10,
     nombre: "Hansell Riojas",
     club: "Cienciano",
     edad: 30,
