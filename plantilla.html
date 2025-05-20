@@ -1,21 +1,128 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Plantilla del Club</title>
-  <link rel="stylesheet" href="plantilla.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Gestión de Clubes de Fútbol</title>
+    <link rel="stylesheet" href="estilos_jugadores.css">
 </head>
 <body>
-  <h1 id="nombre-club"></h1>
-  <p id="info-club"></p>
+    <div class="contenedor">
+        <header>
+            <div class="logo">
+                <img src="logo.png" alt="Logo Liga" id="logo-liga">
+            </div>
+            <nav>
+                <select id="selector-club" onchange="cambiarClub()">
+                    <!-- Se llenará dinámicamente con JavaScript -->
+                </select>
+            </nav>
+        </header>
 
-  <h2>Jugadores</h2>
-  <div id="jugadores-container"></div>
+        <main>
+            <section class="seccion-club">
+                <h1 id="nombre-club">Nombre del Club</h1>
+                <div id="info-club">
+                    <!-- Se llenará dinámicamente con JavaScript -->
+                </div>
+            </section>
 
-  <!-- Scripts de datos -->
-  <script src="clubes.js"></script>
-  <script src="jugadores.js"></script>
-  <!-- Script funcional -->
-  <script src="plantilla.js"></script>
+            <section class="estadisticas-club">
+                <div class="tabla-posiciones">
+                    <h2>Posición en la tabla</h2>
+                    <div id="posicion-container">
+                        <!-- Se llenará dinámicamente con JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="ultimos-partidos">
+                    <h2>Últimos resultados</h2>
+                    <div id="resultados-container">
+                        <!-- Se llenará dinámicamente con JavaScript -->
+                    </div>
+                </div>
+            </section>
+
+            <section class="seccion-jugadores">
+                <h2>Jugadores</h2>
+                <div class="filtros">
+                    <select id="filtro-posicion">
+                        <option value="todos">Todos</option>
+                        <option value="portero">Porteros</option>
+                        <option value="defensa">Defensas</option>
+                        <option value="mediocampista">Mediocampistas</option>
+                        <option value="delantero">Delanteros</option>
+                    </select>
+                    <select id="filtro-orden">
+                        <option value="nombre">Nombre</option>
+                        <option value="general-desc">General (Mayor a menor)</option>
+                        <option value="general-asc">General (Menor a mayor)</option>
+                        <option value="valor-desc">Valor (Mayor a menor)</option>
+                        <option value="valor-asc">Valor (Menor a mayor)</option>
+                    </select>
+                </div>
+                <div id="jugadores-container">
+                    <!-- Se llenará dinámicamente con JavaScript -->
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>&copy; 2025 Sistema de Gestión de Clubes de Fútbol</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script src="clubes.js"></script>
+    <script src="jugadores.js"></script>
+    <script src="estadisticas.js"></script>
+    <script src="plantilla.js"></script>
+
+    <script>
+        // Script para cargar la lista de clubes en el selector
+        function cargarClubes() {
+            const selectorClub = document.getElementById('selector-club');
+            clubes.forEach(club => {
+                const option = document.createElement('option');
+                option.value = club.nombre;
+                option.textContent = club.nombre;
+                selectorClub.appendChild(option);
+            });
+        }
+
+        // Función para cambiar el club seleccionado
+        function cambiarClub() {
+            const clubSeleccionado = document.getElementById('selector-club').value;
+            localStorage.setItem('selectedClub', clubSeleccionado);
+            window.location.reload(); // Recargamos para mostrar los datos del nuevo club
+        }
+
+        // Función para filtrar jugadores por posición
+        function filtrarJugadoresPorPosicion() {
+            const posicionSeleccionada = document.getElementById('filtro-posicion').value;
+            const jugadoresCards = document.querySelectorAll('.jugador');
+            
+            jugadoresCards.forEach(card => {
+                const posicionJugador = card.querySelector('[data-posicion]').getAttribute('data-posicion').toLowerCase();
+                
+                if (posicionSeleccionada === 'todos' || posicionJugador.includes(posicionSeleccionada)) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        // Cargamos clubes al iniciar
+        document.addEventListener('DOMContentLoaded', function() {
+            cargarClubes();
+            
+            // Configuramos los eventos de filtrado
+            document.getElementById('filtro-posicion').addEventListener('change', filtrarJugadoresPorPosicion);
+            document.getElementById('filtro-orden').addEventListener('change', function() {
+                // Implementación pendiente para ordenar jugadores
+            });
+        });
+    </script>
 </body>
 </html>
