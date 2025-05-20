@@ -56,11 +56,11 @@ const clubes = [
     ciudad: "Callao"
   },
   {
-    nombre: "Deportivo Municipal",
+    nombre: "Deportivo Binacional Fútbol Club",
     presupuesto: 4500000,
-    clasico: "Sport Boys",
-    estadio: "Estadio Iván Elías Moreno",
-    ciudad: "Lima"
+    clasico: "Ninguno",
+    estadio: "Guillermo Briceño Rosamedina",
+    ciudad: "Juliaca"
   },
   {
     nombre: "UTC",
