@@ -1,96 +1,62 @@
-// Función para mostrar información de debug
-function mostrarDebug(mensaje) {
-  const debugDiv = document.getElementById("debug-info"); 
-  debugDiv.style.display = "block";
-  debugDiv.innerHTML += `<p>${mensaje}</p>`;
-}
+// Obtener el nombre del club guardado en localStorage
+const selectedClub = localStorage.getItem("selectedClub");
 
-// Función para generar ofertas para un jugador
-function generarOfertasParaJugador(jugador) {
-  const ofertas = [];
-  
-  // Verificamos que clubesCompradores esté definido
-  if (!window.clubesCompradores) {
-    mostrarDebug("❌ Error: No se encontró la variable 'clubesCompradores'");
-    return [];
-  }
-  
-  clubesCompradores.forEach(club => {
-    // El club solo ofertará si tiene suficiente presupuesto
-    if (club.presupuesto >= jugador.valor) {
-      // Probabilidad basada en reputación (simple)
-      const probabilidad = Math.min(club.reputacion / 100, 0.9);
-      if (Math.random() < probabilidad) {
-        // Calculamos un factor de oferta entre 0.9 y 1.2
-        const factorOferta = 0.9 + Math.random() * 0.3;
-        // Calculamos la oferta deseada
-        const ofertaDeseada = Math.floor(jugador.valor * factorOferta);
-        // Limitamos la oferta al presupuesto disponible
-        const ofertaFinal = Math.min(ofertaDeseada, club.presupuesto);
+// Mostrar el nombre del club
+document.getElementById("nombre-club").textContent = selectedClub;
+
+// Obtener todas las propuestas guardadas
+const propuestas = JSON.parse(localStorage.getItem("propuestasTransferencias") || "[]");
+
+// Obtener jugadores del club actual
+const jugadoresDelClub = jugadores.filter(j => j.club === selectedClub);
+
+// Mostrar solo propuestas para jugadores de este club
+const propuestasDelClub = propuestas.filter(p => 
+    jugadoresDelClub.some(j => j.nombre === p.jugador)
+);
+
+// Mostrar contenedor
+const contenedor = document.getElementById("info-club");
+contenedor.innerHTML = "";
+
+// Título
+const tituloPropuestas = document.createElement("h2");
+tituloPropuestas.textContent = "Ofertas Recibidas";
+contenedor.appendChild(tituloPropuestas);
+
+// Mostrar cada propuesta
+if (propuestasDelClub.length === 0) {
+    const sinOfertas = document.createElement("p");
+    sinOfertas.textContent = "No hay propuestas por tus jugadores.";
+    contenedor.appendChild(sinOfertas);
+} else {
+    propuestasDelClub.forEach(propuesta => {
+        const div = document.createElement("div");
+        div.textContent = `${propuesta.jugador}: ${propuesta.clubComprador} ofrece $${propuesta.monto.toLocaleString()}`;
         
-        const oferta = {
-          club: club.nombre,
-          pais: club.pais,
-          reputacion: club.reputacion,
-          ofertaEconomica: ofertaFinal,
+        // Botón para aceptar oferta
+        const botonAceptar = document.createElement("button");
+        botonAceptar.textContent = "Aceptar Oferta";
+        botonAceptar.onclick = function() {
+            aceptarOferta(propuesta.jugador);
         };
-        ofertas.push(oferta);
-      }
-    }
-  });
-  
-  return ofertas;
+        
+        div.appendChild(botonAceptar);
+        contenedor.appendChild(div);
+    });
 }
 
-// Función para mostrar las ofertas en el DOM
-function mostrarOfertas() {
-  const contenedor = document.getElementById("contenedor-ofertas");
-  
-  // Verificar que los datos estén cargados
-  if (!window.jugadores) {
-    mostrarDebug("❌ Error: No se encontró la variable 'jugadores'");
-    return;
-  }
-  
-  // Limpiar contenedor
-  contenedor.innerHTML = "";
-  
-  // Mostrar ofertas para cada jugador
-  jugadores.forEach(jugador => {
-    const ofertas = generarOfertasParaJugador(jugador);
+// Función para aceptar oferta
+function aceptarOferta(nombreJugador) {
+    // Marcar como vendido
+    let vendidos = JSON.parse(localStorage.getItem("jugadoresVendidos") || "[]");
+    vendidos.push(nombreJugador);
+    localStorage.setItem("jugadoresVendidos", JSON.stringify(vendidos));
     
-    // Crear elemento para el jugador
-    const jugadorDiv = document.createElement("div");
-    jugadorDiv.classList.add("jugador-oferta");
+    // Filtrar la propuesta aceptada del arreglo general
+    const nuevasPropuestas = propuestas.filter(p => p.jugador !== nombreJugador);
+    localStorage.setItem("propuestasTransferencias", JSON.stringify(nuevasPropuestas));
     
-    // Agregar información del jugador
-    jugadorDiv.innerHTML = `<h3>${jugador.nombre} (${jugador.club}) - ${jugador.posicion}</h3>`;
-    
-    // Agregar ofertas o mensaje si no hay ofertas
-    if (ofertas.length > 0) {
-      const lista = document.createElement("ul");
-      ofertas.forEach(oferta => {
-        const item = document.createElement("li");
-        item.textContent = `${oferta.club} (${oferta.pais}) ofrece $${oferta.ofertaEconomica.toLocaleString()}`;
-        lista.appendChild(item);
-      });
-      jugadorDiv.appendChild(lista);
-    } else {
-      const noOfertas = document.createElement("p");
-      noOfertas.textContent = "Sin ofertas disponibles por ahora.";
-      jugadorDiv.appendChild(noOfertas);
-    }
-    
-    // Agregar al contenedor principal
-    contenedor.appendChild(jugadorDiv);
-  });
+    alert(`Has vendido a ${nombreJugador}`);
+    location.reload();
 }
-
-// Ejecutar cuando se cargue la página
-window.addEventListener("DOMContentLoaded", function() {
-  try {
-    mostrarOfertas();
-  } catch (error) {
-    mostrarDebug(`❌ Error: ${error.message}`);
-  }
-});
