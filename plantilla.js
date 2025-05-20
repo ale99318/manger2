@@ -1,4 +1,4 @@
-// plantilla.js
+// plantilla.js 
 
 // Obtener el nombre del club guardado en localStorage
 const selectedClub = localStorage.getItem("selectedClub");
