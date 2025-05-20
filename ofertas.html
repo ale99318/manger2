@@ -13,8 +13,11 @@
     <div id="contenedor-ofertas"></div>
   </main>
 
+  <!-- Orden correcto de scripts -->
   <script src="jugadores.js"></script>
   <script src="clubesCompradores.js"></script>
+
+  <!-- Este script contiene la lógica -->
   <script>
     function generarOfertasParaJugador(jugador) {
       const ofertas = [];
@@ -39,6 +42,16 @@
 
     function mostrarOfertas() {
       const contenedor = document.getElementById("contenedor-ofertas");
+
+      if (!Array.isArray(jugadores)) {
+        console.error("❌ jugadores no está definido correctamente.");
+        return;
+      }
+
+      if (!Array.isArray(clubesCompradores)) {
+        console.error("❌ clubesCompradores no está definido correctamente.");
+        return;
+      }
 
       jugadores.forEach(jugador => {
         const ofertas = generarOfertasParaJugador(jugador);
@@ -66,13 +79,7 @@
     }
 
     window.addEventListener("DOMContentLoaded", mostrarOfertas);
-
- <script src="jugadores.js"></script>
-<script src="clubesCompradores.js"></script>
-<script src="ofertas.js"></script> <!-- Este debe ir al final -->
-    
   </script>
- 
 
 </body>
 </html>
