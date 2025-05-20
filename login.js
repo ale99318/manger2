@@ -1,5 +1,5 @@
 // login.js
-
+ 
 document.getElementById("empezarBtn").addEventListener("click", () => {
   const nombreDT = document.getElementById("nombreDT").value.trim();
   const clubFavorito = document.getElementById("clubFavorito").value.trim();
