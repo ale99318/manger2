@@ -1,4 +1,4 @@
-// Obtener el nombre del club guardado en localStorage 
+// Obtener el nombre del club guardado en localStorage
 const selectedClub = localStorage.getItem("selectedClub");
 // Mostrar el nombre del club
 document.getElementById("nombre-club").textContent = selectedClub;
@@ -23,25 +23,27 @@ jugadoresDelClub.forEach(jugador => {
     const div = document.createElement("div");
     div.textContent = jugador.nombre;
     
-    // Agregar botón para vender jugador
+    // Agregar botón para poner en venta al jugador (redirige a ofertas.html)
     const botonVender = document.createElement("button");
-    botonVender.textContent = "Vender";
+    botonVender.textContent = "Poner en venta";
     botonVender.onclick = function() {
-        venderJugador(jugador.nombre);
-        div.remove(); // Eliminar el elemento de la interfaz
+        ponerEnVenta(jugador);
     };
     
     div.appendChild(botonVender);
     contenedor.appendChild(div);
 });
 
-// Función para vender un jugador (eliminarlo de la lista)
-function venderJugador(nombreJugador) {
-    // Guardar el jugador vendido en localStorage
-    jugadoresVendidos.push(nombreJugador);
-    localStorage.setItem("jugadoresVendidos", JSON.stringify(jugadoresVendidos));
+// Función para poner en venta a un jugador (redirige a ofertas.html)
+function ponerEnVenta(jugador) {
+    // Marcar al jugador como en venta
+    jugador.enVenta = true;
     
-    console.log(`Jugador ${nombreJugador} vendido`);
+    // Guardar el jugador en transferencia en localStorage para acceder desde ofertas.html
+    localStorage.setItem("jugadorEnTransferencia", jugador.nombre);
+    
+    // Redirigir a la página de ofertas
+    window.location.href = "ofertas.html";
 }
 
 // Función para resetear todas las ventas
@@ -49,6 +51,11 @@ function resetearVentas() {
     // Limpiar la lista de jugadores vendidos en localStorage
     localStorage.removeItem("jugadoresVendidos");
     jugadoresVendidos = [];
+    
+    // Quitar el estado de "en venta" a todos los jugadores
+    jugadores.forEach(jugador => {
+        jugador.enVenta = false;
+    });
     
     // Recargar la página para mostrar todos los jugadores de nuevo
     location.reload();
