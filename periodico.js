@@ -14,6 +14,6 @@ window.addEventListener("DOMContentLoaded", () => {
   document.getElementById("dtImagen").src = imagen;
 
   document.getElementById("continuarBtn").addEventListener("click", () => {
-    window.location.href = "index.html"; // O a la página que quieras
+    window.location.href = "plantilla.html"; // O a la página que quieras
   });
 });
