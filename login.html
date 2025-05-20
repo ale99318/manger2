@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inicio de Sesión</title>
+  <link rel="stylesheet" href="login.css" />
+</head>
+<body>
+  <div class="login-container">
+    <h1>¡Empieza tu sueño como DT!</h1>
+    <p>Elige tu rostro, nombre y club favorito del fútbol peruano</p>
+
+    <div class="faces">
+      <label><input type="radio" name="face" value="img/entrenador1.png" checked><img src="img/entrenador1.png" alt="DT 1"></label>
+      <label><input type="radio" name="face" value="img/entrenador2.png"><img src="img/entrenador2.png" alt="DT 2"></label>
+      <label><input type="radio" name="face" value="img/entrenador3.png"><img src="img/entrenador3.png" alt="DT 3"></label>
+    </div>
+
+    <input type="text" id="nombreDT" placeholder="Tu nombre de entrenador" />
+    <input type="text" id="clubFavorito" placeholder="Tu club favorito del Perú" />
+
+    <button id="empezarBtn">Empezar el sueño</button>
+  </div>
+
+  <script src="login.js"></script>
+</body>
+</html>
