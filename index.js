@@ -1,4 +1,4 @@
-// index.js 
+// index.js  
 
 document.addEventListener("DOMContentLoaded", () => {
   const empezarBtn = document.getElementById("empezarBtn");
