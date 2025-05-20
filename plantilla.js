@@ -5,20 +5,31 @@ document.getElementById("nombre-club").textContent = selectedClub;
 
 // Verificar si hay jugadores vendidos guardados en localStorage
 let jugadoresVendidos = JSON.parse(localStorage.getItem("jugadoresVendidos") || "[]");
+let jugadoresCedidos = JSON.parse(localStorage.getItem("jugadoresCedidos") || "[]");
 
-// Filtrar los jugadores que pertenecen al club y que no están vendidos
+// Filtrar los jugadores que pertenecen al club, no están vendidos y no están cedidos
 const jugadoresDelClub = jugadores.filter(jugador => 
-    jugador.club === selectedClub && !jugadoresVendidos.includes(jugador.nombre)
+    jugador.club === selectedClub && 
+    !jugadoresVendidos.includes(jugador.nombre) &&
+    !jugadoresCedidos.some(cedido => cedido.nombre === jugador.nombre)
 );
 
 // Crear botón de resetear ventas
 const botonResetear = document.createElement("button");
-botonResetear.textContent = "Resetear Ventas";
-botonResetear.onclick = resetearVentas;
+botonResetear.textContent = "Resetear Transferencias";
+botonResetear.onclick = resetearTransferencias;
 document.querySelector(".seccion-club").appendChild(botonResetear);
 
 // Mostrar los jugadores en el contenedor info-club
 const contenedor = document.getElementById("info-club");
+contenedor.innerHTML = "";
+
+// Primero agregar título para jugadores disponibles
+const tituloDisponibles = document.createElement("h2");
+tituloDisponibles.textContent = "Jugadores Disponibles";
+contenedor.appendChild(tituloDisponibles);
+
+// Agregar jugadores disponibles
 jugadoresDelClub.forEach(jugador => {
     const div = document.createElement("div");
     div.textContent = jugador.nombre;
@@ -34,6 +45,28 @@ jugadoresDelClub.forEach(jugador => {
     contenedor.appendChild(div);
 });
 
+// Ahora mostrar jugadores cedidos (si existen)
+const jugadoresCedidosDelClub = jugadoresCedidos.filter(cedido => {
+    // Encontrar el jugador completo
+    const jugadorCompleto = jugadores.find(j => j.nombre === cedido.nombre);
+    return jugadorCompleto && jugadorCompleto.club === selectedClub;
+});
+
+if (jugadoresCedidosDelClub.length > 0) {
+    // Agregar título para jugadores cedidos
+    const tituloCedidos = document.createElement("h2");
+    tituloCedidos.textContent = "Jugadores Cedidos";
+    tituloCedidos.style.marginTop = "20px";
+    contenedor.appendChild(tituloCedidos);
+    
+    // Mostrar cada jugador cedido
+    jugadoresCedidosDelClub.forEach(cedido => {
+        const div = document.createElement("div");
+        div.textContent = `${cedido.nombre} (Cedido al ${cedido.club} hasta ${cedido.finPrestamo})`;
+        contenedor.appendChild(div);
+    });
+}
+
 // Función para poner en venta a un jugador (redirige a ofertas.html)
 function ponerEnVenta(jugador) {
     // Marcar al jugador como en venta
@@ -46,11 +79,12 @@ function ponerEnVenta(jugador) {
     window.location.href = "ofertas.html";
 }
 
-// Función para resetear todas las ventas
-function resetearVentas() {
-    // Limpiar la lista de jugadores vendidos en localStorage
+// Función para resetear todas las transferencias
+function resetearTransferencias() {
+    // Limpiar todos los datos de transferencias
     localStorage.removeItem("jugadoresVendidos");
-    jugadoresVendidos = [];
+    localStorage.removeItem("jugadoresCedidos");
+    localStorage.removeItem("historialTransferencias");
     
     // Quitar el estado de "en venta" a todos los jugadores
     jugadores.forEach(jugador => {
@@ -60,5 +94,5 @@ function resetearVentas() {
     // Recargar la página para mostrar todos los jugadores de nuevo
     location.reload();
     
-    console.log("Ventas reseteadas");
+    console.log("Transferencias reseteadas");
 }
