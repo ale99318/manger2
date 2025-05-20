@@ -1,6 +1,6 @@
 // Función para mostrar información de debug
 function mostrarDebug(mensaje) {
-  const debugDiv = document.getElementById("debug-info");
+  const debugDiv = document.getElementById("debug-info"); 
   debugDiv.style.display = "block";
   debugDiv.innerHTML += `<p>${mensaje}</p>`;
 }
