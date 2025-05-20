@@ -13,6 +13,7 @@
                 <img src="logo.png" alt="Logo Liga" id="logo-liga">
             </div>
             <nav>
+              
                     <!-- Se llenará dinámicamente con JavaScript -->
                 </select>
             </nav>
@@ -102,14 +103,27 @@
             const jugadoresCards = document.querySelectorAll('.jugador');
             
             jugadoresCards.forEach(card => {
-                const posicionJugador = card.querySelector('[data-posicion]').getAttribute('data-posicion').toLowerCase();
+                // Modificado para adaptarse a la nueva estructura
+                const posicionText = card.querySelector('.jugador-header p').textContent;
+                const posicionJugador = posicionText.toLowerCase();
                 
-                if (posicionSeleccionada === 'todos' || posicionJugador.includes(posicionSeleccionada)) {
+                if (posicionSeleccionada === 'todos' || posicionJugador.includes(posicionSeleccionada.toLowerCase())) {
                     card.style.display = 'block';
                 } else {
                     card.style.display = 'none';
                 }
             });
+        }
+
+        // Función para mostrar/ocultar la información adicional (definida globalmente)
+        function toggleInfo(id) {
+            const infoDiv = document.getElementById(id);
+            const isHidden = infoDiv.style.display === 'none';
+            infoDiv.style.display = isHidden ? 'block' : 'none';
+            
+            // Cambiar el texto del botón
+            const button = infoDiv.previousElementSibling.querySelector('button');
+            button.textContent = isHidden ? 'Ver menos' : 'Ver más';
         }
 
         // Cargamos clubes al iniciar
