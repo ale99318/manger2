@@ -77,11 +77,11 @@ const clubes = [
     ciudad: "Trujillo"
   },
   {
-    nombre: "César Vallejo",
+    nombre: "Club Deportivo Garcilaso",
     presupuesto: 4800000,
-    clasico: "Carlos A. Mannucci",
-    estadio: "Estadio Mansiche",
-    ciudad: "Trujillo"
+    clasico: "Cienciano",
+    estadio: "Estadio Inca Garcilaso de la Vega",
+    ciudad: "Cusco"
   },
   {
     nombre: "Sport Huancayo",
@@ -105,7 +105,7 @@ const clubes = [
     ciudad: "Piura"
   },
   {
-    nombre: "Unión Comercio",
+    nombre: "Juan Pablo II College",
     presupuesto: 3200000,
     clasico: "Ninguno",
     estadio: "Estadio Carlos Vidaurre García",
