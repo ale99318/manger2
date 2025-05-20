@@ -1,19 +1,71 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Transferencias de Jugadores</title>
-    <!-- Enlazar el archivo CSS externo -->
-    <link rel="stylesheet" href="transferencias.css">
+  <meta charset="UTF-8">
+  <title>Negociaciones de Jugadores</title>
 </head>
 <body>
-    <!-- Contenido existente... -->
-    <div id="lista-ofertas">
-        <!-- Aquí se mostrarán las ofertas dinámicamente -->
-    </div>
-    
-    <!-- Enlazar el archivo JavaScript externo -->
-    <script src="transferencias.js"></script>
+
+  <h1>Ofertas de Clubes por Jugadores</h1>
+  <div id="contenedor-ofertas"></div>
+
+  <!-- Cargar scripts en orden correcto -->
+  <script src="jugadores.js"></script>
+  <script src="clubesCompradores.js"></script>
+  <script>
+    // Simulación simple de negociación para un jugador dado
+    function generarOfertasParaJugador(jugador) {
+      const ofertas = [];
+
+      clubesCompradores.forEach(club => {
+        if (club.presupuesto >= jugador.valor) {
+          const probabilidad = Math.min(club.reputacion / 100, 0.9);
+          if (Math.random() < probabilidad) {
+            const oferta = {
+              club: club.nombre,
+              pais: club.pais,
+              reputacion: club.reputacion,
+              ofertaEconomica: Math.floor(jugador.valor * (0.9 + Math.random() * 0.3)),
+            };
+            ofertas.push(oferta);
+          }
+        }
+      });
+
+      return ofertas;
+    }
+
+    // Mostrar las ofertas en pantalla
+    function mostrarOfertas() {
+      const contenedor = document.getElementById("contenedor-ofertas");
+
+      jugadores.forEach(jugador => {
+        const ofertas = generarOfertasParaJugador(jugador);
+
+        const jugadorDiv = document.createElement("div");
+        jugadorDiv.innerHTML = `<h3>${jugador.nombre} (${jugador.club})</h3>`;
+
+        if (ofertas.length > 0) {
+          const lista = document.createElement("ul");
+          ofertas.forEach(oferta => {
+            const item = document.createElement("li");
+            item.textContent = `${oferta.club} (${oferta.pais}) ofrece $${oferta.ofertaEconomica.toLocaleString()}`;
+            lista.appendChild(item);
+          });
+          jugadorDiv.appendChild(lista);
+        } else {
+          const noOfertas = document.createElement("p");
+          noOfertas.textContent = "Sin ofertas disponibles por ahora.";
+          jugadorDiv.appendChild(noOfertas);
+        }
+
+        contenedor.appendChild(jugadorDiv);
+        contenedor.appendChild(document.createElement("hr"));
+      });
+    }
+
+    // Ejecutar al cargar
+    window.addEventListener("DOMContentLoaded", mostrarOfertas);
+  </script>
 </body>
 </html>
