@@ -1,0 +1,54 @@
+body {
+  font-family: 'Georgia', serif;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+.portada {
+  max-width: 800px;
+  margin: 50px auto;
+  padding: 30px;
+  background-color: white;
+  box-shadow: 0 0 10px rgba(0,0,0,0.1);
+  border: 2px solid #ccc;
+  position: relative;
+}
+
+#continuarBtn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  padding: 10px 20px;
+  font-weight: bold;
+  background-color: #444;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.titular {
+  text-align: center;
+  font-size: 28px;
+  margin-top: 60px;
+  margin-bottom: 30px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 10px;
+}
+
+.contenido {
+  display: flex;
+  align-items: center;
+  gap: 30px;
+}
+
+.imagen-dt img {
+  width: 180px;
+  border: 2px solid #999;
+  border-radius: 4px;
+}
+
+.info-dt p {
+  font-size: 18px;
+  margin: 10px 0;
+}
