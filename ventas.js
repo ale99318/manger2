@@ -1,4 +1,4 @@
-// Al cargar la página
+// Al cargar la página 
 document.addEventListener("DOMContentLoaded", function() {
     // Obtener el jugador en transferencia desde localStorage
     const jugadorEnVenta = localStorage.getItem("jugadorEnTransferencia");
