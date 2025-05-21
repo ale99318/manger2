@@ -1,5 +1,5 @@
 // Al cargar la página
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() { 
     // Primero debemos asegurarnos de que los jugadores del archivo  .txt
     // estén guardados en localStorage (esto es lo que faltaba en tu código)
     if (!localStorage.getItem("jugadores") && typeof window.jugadores !== 'undefined') {
