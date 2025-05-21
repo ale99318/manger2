@@ -40,6 +40,10 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
     
+    // Añadir sección para establecer precio
+    agregarSeccionPrecio(jugador);
+    
+    // Generar ofertas de los clubes
     generarOfertas(jugador);
 });
 
@@ -58,6 +62,182 @@ function mostrarInfoJugador(jugador) {
             <div class="stat-item">Club actual: ${jugador.club}</div>
         </div>
     `;
+}
+
+// Nueva función para agregar la sección de precio
+function agregarSeccionPrecio(jugador) {
+    // Crear el elemento para la sección de precio
+    const seccionPrecio = document.createElement("div");
+    seccionPrecio.id = "seccion-precio";
+    seccionPrecio.className = "seccion-precio";
+    
+    // Valor sugerido (valor del jugador)
+    const valorSugerido = jugador.valor;
+    
+    // Contenido HTML para la sección de precio
+    seccionPrecio.innerHTML = `
+        <div class="precio-header">
+            <h4>Establecer precio de venta</h4>
+        </div>
+        <div class="precio-input">
+            <label for="precio-venta">Precio (en millones): $</label>
+            <input type="number" id="precio-venta" value="${(valorSugerido/1000000).toFixed(1)}" step="0.1" min="0.1">
+            <button id="btn-establecer-precio" class="btn">Establecer precio</button>
+        </div>
+        <div id="resultado-negociacion" class="resultado-negociacion" style="display: none;"></div>
+    `;
+    
+    // Insertar la sección de precio antes de la lista de ofertas
+    const listaOfertas = document.getElementById("lista-ofertas");
+    listaOfertas.parentNode.insertBefore(seccionPrecio, listaOfertas);
+    
+    // Añadir evento al botón de establecer precio
+    document.getElementById("btn-establecer-precio").addEventListener("click", function() {
+        const precioVenta = parseFloat(document.getElementById("precio-venta").value) * 1000000;
+        negociarConClubes(jugador, precioVenta);
+    });
+}
+
+// Función para negociar con los clubes
+function negociarConClubes(jugador, precioVenta) {
+    // Obtener los clubes interesados
+    const clubesInteresados = clubesCompradores.filter(club => clubEstaInteresado(club, jugador));
+    
+    // Verificar si hay clubes interesados
+    if (clubesInteresados.length === 0) {
+        document.getElementById("resultado-negociacion").innerHTML = `
+            <p>No hay clubes interesados en el jugador en este momento.</p>
+        `;
+        document.getElementById("resultado-negociacion").style.display = "block";
+        return;
+    }
+    
+    // Evaluar para cada club si aceptaría el precio propuesto
+    const resultadosNegociacion = [];
+    
+    clubesInteresados.forEach(club => {
+        const ofertaOriginal = calcularValorOferta(club, jugador);
+        const maxOfertaClub = ofertaOriginal * 1.2; // El club podría pagar hasta un 20% más
+        
+        // El club aceptará si el precio está dentro de lo que puede pagar
+        const aceptaria = precioVenta <= maxOfertaClub;
+        
+        // El club podría hacer una contraoferta
+        let contraoferta = 0;
+        if (!aceptaria && precioVenta <= maxOfertaClub * 1.3) {
+            // Contraoferta entre su máximo y su oferta original
+            contraoferta = Math.round(
+                (ofertaOriginal + (maxOfertaClub - ofertaOriginal) * Math.random()) / 100000
+            ) * 100000;
+        }
+        
+        resultadosNegociacion.push({
+            club: club,
+            aceptaria: aceptaria,
+            contraoferta: contraoferta,
+            ofertaOriginal: ofertaOriginal
+        });
+    });
+    
+    // Mostrar resultados
+    mostrarResultadosNegociacion(resultadosNegociacion, jugador, precioVenta);
+}
+
+// Función para mostrar los resultados de la negociación
+function mostrarResultadosNegociacion(resultados, jugador, precioVenta) {
+    const divResultado = document.getElementById("resultado-negociacion");
+    divResultado.style.display = "block";
+    
+    // Limpiar resultados anteriores
+    divResultado.innerHTML = "";
+    
+    // Título
+    const titulo = document.createElement("h4");
+    titulo.textContent = "Resultados de la negociación";
+    divResultado.appendChild(titulo);
+    
+    // Mostrar clubes que aceptan directamente
+    const clubesAceptan = resultados.filter(r => r.aceptaria);
+    if (clubesAceptan.length > 0) {
+        const divAceptan = document.createElement("div");
+        divAceptan.className = "clubes-aceptan";
+        divAceptan.innerHTML = "<h5>Clubes que aceptan tu precio:</h5>";
+        
+        clubesAceptan.forEach(resultado => {
+            const divClub = document.createElement("div");
+            divClub.className = "club-respuesta";
+            divClub.innerHTML = `
+                <div class="club-nombre">${resultado.club.nombre}</div>
+                <div class="club-oferta">Acepta: $${(precioVenta/1000000).toFixed(1)}M</div>
+                <button class="btn btn-aceptar" onclick="aceptarOferta('${resultado.club.nombre}', ${precioVenta})">Cerrar trato</button>
+            `;
+            divAceptan.appendChild(divClub);
+        });
+        
+        divResultado.appendChild(divAceptan);
+    }
+    
+    // Mostrar clubes que hacen contraoferta
+    const clubesContraoferta = resultados.filter(r => !r.aceptaria && r.contraoferta > 0);
+    if (clubesContraoferta.length > 0) {
+        const divContraoferta = document.createElement("div");
+        divContraoferta.className = "clubes-contraoferta";
+        divContraoferta.innerHTML = "<h5>Clubes que hacen contraoferta:</h5>";
+        
+        clubesContraoferta.forEach(resultado => {
+            const divClub = document.createElement("div");
+            divClub.className = "club-respuesta";
+            divClub.innerHTML = `
+                <div class="club-nombre">${resultado.club.nombre}</div>
+                <div class="club-oferta">Contraoferta: $${(resultado.contraoferta/1000000).toFixed(1)}M</div>
+                <button class="btn btn-aceptar" onclick="aceptarOferta('${resultado.club.nombre}', ${resultado.contraoferta})">Aceptar</button>
+                <button class="btn btn-rechazar" onclick="rechazarContraoferta('${resultado.club.nombre}')">Rechazar</button>
+            `;
+            divContraoferta.appendChild(divClub);
+        });
+        
+        divResultado.appendChild(divContraoferta);
+    }
+    
+    // Mostrar clubes que rechazan
+    const clubesRechazan = resultados.filter(r => !r.aceptaria && r.contraoferta === 0);
+    if (clubesRechazan.length > 0) {
+        const divRechazan = document.createElement("div");
+        divRechazan.className = "clubes-rechazan";
+        divRechazan.innerHTML = "<h5>Clubes que rechazan tu precio:</h5>";
+        
+        clubesRechazan.forEach(resultado => {
+            const divClub = document.createElement("div");
+            divClub.className = "club-respuesta";
+            divClub.innerHTML = `
+                <div class="club-nombre">${resultado.club.nombre}</div>
+                <div class="club-oferta">Oferta original: $${(resultado.ofertaOriginal/1000000).toFixed(1)}M</div>
+                <button class="btn btn-aceptar" onclick="aceptarOferta('${resultado.club.nombre}', ${resultado.ofertaOriginal})">Aceptar oferta original</button>
+            `;
+            divRechazan.appendChild(divClub);
+        });
+        
+        divResultado.appendChild(divRechazan);
+    }
+}
+
+// Función para rechazar una contraoferta
+function rechazarContraoferta(clubNombre) {
+    // Simplemente eliminar la respuesta del club
+    const clubesContraoferta = document.querySelector(".clubes-contraoferta");
+    if (clubesContraoferta) {
+        const respuestas = clubesContraoferta.querySelectorAll(".club-respuesta");
+        respuestas.forEach(respuesta => {
+            if (respuesta.querySelector(".club-nombre").textContent === clubNombre) {
+                respuesta.remove();
+            }
+        });
+        
+        // Si no quedan respuestas, ocultar la sección
+        if (clubesContraoferta.querySelectorAll(".club-respuesta").length === 0) {
+            clubesContraoferta.style.display = "none";
+        }
+    }
 }
 
 // Función para determinar si un club está interesado en un jugador
