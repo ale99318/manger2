@@ -25,6 +25,21 @@ document.addEventListener("DOMContentLoaded", function() {
     mostrarInfoJugador(jugador);
     
     // Generar ofertas de los clubes
+    // Asegúrate de que clubesCompradores esté definido y disponible aquí
+    if (typeof clubesCompradores === 'undefined') {
+        console.error("Error: La variable clubesCompradores no está definida");
+        
+        // Mostrar el mensaje de error directamente en la interfaz
+        const listaOfertas = document.getElementById("lista-ofertas");
+        listaOfertas.innerHTML = `
+            <div class="sin-ofertas">
+                <p>Error al cargar los clubes interesados.</p>
+                <p>Verifica que el archivo con los clubes se haya cargado correctamente.</p>
+            </div>
+        `;
+        return;
+    }
+    
     generarOfertas(jugador);
 });
 
@@ -90,10 +105,31 @@ function calcularValorOferta(club, jugador) {
 // Función para generar las ofertas de los clubes
 function generarOfertas(jugador) {
     const listaOfertas = document.getElementById("lista-ofertas");
+    
+    // Asegurarse de que el elemento existe
+    if (!listaOfertas) {
+        console.error("Error: No se encontró el elemento con ID 'lista-ofertas'");
+        return;
+    }
+    
+    // Limpiar cualquier contenido previo
     listaOfertas.innerHTML = "";
+    
+    // Verificar nuevamente que clubesCompradores esté disponible
+    if (typeof clubesCompradores === 'undefined' || !Array.isArray(clubesCompradores)) {
+        console.error("Error: clubesCompradores no está definido o no es un array");
+        listaOfertas.innerHTML = `
+            <div class="sin-ofertas">
+                <p>Error al cargar los clubes interesados.</p>
+            </div>
+        `;
+        return;
+    }
     
     // Seleccionar los clubes interesados
     const clubesInteresados = clubesCompradores.filter(club => clubEstaInteresado(club, jugador));
+    
+    console.log("Clubes interesados:", clubesInteresados.length);
     
     // Si no hay clubes interesados
     if (clubesInteresados.length === 0) {
