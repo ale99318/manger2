@@ -1,4 +1,4 @@
-// Configuración inicial
+// Configuración inicial 
 const dtNombre = localStorage.getItem("coachName") || "Entrenador";
 const clubNombre = localStorage.getItem("selectedClub") || "Mi Equipo";
 
