@@ -1,5 +1,5 @@
 // Al cargar la página 
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function() { 
     // Obtener el jugador en préstamo desde localStorage
     const jugadorEnPrestamo = localStorage.getItem("jugadorEnPrestamo");
     
