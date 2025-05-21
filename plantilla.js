@@ -29,6 +29,21 @@ const tituloDisponibles = document.createElement("h2");
 tituloDisponibles.textContent = "Jugadores Disponibles";
 contenedor.appendChild(tituloDisponibles);
 
+function ponerEnVenta(jugador) {
+  jugador.enVenta = true;
+
+  // Guardar el nombre del jugador que irá a ofertas.html
+  localStorage.setItem("jugadorEnTransferencia", jugador.nombre);
+
+  // Guardar la lista completa de jugadores, si no está ya guardada
+  localStorage.setItem("jugadores", JSON.stringify(jugadores));
+
+  // Redirigir
+  window.location.href = "ofertas.html";
+}
+
+
+
 // Agregar jugadores disponibles
 jugadoresDelClub.forEach(jugador => {
     const div = document.createElement("div");
