@@ -113,7 +113,7 @@ function ponerEnVenta(jugador) {
         localStorage.setItem("jugadores", JSON.stringify(jugadores));
         
         // Redirigir a ofertas.html
-        window.location.href = "ofertas.html";
+        window.location.href = "ventas.html";
     }
 }
 
