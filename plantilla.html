@@ -1,24 +1,26 @@
 <!DOCTYPE html>
-<html lang="es"> 
+<html lang="es">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Plantilla del Club</title>
     <link rel="stylesheet" href="plantilla.css">
-
 </head>
 <body>
+    <div class="seccion-club">
+        <h1>Plantilla: <span id="nombre-club">Cargando...</span></h1>
+        <!-- El botón de resetear transferencias se agregará aquí mediante JavaScript -->
+    </div>
 
-    <main>
-        <section class="seccion-club">
-            <h1 id="nombre-club">Nombre del Club</h1>
-            <div id="info-club"></div>
-        </section>
-    </main>
+    <div id="info-club">
+        <!-- Aquí se mostrarán los jugadores -->
+        <p>Cargando plantilla...</p>
+    </div>
 
-    <!-- Scripts -->
-    <script src="clubes.js"></script>
-    <script src="jugadores.js"></script>
+    <!-- Primero cargar el archivo con los datos de jugadores -->
+    <script src="paste.txt"></script>
+    
+    <!-- Luego cargar nuestro script para la página de plantilla -->
     <script src="plantilla.js"></script>
-
 </body>
 </html>
