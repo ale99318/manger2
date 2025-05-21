@@ -74,6 +74,13 @@ document.addEventListener("DOMContentLoaded", function() {
         botonVender.onclick = () => ponerEnVenta(jugador);
         div.appendChild(botonVender);
         
+        // Botón de préstamo
+        const botonPrestar = document.createElement("button");
+        botonPrestar.textContent = "Prestar jugador";
+        botonPrestar.classList.add("btn-prestar");
+        botonPrestar.onclick = () => prestarJugador(jugador);
+        div.appendChild(botonPrestar);
+        
         contenedor.appendChild(div);
     });
     
@@ -115,6 +122,15 @@ function ponerEnVenta(jugador) {
         // Redirigir a ofertas.html
         window.location.href = "ventas.html";
     }
+}
+
+// Función para prestar un jugador
+function prestarJugador(jugador) {
+    // Guardar jugador seleccionado para préstamo
+    localStorage.setItem("jugadorEnPrestamo", jugador.nombre);
+    
+    // Redirigir a página de préstamos
+    window.location.href = "prestamos.html";
 }
 
 // Función para resetear transferencias
