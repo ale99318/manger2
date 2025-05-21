@@ -10,6 +10,24 @@ const jugador = jugadores.find(j => j.nombre === jugadorNombre);
 const jugadorInfo = document.getElementById("jugador-info");
 jugadorInfo.textContent = jugador ? `Jugador: ${jugador.nombre} - Valor estimado: $${jugador.valor.toLocaleString()}` : "Jugador no encontrado";
 
+// Recuperar nombre del jugador seleccionado
+const jugadorNombre = localStorage.getItem("jugadorEnTransferencia");
+
+// Recuperar lista completa de jugadores
+const jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+
+// Buscar al jugador
+const jugador = jugadores.find(j => j.nombre === jugadorNombre);
+
+if (!jugadorNombre) {
+  document.body.innerHTML = "<p>No hay jugador seleccionado.</p>";
+} else if (!jugador) {
+  document.body.innerHTML = "<p>Jugador no encontrado.</p>";
+} else {
+  // Mostrar sus datos y generar ofertas normalmente
+}
+
+
 // Obtener contenedor
 const listaOfertas = document.getElementById("lista-ofertas");
 
