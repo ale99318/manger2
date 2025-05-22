@@ -1,4 +1,4 @@
-// Sistema simple para mostrar equipo y presupuesto + Sistema de transferencias 
+// Sistema simple para mostrar equipo y presupuesto + Sistema de transferencias
 document.addEventListener('DOMContentLoaded', function() {
     // Obtener datos del localStorage
     const equipoNombre = localStorage.getItem("selectedClub") || "Mi Equipo";
@@ -28,33 +28,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const presupuestoGuardado = localStorage.getItem(`presupuesto_${equipoNombre}`);
     const presupuestoActual = presupuestoGuardado ? parseInt(presupuestoGuardado) : miEquipo.presupuesto;
     
-    // Obtener jugadores de mi equipo (incluyendo los comprados)
-    function obtenerJugadoresEquipo() {
-        // La plantilla se guarda en "jugadores" en localStorage
-        const jugadoresGuardados = localStorage.getItem("jugadores");
-        
-        if (jugadoresGuardados) {
-            try {
-                const todosLosJugadores = JSON.parse(jugadoresGuardados);
-                // Filtrar solo los jugadores que pertenecen a mi equipo
-                const jugadoresDelEquipo = todosLosJugadores.filter(j => j.club === equipoNombre);
-                console.log(`✓ Jugadores de ${equipoNombre} encontrados: ${jugadoresDelEquipo.length}`);
-                return jugadoresDelEquipo;
-            } catch (e) {
-                console.warn("Error al parsear jugadores:", e);
-            }
-        }
-        
-        // Si no hay jugadores guardados, usar los originales del window.jugadores
-        if (window.jugadores && Array.isArray(window.jugadores)) {
-            return window.jugadores.filter(j => j.club === equipoNombre);
-        }
-        
-        return [];
-    }
-    
-    const jugadoresEquipo = obtenerJugadoresEquipo();
-    
     // Función para formatear el precio
     function formatearPrecio(precio) {
         if (precio >= 1000000) {
@@ -71,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log(`Entrenador: ${entrenadorNombre}`);
     console.log(`Equipo: ${equipoNombre}`);
     console.log(`Presupuesto: ${formatearPrecio(presupuestoActual)}`);
-    console.log(`Jugadores en plantilla: ${jugadoresEquipo.length}`);
     console.log("===============================");
     
     // Si existen elementos en el DOM, actualizar
@@ -92,32 +64,10 @@ document.addEventListener('DOMContentLoaded', function() {
         entrenador: entrenadorNombre,
         presupuesto: presupuestoActual,
         presupuestoFormateado: formatearPrecio(presupuestoActual),
-        jugadores: jugadoresEquipo,
         
         // Método para mostrar información
         mostrarInfo: function() {
-            console.log(`Equipo: ${this.nombre} | Presupuesto: ${this.presupuestoFormateado} | Jugadores: ${this.jugadores.length}`);
-        },
-        
-        // Método para actualizar plantilla
-        actualizarPlantilla: function() {
-            const plantillaActualizada = obtenerJugadoresEquipo();
-            this.jugadores = plantillaActualizada;
-            return plantillaActualizada;
-        },
-        
-        // Método para actualizar presupuesto
-        actualizarPresupuesto: function() {
-            const presupuestoGuardado = localStorage.getItem(`presupuesto_${equipoNombre}`);
-            this.presupuesto = presupuestoGuardado ? parseInt(presupuestoGuardado) : miEquipo.presupuesto;
-            this.presupuestoFormateado = formatearPrecio(this.presupuesto);
-            
-            // Actualizar en DOM si existe
-            if (elementoPresupuesto) {
-                elementoPresupuesto.textContent = this.presupuestoFormateado;
-            }
-            
-            return this.presupuesto;
+            console.log(`Equipo: ${this.nombre} | Presupuesto: ${this.presupuestoFormateado}`);
         }
     };
     
@@ -166,31 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Crear mercado de transferencias (excluyendo jugadores del equipo actual Y jugadores ya comprados)
-    function crearMercadoTransferencias() {
-        // Obtener TODOS los jugadores actualizados de localStorage
-        const jugadoresActualizados = localStorage.getItem("jugadores");
-        let todosLosJugadores = [];
-        
-        if (jugadoresActualizados) {
-            try {
-                todosLosJugadores = JSON.parse(jugadoresActualizados);
-                console.log("✓ Usando jugadores actualizados de localStorage");
-            } catch (e) {
-                console.warn("Error al parsear jugadores actualizados:", e);
-                // Usar jugadores originales como fallback
-                todosLosJugadores = window.jugadores || [];
-            }
-        } else {
-            // Si no hay jugadores en localStorage, usar los originales
-            todosLosJugadores = window.jugadores || [];
-            console.log("✓ Usando jugadores originales de window.jugadores");
-        }
-        
-        // Filtrar jugadores que NO pertenecen a mi equipo
-        const jugadoresDisponibles = todosLosJugadores.filter(jugador => jugador.club !== equipoNombre);
-        
-        return jugadoresDisponibles.map(jugador => {
+    // Crear mercado de transferencias (excluyendo jugadores del equipo actual)
+    const mercadoTransferencias = window.jugadores
+        .filter(jugador => jugador.club !== equipoNombre)
+        .map(jugador => {
             const estadoTransferencia = generarEstadoTransferencia();
             const precioTransferencia = calcularPrecioTransferencia(jugador, estadoTransferencia);
             const bonus = generarBonus(jugador);
@@ -205,9 +134,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 disponibleParaCompra: true
             };
         });
-    }
-    
-    let mercadoTransferencias = crearMercadoTransferencias();
     
     // Variables para los elementos del DOM
     const playersGrid = document.getElementById('playersGrid');
@@ -220,19 +146,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function llenarFiltroClub() {
         if (!clubFilter) return;
         
-        // Limpiar opciones existentes (excepto la primera)
-        const firstOption = clubFilter.querySelector('option[value="all"]');
-        clubFilter.innerHTML = '';
-        if (firstOption) {
-            clubFilter.appendChild(firstOption);
-        } else {
-            const allOption = document.createElement('option');
-            allOption.value = 'all';
-            allOption.textContent = 'Todos los clubes';
-            clubFilter.appendChild(allOption);
-        }
-        
-        const clubesUnicos = [...new Set(mercadoTransferencias.map(j => j.club))].sort();
+        const clubesUnicos = [...new Set(mercadoTransferencias.map(j => j.club))];
         clubesUnicos.forEach(club => {
             const option = document.createElement('option');
             option.value = club;
@@ -284,10 +198,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Mostrar jugadores en la interfaz
     function mostrarJugadores(jugadoresToShow = mercadoTransferencias) {
-        if (!playersGrid) {
-            console.log("⚠️ Elemento playersGrid no encontrado en el DOM");
-            return;
-        }
+        if (!playersGrid) return;
         
         playersGrid.innerHTML = '';
         
@@ -310,29 +221,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 irANegociacion(jugadorId);
             });
         });
-        
-        console.log(`✓ Mostrando ${jugadoresDisponibles.length} jugadores en la interfaz`);
     }
     
     // Función para ir a la página de negociación
     function irANegociacion(jugadorId) {
         const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
-        if (!jugador) {
-            console.error(`❌ No se encontró el jugador con ID: ${jugadorId}`);
-            return;
-        }
+        if (!jugador) return;
         
         // Guardar datos del jugador seleccionado en localStorage para la página de negociación
         localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
         
-        // Redirigir según el estado de transferencia
-        if (jugador.estadoTransferencia === 'disponible') {
-            window.location.href = 'negociarclub.html';
-        } else if (jugador.estadoTransferencia === 'libre') {
-            window.location.href = 'agente-libre.html';
-        } else if (jugador.estadoTransferencia === 'clausula') {
-            window.location.href = 'clausula-rescision.html';
-        }
+        // Redirigir a la página de negociación
+        window.location.href = 'negociacion.html';
     }
     
     // Aplicar filtros
@@ -377,33 +277,36 @@ document.addEventListener('DOMContentLoaded', function() {
     if (clubFilter) {
         clubFilter.addEventListener('change', aplicarFiltros);
     }
-    
-    // Función para actualizar mercado (llamar después de una compra exitosa)
-    function actualizarMercado() {
-        console.log("🔄 Actualizando mercado de transferencias...");
-        mercadoTransferencias = crearMercadoTransferencias();
-        llenarFiltroClub();
-        aplicarFiltros();
+
+    // Función para ir a la página de negociación
+    function irANegociacion(jugadorId) {
+        const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
+        if (!jugador) return;
         
-        // También actualizar información del equipo
-        window.miEquipoInfo.actualizarPlantilla();
-        window.miEquipoInfo.actualizarPresupuesto();
+        // Guardar datos del jugador seleccionado en localStorage para la página de negociación
+        localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
         
-        console.log("📊 Mercado actualizado - Jugadores disponibles:", mercadoTransferencias.length);
+        // Redirigir según el estado de transferencia
+        if (jugador.estadoTransferencia === 'disponible') {
+            window.location.href = 'negociarclub.html';
+        } else if (jugador.estadoTransferencia === 'libre') {
+            window.location.href = 'agente-libre.html';
+        } else if (jugador.estadoTransferencia === 'clausula') {
+            window.location.href = 'clausula-rescision.html';
+        }
     }
+
+
     
     // Crear sistema global de transferencias (para consola)
     window.sistemaTransferencias = {
         mercado: mercadoTransferencias,
-        actualizarMercado: actualizarMercado,
         mostrarMercado: function() {
             console.log("=== MERCADO DE TRANSFERENCIAS ===");
-            const disponibles = mercadoTransferencias.filter(j => j.disponibleParaCompra);
-            disponibles.forEach(jugador => {
+            mercadoTransferencias.filter(j => j.disponibleParaCompra).forEach(jugador => {
                 const costoTotal = jugador.precioTransferencia + jugador.bonusFirma;
-                console.log(`📋 ${jugador.nombre} (${jugador.posicion}) - ${jugador.club} - ${formatearPrecio(costoTotal)} [${jugador.estadoTransferencia}]`);
+                console.log(`📋 ${jugador.nombre} (ID: ${jugador.id}) - ${formatearPrecio(costoTotal)}`);
             });
-            console.log(`Total jugadores disponibles: ${disponibles.length}`);
         },
         buscarJugador: function(nombre) {
             return mercadoTransferencias.find(j => 
@@ -413,46 +316,11 @@ document.addEventListener('DOMContentLoaded', function() {
         formatearPrecio: formatearPrecio
     };
     
-    // Listener para detectar cambios en localStorage (cuando se compra un jugador)
-    window.addEventListener('storage', function(e) {
-        if (e.key === 'jugadores' || e.key === 'contratoFirmado' || e.key.startsWith('presupuesto_')) {
-            console.log("📈 Detectado cambio en localStorage:", e.key);
-            setTimeout(actualizarMercado, 100); // Pequeño delay para asegurar que los cambios estén guardados
-        }
-    });
-    
-    // También escuchar evento personalizado para actualizaciones en la misma pestaña
-    window.addEventListener('plantillaActualizada', function() {
-        console.log("📈 Detectado evento de plantilla actualizada");
-        actualizarMercado();
-    });
-    
-    // Detectar cuando se vuelve a la página (desde otra pestaña)
-    window.addEventListener('focus', function() {
-        console.log("🔄 Página enfocada - Verificando actualizaciones");
-        actualizarMercado();
-    });
-    
-    // Detectar cuando la página se vuelve visible
-    document.addEventListener('visibilitychange', function() {
-        if (!document.hidden) {
-            console.log("👁️ Página visible - Verificando actualizaciones");
-            actualizarMercado();
-        }
-    });
-    
     // Inicializar la interfaz
-    if (mercadoTransferencias.length > 0) {
-        llenarFiltroClub();
-        mostrarJugadores();
-        
-        console.log("💼 Sistema de transferencias inicializado correctamente");
-        console.log(`📊 Jugadores disponibles: ${mercadoTransferencias.filter(j => j.disponibleParaCompra).length}`);
-        console.log("📝 Comandos disponibles en consola:");
-        console.log("   - sistemaTransferencias.mostrarMercado() // Ver jugadores disponibles");
-        console.log("   - sistemaTransferencias.actualizarMercado() // Refrescar el mercado");
-        console.log("   - miEquipoInfo.mostrarInfo() // Ver información del equipo");
-    } else {
-        console.error("❌ No se pudieron cargar jugadores para el mercado");
-    }
+    llenarFiltroClub();
+    mostrarJugadores();
+    
+    console.log("💼 Sistema de transferencias inicializado");
+    console.log(`📊 Jugadores disponibles: ${mercadoTransferencias.filter(j => j.disponibleParaCompra).length}`);
+    console.log("📝 Usa sistemaTransferencias.mostrarMercado() para ver jugadores en consola");
 });
