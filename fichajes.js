@@ -141,7 +141,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const priceFilter = document.getElementById('priceFilter');
     const priceValue = document.getElementById('priceValue');
     const clubFilter = document.getElementById('clubFilter');
-    const transferModal = document.getElementById('transferModal');
     
     // Llenar filtro de clubes
     function llenarFiltroClub() {
@@ -188,8 +187,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p class="transfer-status">${obtenerDescripcionEstado(jugador.estadoTransferencia)}</p>
                     <p class="transfer-price">${formatearPrecio(costoTotal)}</p>
                 </div>
-                <button class="btn-transfer" data-player-id="${jugador.id}">
-                    Iniciar Negociación
+                <button class="btn-negotiation" data-player-id="${jugador.id}">
+                    Negociar
                 </button>
             </div>
         `;
@@ -216,12 +215,24 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Agregar event listeners a los botones de negociación
-        document.querySelectorAll('.btn-transfer').forEach(btn => {
+        document.querySelectorAll('.btn-negotiation').forEach(btn => {
             btn.addEventListener('click', function() {
                 const jugadorId = parseInt(this.dataset.playerId);
-                mostrarModalConfirmacion(jugadorId);
+                irANegociacion(jugadorId);
             });
         });
+    }
+    
+    // Función para ir a la página de negociación
+    function irANegociacion(jugadorId) {
+        const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
+        if (!jugador) return;
+        
+        // Guardar datos del jugador seleccionado en localStorage para la página de negociación
+        localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
+        
+        // Redirigir a la página de negociación
+        window.location.href = 'negociacion.html';
     }
     
     // Aplicar filtros
@@ -249,71 +260,6 @@ document.addEventListener('DOMContentLoaded', function() {
         mostrarJugadores(jugadoresFiltrados);
     }
     
-    // Mostrar modal de confirmación
-    function mostrarModalConfirmacion(jugadorId) {
-        const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
-        if (!jugador || !transferModal) return;
-        
-        const costoTotal = jugador.precioTransferencia + jugador.bonusFirma;
-        const presupuestoDespues = window.miEquipoInfo.presupuesto - costoTotal;
-        
-        // Llenar datos del modal
-        document.getElementById('modalPlayerName').textContent = jugador.nombre;
-        document.getElementById('modalPlayerPosition').textContent = jugador.posicion;
-        document.getElementById('modalPlayerClub').textContent = jugador.club;
-        document.getElementById('modalPlayerOverall').textContent = jugador.general;
-        document.getElementById('modalTransferPrice').textContent = formatearPrecio(costoTotal);
-        document.getElementById('modalBudgetAfter').textContent = formatearPrecio(presupuestoDespues);
-        
-        // Mostrar modal
-        transferModal.style.display = 'block';
-        
-        // Event listeners para el modal - CAMBIO AQUÍ
-        document.getElementById('startNegotiation').onclick = () => iniciarNegociacion(jugadorId);
-        document.getElementById('cancelTransfer').onclick = () => cerrarModal();
-        document.querySelector('.close').onclick = () => cerrarModal();
-    }
-    
-    // Cerrar modal
-    function cerrarModal() {
-        if (transferModal) {
-            transferModal.style.display = 'none';
-        }
-    }
-    
-    // Iniciar negociación - NUEVA FUNCIÓN
-    function iniciarNegociacion(jugadorId) {
-        const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
-        
-        if (!jugador || !jugador.disponibleParaCompra) {
-            alert("❌ Jugador no disponible para negociación");
-            return;
-        }
-        
-        // Guardar datos de la negociación en localStorage
-        const datosNegociacion = {
-            jugadorId: jugador.id,
-            jugadorNombre: jugador.nombre,
-            jugadorPosicion: jugador.posicion,
-            jugadorClub: jugador.club,
-            jugadorGeneral: jugador.general,
-            jugadorPotencial: jugador.potencial,
-            estadoTransferencia: jugador.estadoTransferencia,
-            precioTransferencia: jugador.precioTransferencia,
-            bonusFirma: jugador.bonusFirma,
-            bonusGol: jugador.bonusGol,
-            bonusArcoEnCero: jugador.bonusArcoEnCero,
-            costoTotal: jugador.precioTransferencia + jugador.bonusFirma,
-            equipoComprador: window.miEquipoInfo.nombre,
-            presupuestoActual: window.miEquipoInfo.presupuesto
-        };
-        
-        localStorage.setItem('negociacionActiva', JSON.stringify(datosNegociacion));
-        
-        // Redirigir a la página de negociación
-        window.location.href = 'negociacion.html';
-    }
-    
     // Event listeners para filtros
     if (positionFilter) {
         positionFilter.addEventListener('change', aplicarFiltros);
@@ -331,41 +277,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (clubFilter) {
         clubFilter.addEventListener('change', aplicarFiltros);
     }
-    
-    // Cerrar modal al hacer clic fuera
-    window.addEventListener('click', function(event) {
-        if (event.target === transferModal) {
-            cerrarModal();
-        }
-    });
-    
-    // Función para manejar transferencias completadas (llamada desde negociacion.js)
-    window.completarTransferencia = function(jugadorId, costoFinal) {
-        const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
-        if (!jugador) return false;
-        
-        // Actualizar presupuesto
-        const nuevoPresupuesto = window.miEquipoInfo.presupuesto - costoFinal;
-        window.miEquipoInfo.presupuesto = nuevoPresupuesto;
-        window.miEquipoInfo.presupuestoFormateado = formatearPrecio(nuevoPresupuesto);
-        
-        // Guardar nuevo presupuesto
-        localStorage.setItem(`presupuesto_${equipoNombre}`, nuevoPresupuesto);
-        
-        // Actualizar DOM
-        if (elementoPresupuesto) {
-            elementoPresupuesto.textContent = formatearPrecio(nuevoPresupuesto);
-        }
-        
-        // Marcar jugador como no disponible
-        jugador.disponibleParaCompra = false;
-        jugador.club = equipoNombre;
-        
-        // Actualizar vista
-        aplicarFiltros();
-        
-        return true;
-    };
     
     // Crear sistema global de transferencias (para consola)
     window.sistemaTransferencias = {
