@@ -7,6 +7,9 @@ document.addEventListener("DOMContentLoaded", function() {
         console.log("Jugadores inicializados en localStorage");
     }
 
+    // **NUEVA FUNCIÓN: Mostrar fecha del juego**
+    mostrarFechaJuego();
+
     // Obtener el nombre del club guardado en localStorage
     const selectedClub = localStorage.getItem("selectedClub");
     
@@ -29,6 +32,9 @@ document.addEventListener("DOMContentLoaded", function() {
     // Obtener jugadores vendidos y cedidos
     let jugadoresVendidos = JSON.parse(localStorage.getItem("jugadoresVendidos") || "[]");
     let jugadoresCedidos = JSON.parse(localStorage.getItem("jugadoresCedidos") || "[]");
+    
+    // **MODIFICACIÓN: Verificar contratos vencidos antes de mostrar jugadores**
+    verificarContratosVencidos(jugadores);
     
     // Filtrar jugadores del club que no están vendidos ni cedidos
     const jugadoresDelClub = jugadores.filter(jugador => 
@@ -73,9 +79,14 @@ document.addEventListener("DOMContentLoaded", function() {
         // **MODIFICACIÓN: Mostrar información del contrato si es nuevo fichaje**
         let infoContrato = '';
         if (jugador.contrato) {
+            const fechaActual = obtenerFechaJuego();
+            const fechaVencimiento = new Date(jugador.contrato.fechaVencimiento);
+            const diasRestantes = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
+            
             infoContrato = `
                 <div class="info-contrato">
                     <small>Contrato: ${jugador.contrato.anos} años - ${formatearPrecio(jugador.contrato.salarioSemanal)}/sem</small>
+                    <small>Vence en: ${diasRestantes} días</small>
                 </div>
             `;
         }
@@ -128,6 +139,99 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 });
+
+// **NUEVA FUNCIÓN: Mostrar fecha del juego**
+function mostrarFechaJuego() {
+    const fechaJuego = obtenerFechaJuego();
+    const opciones = { 
+        year: 'numeric', 
+        month: 'long', 
+        day: 'numeric',
+        weekday: 'long'
+    };
+    
+    const fechaFormateada = fechaJuego.toLocaleDateString('es-ES', opciones);
+    
+    // Crear elemento para mostrar la fecha si no existe
+    if (!document.getElementById("fecha-juego")) {
+        const fechaElement = document.createElement("div");
+        fechaElement.id = "fecha-juego";
+        fechaElement.style.cssText = "text-align: center; margin: 10px 0; font-weight: bold; color: #333;";
+        fechaElement.innerHTML = `📅 ${fechaFormateada}`;
+        
+        const seccionClub = document.querySelector(".seccion-club");
+        seccionClub.insertBefore(fechaElement, seccionClub.firstChild);
+    } else {
+        document.getElementById("fecha-juego").innerHTML = `📅 ${fechaFormateada}`;
+    }
+}
+
+// **NUEVA FUNCIÓN: Obtener fecha del juego**
+function obtenerFechaJuego() {
+    let fechaJuego = localStorage.getItem("fechaJuego");
+    
+    if (!fechaJuego) {
+        // Si no existe, inicializar con fecha por defecto
+        const fechaInicio = new Date("2025-01-01");
+        localStorage.setItem("fechaJuego", fechaInicio.toISOString());
+        return fechaInicio;
+    }
+    
+    return new Date(fechaJuego);
+}
+
+// **NUEVA FUNCIÓN: Verificar contratos vencidos**
+function verificarContratosVencidos(jugadores) {
+    const fechaActual = obtenerFechaJuego();
+    let jugadoresEliminados = [];
+    
+    for (let i = jugadores.length - 1; i >= 0; i--) {
+        const jugador = jugadores[i];
+        
+        if (jugador.contrato && jugador.contrato.fechaVencimiento) {
+            const fechaVencimiento = new Date(jugador.contrato.fechaVencimiento);
+            
+            if (fechaActual > fechaVencimiento) {
+                // Contrato vencido, eliminar jugador
+                jugadoresEliminados.push({
+                    nombre: jugador.nombre,
+                    posicion: jugador.posicion,
+                    club: jugador.club,
+                    fechaEliminacion: fechaActual.toISOString(),
+                    motivo: "Contrato vencido"
+                });
+                
+                jugadores.splice(i, 1);
+                console.log(`Jugador eliminado por contrato vencido: ${jugador.nombre}`);
+            }
+        }
+    }
+    
+    if (jugadoresEliminados.length > 0) {
+        // Actualizar lista de jugadores
+        localStorage.setItem("jugadores", JSON.stringify(jugadores));
+        
+        // Guardar historial de eliminados
+        guardarHistorialEliminados(jugadoresEliminados);
+        
+        console.log(`${jugadoresEliminados.length} jugador(es) eliminado(s) por contrato vencido`);
+    }
+}
+
+// **NUEVA FUNCIÓN: Guardar historial de jugadores eliminados**
+function guardarHistorialEliminados(jugadoresEliminados) {
+    let historial = JSON.parse(localStorage.getItem('historialEliminados') || '[]');
+    
+    jugadoresEliminados.forEach(jugador => {
+        historial.unshift(jugador);
+    });
+    
+    if (historial.length > 50) {
+        historial = historial.slice(0, 50);
+    }
+    
+    localStorage.setItem('historialEliminados', JSON.stringify(historial));
+}
 
 // **NUEVA FUNCIÓN: Procesar contratos firmados**
 function procesarContratosFirmados(jugadores, selectedClub) {
@@ -307,6 +411,7 @@ function resetearTransferencias() {
         localStorage.removeItem("historialTransferencias");
         localStorage.removeItem("historialFichajes"); // **NUEVO**
         localStorage.removeItem("contratoFirmado"); // **NUEVO**
+        localStorage.removeItem("historialEliminados"); // **NUEVO**
         
         // Obtener y actualizar jugadores
         const jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
