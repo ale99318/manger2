@@ -1,4 +1,4 @@
-// Inicialización del calendario
+// Inicialización del calendario 
 document.addEventListener("DOMContentLoaded", function() {
     inicializarFecha();
     actualizarDisplay();
