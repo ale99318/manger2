@@ -26,9 +26,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Obtener la lista de jugadores
     let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
     
-    // **NUEVA FUNCIONALIDAD: Inicializar contratos para jugadores existentes**
-    inicializarContratosJugadoresExistentes(jugadores);
-    
     // **NUEVA FUNCIONALIDAD: Procesar contratos firmados**
     procesarContratosFirmados(jugadores, selectedClub);
     
@@ -141,83 +138,7 @@ document.addEventListener("DOMContentLoaded", function() {
             contenedor.appendChild(div);
         });
     }
-
-    // **NUEVA FUNCIONALIDAD: Escuchar cambios de fecha del calendario**
-    window.addEventListener('fechaCambiada', function(e) {
-        console.log('Fecha cambiada detectada en plantilla.js');
-        actualizarEdadesJugadores();
-        mostrarFechaJuego(); // Actualizar display de fecha
-        location.reload(); // Recargar para mostrar cambios
-    });
 });
-
-// **NUEVA FUNCIÓN: Inicializar contratos para jugadores existentes**
-function inicializarContratosJugadoresExistentes(jugadores) {
-    let jugadoresActualizados = false;
-    const fechaActual = obtenerFechaJuego();
-    
-    jugadores.forEach(jugador => {
-        // Si el jugador no tiene contrato, crear uno por defecto
-        if (!jugador.contrato) {
-            const anosContrato = Math.floor(Math.random() * 4) + 2; // Entre 2 y 5 años
-            const salarioBase = Math.floor(jugador.valor * 0.05); // 5% del valor como salario anual
-            const salarioSemanal = Math.floor(salarioBase / 52);
-            
-            jugador.contrato = {
-                anos: anosContrato,
-                salarioSemanal: salarioSemanal,
-                salarioAnual: salarioBase,
-                bonusGol: 0,
-                bonusPorteriaLimpia: 0,
-                bonusGoleador: 0,
-                fechaFirma: fechaActual.toISOString(),
-                fechaVencimiento: calcularFechaVencimiento(fechaActual.toISOString(), anosContrato)
-            };
-            
-            jugadoresActualizados = true;
-            console.log(`Contrato inicializado para: ${jugador.nombre}`);
-        }
-        
-        // Asegurar que el jugador tenga fechaNacimiento para calcular edad
-        if (!jugador.fechaNacimiento) {
-            const fechaNacimiento = new Date(fechaActual);
-            fechaNacimiento.setFullYear(fechaNacimiento.getFullYear() - jugador.edad);
-            jugador.fechaNacimiento = fechaNacimiento.toISOString();
-            jugadoresActualizados = true;
-        }
-    });
-    
-    // Guardar cambios si se actualizaron jugadores
-    if (jugadoresActualizados) {
-        localStorage.setItem("jugadores", JSON.stringify(jugadores));
-        console.log("Contratos inicializados para jugadores existentes");
-    }
-}
-
-// **NUEVA FUNCIÓN: Actualizar edades de jugadores**
-function actualizarEdadesJugadores() {
-    let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
-    const fechaActual = obtenerFechaJuego();
-    let edadesActualizadas = false;
-    
-    jugadores.forEach(jugador => {
-        if (jugador.fechaNacimiento) {
-            const fechaNacimiento = new Date(jugador.fechaNacimiento);
-            const edadActual = Math.floor((fechaActual - fechaNacimiento) / (365.25 * 24 * 60 * 60 * 1000));
-            
-            if (jugador.edad !== edadActual) {
-                console.log(`${jugador.nombre}: edad ${jugador.edad} -> ${edadActual}`);
-                jugador.edad = edadActual;
-                edadesActualizadas = true;
-            }
-        }
-    });
-    
-    if (edadesActualizadas) {
-        localStorage.setItem("jugadores", JSON.stringify(jugadores));
-        console.log("Edades de jugadores actualizadas");
-    }
-}
 
 // **NUEVA FUNCIÓN: Mostrar fecha del juego**
 function mostrarFechaJuego() {
@@ -328,17 +249,12 @@ function procesarContratosFirmados(jugadores, selectedClub) {
             
             if (!jugadorExistente) {
                 // Crear nuevo jugador con toda la información del contrato
-                const fechaActual = obtenerFechaJuego();
-                const fechaNacimiento = new Date(fechaActual);
-                fechaNacimiento.setFullYear(fechaNacimiento.getFullYear() - jugadorContratado.edad);
-                
                 const nuevoJugador = {
                     ...jugadorContratado,
                     id: jugadores.length + 1, // Asignar nuevo ID
                     club: selectedClub, // Asignar al club actual
                     nuevoFichaje: true, // Marcar como nuevo fichaje
-                    fechaContratacion: fechaActual.toISOString(),
-                    fechaNacimiento: fechaNacimiento.toISOString(),
+                    fechaContratacion: new Date().toISOString(),
                     contrato: {
                         anos: contrato.anos,
                         salarioSemanal: contrato.salarioSemanal,
