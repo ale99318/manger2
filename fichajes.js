@@ -30,14 +30,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Obtener jugadores de mi equipo (incluyendo los comprados)
     function obtenerJugadoresEquipo() {
-        const plantillaGuardada = localStorage.getItem(`plantilla_${equipoNombre}`);
-        if (plantillaGuardada) {
-            return JSON.parse(plantillaGuardada);
+        // La plantilla se guarda en "jugadores" en localStorage
+        const jugadoresGuardados = localStorage.getItem("jugadores");
+        
+        if (jugadoresGuardados) {
+            try {
+                const todosLosJugadores = JSON.parse(jugadoresGuardados);
+                // Filtrar solo los jugadores que pertenecen a mi equipo
+                const jugadoresDelEquipo = todosLosJugadores.filter(j => j.club === equipoNombre);
+                console.log(`✓ Jugadores de ${equipoNombre} encontrados: ${jugadoresDelEquipo.length}`);
+                return jugadoresDelEquipo;
+            } catch (e) {
+                console.warn("Error al parsear jugadores:", e);
+            }
         }
         
-        // Si no hay plantilla guardada, usar jugadores originales del equipo
-        return window.jugadores ? window.jugadores.filter(j => j.club === equipoNombre) : [];
-    }
+        // Si no hay jugadores guardados, usar los originales del window.jugadores
+        if (window.jugadores && Array.isArray(window.jugadores)) {
+            return window.jugadores.filter(j => j.club === equipoNombre);
+        }
+        
+        return [];
     
     const jugadoresEquipo = obtenerJugadoresEquipo();
     const idsJugadoresEquipo = new Set(jugadoresEquipo.map(j => j.id));
@@ -141,14 +154,26 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Crear mercado de transferencias (excluyendo jugadores del equipo actual Y jugadores ya comprados)
     function crearMercadoTransferencias() {
-        const jugadoresEquipoActualizados = obtenerJugadoresEquipo();
-        const idsJugadoresEquipoActualizados = new Set(jugadoresEquipoActualizados.map(j => j.id));
+        // Obtener TODOS los jugadores actualizados de localStorage
+        const jugadoresActualizados = localStorage.getItem("jugadores");
+        let todosLosJugadores = [];
         
-        return window.jugadores
-            .filter(jugador => 
-                jugador.club !== equipoNombre && 
-                !idsJugadoresEquipoActualizados.has(jugador.id)
-            )
+        if (jugadoresActualizados) {
+            try {
+                todosLosJugadores = JSON.parse(jugadoresActualizados);
+            } catch (e) {
+                console.warn("Error al parsear jugadores actualizados:", e);
+                // Usar jugadores originales como fallback
+                todosLosJugadores = window.jugadores || [];
+            }
+        } else {
+            // Si no hay jugadores en localStorage, usar los originales
+            todosLosJugadores = window.jugadores || [];
+        }
+        
+        // Filtrar jugadores que NO pertenecen a mi equipo
+        return todosLosJugadores
+            .filter(jugador => jugador.club !== equipoNombre)
             .map(jugador => {
                 const estadoTransferencia = generarEstadoTransferencia();
                 const precioTransferencia = calcularPrecioTransferencia(jugador, estadoTransferencia);
@@ -346,14 +371,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Listener para detectar cambios en localStorage (cuando se compra un jugador)
     window.addEventListener('storage', function(e) {
-        if (e.key && e.key.startsWith(`plantilla_${equipoNombre}`)) {
+        if (e.key === 'jugadores' || e.key === 'contratoFirmado') {
+            console.log("📈 Detectado cambio en jugadores o contrato firmado");
             actualizarMercado();
         }
     });
     
     // También escuchar evento personalizado para actualizaciones en la misma pestaña
     window.addEventListener('plantillaActualizada', function() {
+        console.log("📈 Detectado evento de plantilla actualizada");
         actualizarMercado();
+    });
+    
+    // Detectar cuando se vuelve a la página (desde otra pestaña)
+    window.addEventListener('focus', function() {
+        console.log("🔄 Página enfocada - Actualizando mercado");
+        actualizarMercado();
+    });
+    
+    // Detectar cuando la página se vuelve visible
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            console.log("👁️ Página visible - Actualizando mercado");
+            actualizarMercado();
+        }
     });
     
     // Inicializar la interfaz
