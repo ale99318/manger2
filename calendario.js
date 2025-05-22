@@ -127,8 +127,8 @@ function mostrarContratosVencidos(contratosVencidos) {
             const div = document.createElement("div");
             div.innerHTML = `
                 <p><strong>${item.jugador.nombre}</strong> - ${item.jugador.posicion}</p>
-                <p>Contrato vencido hace ${item.diasVencido} día(s)</p>
-                <p>Club: ${item.jugador.club}</p>
+                <p>🚫 ELIMINADO - Contrato vencido hace ${item.diasVencido} día(s)</p>
+                <p>Ex-Club: ${item.jugador.club}</p>
                 <hr>
             `;
             lista.appendChild(div);
@@ -166,27 +166,37 @@ function mostrarContratosPorVencer(contratosPorVencer) {
 function procesarContratosVencidos(contratosVencidos) {
     if (contratosVencidos.length === 0) return;
     
-    const jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
-    let jugadoresModificados = false;
+    let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+    let jugadoresEliminados = [];
     
     contratosVencidos.forEach(item => {
         const jugadorIndex = jugadores.findIndex(j => j.id === item.jugador.id);
         
         if (jugadorIndex !== -1) {
-            // Eliminar información del contrato vencido
-            delete jugadores[jugadorIndex].contrato;
-            delete jugadores[jugadorIndex].nuevoFichaje;
-            delete jugadores[jugadorIndex].fechaContratacion;
+            // Guardar información del jugador eliminado para el historial
+            jugadoresEliminados.push({
+                nombre: jugadores[jugadorIndex].nombre,
+                posicion: jugadores[jugadorIndex].posicion,
+                club: jugadores[jugadorIndex].club,
+                fechaEliminacion: new Date().toISOString(),
+                motivo: "Contrato vencido"
+            });
             
-            jugadoresModificados = true;
+            // Eliminar jugador de la plantilla
+            jugadores.splice(jugadorIndex, 1);
             
-            console.log(`Contrato vencido procesado para: ${item.jugador.nombre}`);
+            console.log(`Jugador eliminado por contrato vencido: ${item.jugador.nombre}`);
         }
     });
     
-    if (jugadoresModificados) {
+    if (jugadoresEliminados.length > 0) {
+        // Guardar lista actualizada de jugadores
         localStorage.setItem("jugadores", JSON.stringify(jugadores));
-        console.log("Contratos vencidos procesados y guardados");
+        
+        // Guardar historial de jugadores eliminados
+        guardarHistorialEliminados(jugadoresEliminados);
+        
+        console.log(`${jugadoresEliminados.length} jugador(es) eliminado(s) por contrato vencido`);
     }
 }
 
@@ -201,4 +211,20 @@ function resetearCalendario() {
         
         console.log("Calendario reseteado al 01/01/2025");
     }
+}
+
+// Función para guardar historial de jugadores eliminados
+function guardarHistorialEliminados(jugadoresEliminados) {
+    let historial = JSON.parse(localStorage.getItem('historialEliminados') || '[]');
+    
+    jugadoresEliminados.forEach(jugador => {
+        historial.unshift(jugador); // Agregar al inicio
+    });
+    
+    // Mantener solo los últimos 50 eliminaciones
+    if (historial.length > 50) {
+        historial = historial.slice(0, 50);
+    }
+    
+    localStorage.setItem('historialEliminados', JSON.stringify(historial));
 }
