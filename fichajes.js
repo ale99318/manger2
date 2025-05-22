@@ -288,7 +288,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Redirigir según el estado de transferencia
         if (jugador.estadoTransferencia === 'disponible') {
-            window.location.href = 'negociar-club.html';
+            window.location.href = 'negociarclub.html';
         } else if (jugador.estadoTransferencia === 'libre') {
             window.location.href = 'agente-libre.html';
         } else if (jugador.estadoTransferencia === 'clausula') {
