@@ -50,48 +50,6 @@
                 <!-- Los jugadores se cargarán aquí dinámicamente -->
             </div>
         </div>
-
-        <div class="transfer-history">
-            <h3>Últimas Transferencias</h3>
-            <div id="transferHistory" class="transfer-list">
-                <!-- Historial de transferencias -->
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal de confirmación -->
-    <div id="transferModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Confirmar Transferencia</h3>
-                <span class="close">&times;</span>
-            </div>
-            <div class="modal-body">
-                <div class="player-details">
-                    <img id="modalPlayerPhoto" src="/api/placeholder/80/80" alt="Jugador">
-                    <div class="player-info">
-                        <h4 id="modalPlayerName">Nombre del Jugador</h4>
-                        <p id="modalPlayerPosition">Posición</p>
-                        <p id="modalPlayerClub">Club Actual</p>
-                        <p class="overall-rating">Overall: <span id="modalPlayerOverall">85</span></p>
-                    </div>
-                </div>
-                <div class="transfer-details">
-                    <div class="price-info">
-                        <span class="price-label">Precio de transferencia:</span>
-                        <span id="modalTransferPrice" class="price-amount">$5,000,000</span>
-                    </div>
-                    <div class="budget-after">
-                        <span class="budget-label">Presupuesto después:</span>
-                        <span id="modalBudgetAfter" class="budget-amount">$7,000,000</span>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button id="confirmTransfer" class="btn btn-primary">Confirmar Transferencia</button>
-                <button id="cancelTransfer" class="btn btn-secondary">Cancelar</button>
-            </div>
-        </div>
     </div>
 
     <script src="jugadores.js"></script>
