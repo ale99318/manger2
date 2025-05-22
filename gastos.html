@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Gastos - Simulador de Fútbol</title>
+    <link rel="stylesheet" href="gastos.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Gestión Financiera</h1>
+            <h2 id="nombre-club">Club</h2>
+        </div>
+
+        <div class="saldo-section">
+            <div class="saldo-card">
+                <h3>Saldo Actual</h3>
+                <div class="saldo-amount" id="saldo-actual">$0</div>
+                <button id="btn-ajustar-saldo" class="btn-primary">Ajustar Saldo</button>
+            </div>
+        </div>
+
+        <div class="resumen-section">
+            <div class="resumen-card ingresos">
+                <h4>Ingresos Totales</h4>
+                <div class="amount" id="ingresos-totales">$0</div>
+            </div>
+            <div class="resumen-card gastos">
+                <h4>Gastos Totales</h4>
+                <div class="amount" id="gastos-totales">$0</div>
+            </div>
+            <div class="resumen-card salarios">
+                <h4>Salarios Semanales</h4>
+                <div class="amount" id="salarios-semanales">$0</div>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="mostrarTab('fichajes')">Fichajes</button>
+            <button class="tab-button" onclick="mostrarTab('ventas')">Ventas</button>
+            <button class="tab-button" onclick="mostrarTab('salarios')">Salarios</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- Tab Fichajes -->
+            <div id="tab-fichajes" class="tab-panel active">
+                <h3>Fichajes Realizados</h3>
+                <div id="lista-fichajes" class="transacciones-lista">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Tab Ventas -->
+            <div id="tab-ventas" class="tab-panel">
+                <h3>Ventas Realizadas</h3>
+                <div id="lista-ventas" class="transacciones-lista">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+
+            <!-- Tab Salarios -->
+            <div id="tab-salarios" class="tab-panel">
+                <h3>Gastos en Salarios</h3>
+                <div id="lista-salarios" class="transacciones-lista">
+                    <!-- Se llena dinámicamente -->
+                </div>
+            </div>
+        </div>
+
+        <div class="acciones">
+            <button onclick="resetearFinanzas()" class="btn-danger">Resetear Finanzas</button>
+            <button onclick="volverAlClub()" class="btn-secondary">Volver al Club</button>
+        </div>
+    </div>
+
+    <!-- Modal para ajustar saldo -->
+    <div id="modal-saldo" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Ajustar Saldo del Club</h3>
+            <div class="form-group">
+                <label for="nuevo-saldo">Nuevo Saldo:</label>
+                <input type="number" id="nuevo-saldo" placeholder="Ingrese el nuevo saldo">
+            </div>
+            <div class="modal-actions">
+                <button onclick="confirmarSaldo()" class="btn-primary">Confirmar</button>
+                <button onclick="cerrarModal()" class="btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="gastos.js"></script>
+</body>
+</html>
