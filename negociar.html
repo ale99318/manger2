@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Negociación con Club</title>
+    <link rel="stylesheet" href="negociar-club.css">
+</head>
+<body>
+    <div class="container">
+        <div class="negotiation-header">
+            <h1>Negociación con Club</h1>
+            <div class="player-info" id="playerInfo">
+                <!-- Información del jugador se carga aquí -->
+            </div>
+        </div>
+
+        <div class="negotiation-area">
+            <div class="chat-container" id="chatContainer">
+                <!-- Mensajes de la negociación aparecen aquí -->
+            </div>
+            
+            <div class="response-options" id="responseOptions">
+                <!-- Opciones de respuesta aparecen aquí -->
+            </div>
+        </div>
+
+        <div class="negotiation-status">
+            <div class="status-bar">
+                <span>Progreso de negociación:</span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <span id="statusText">En negociación...</span>
+            </div>
+        </div>
+
+        <!-- Modal de éxito -->
+        <div class="modal" id="successModal">
+            <div class="modal-content">
+                <h2>¡Negociación Exitosa!</h2>
+                <p>Has llegado a un acuerdo con el club para la transferencia del jugador.</p>
+                <div class="final-terms" id="finalTerms">
+                    <!-- Términos finales aparecen aquí -->
+                </div>
+                <button class="btn-continue" id="btnContinue">Continuar</button>
+            </div>
+        </div>
+
+        <!-- Modal de fracaso -->
+        <div class="modal" id="failModal">
+            <div class="modal-content">
+                <h2>Negociación Fallida</h2>
+                <p>No se pudo llegar a un acuerdo. El club ha retirado su oferta.</p>
+                <button class="btn-back" onclick="history.back()">Volver al Mercado</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="negociar-club.js"></script>
+</body>
+</html>
