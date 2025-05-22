@@ -51,9 +51,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         return [];
+    }
     
     const jugadoresEquipo = obtenerJugadoresEquipo();
-    const idsJugadoresEquipo = new Set(jugadoresEquipo.map(j => j.id));
     
     // Función para formatear el precio
     function formatearPrecio(precio) {
@@ -104,6 +104,20 @@ document.addEventListener('DOMContentLoaded', function() {
             const plantillaActualizada = obtenerJugadoresEquipo();
             this.jugadores = plantillaActualizada;
             return plantillaActualizada;
+        },
+        
+        // Método para actualizar presupuesto
+        actualizarPresupuesto: function() {
+            const presupuestoGuardado = localStorage.getItem(`presupuesto_${equipoNombre}`);
+            this.presupuesto = presupuestoGuardado ? parseInt(presupuestoGuardado) : miEquipo.presupuesto;
+            this.presupuestoFormateado = formatearPrecio(this.presupuesto);
+            
+            // Actualizar en DOM si existe
+            if (elementoPresupuesto) {
+                elementoPresupuesto.textContent = this.presupuestoFormateado;
+            }
+            
+            return this.presupuesto;
         }
     };
     
@@ -161,6 +175,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (jugadoresActualizados) {
             try {
                 todosLosJugadores = JSON.parse(jugadoresActualizados);
+                console.log("✓ Usando jugadores actualizados de localStorage");
             } catch (e) {
                 console.warn("Error al parsear jugadores actualizados:", e);
                 // Usar jugadores originales como fallback
@@ -169,26 +184,27 @@ document.addEventListener('DOMContentLoaded', function() {
         } else {
             // Si no hay jugadores en localStorage, usar los originales
             todosLosJugadores = window.jugadores || [];
+            console.log("✓ Usando jugadores originales de window.jugadores");
         }
         
         // Filtrar jugadores que NO pertenecen a mi equipo
-        return todosLosJugadores
-            .filter(jugador => jugador.club !== equipoNombre)
-            .map(jugador => {
-                const estadoTransferencia = generarEstadoTransferencia();
-                const precioTransferencia = calcularPrecioTransferencia(jugador, estadoTransferencia);
-                const bonus = generarBonus(jugador);
-                
-                return {
-                    ...jugador,
-                    estadoTransferencia: estadoTransferencia,
-                    precioTransferencia: precioTransferencia,
-                    bonusGol: bonus.gol,
-                    bonusArcoEnCero: bonus.arcoEnCero,
-                    bonusFirma: bonus.firma,
-                    disponibleParaCompra: true
-                };
-            });
+        const jugadoresDisponibles = todosLosJugadores.filter(jugador => jugador.club !== equipoNombre);
+        
+        return jugadoresDisponibles.map(jugador => {
+            const estadoTransferencia = generarEstadoTransferencia();
+            const precioTransferencia = calcularPrecioTransferencia(jugador, estadoTransferencia);
+            const bonus = generarBonus(jugador);
+            
+            return {
+                ...jugador,
+                estadoTransferencia: estadoTransferencia,
+                precioTransferencia: precioTransferencia,
+                bonusGol: bonus.gol,
+                bonusArcoEnCero: bonus.arcoEnCero,
+                bonusFirma: bonus.firma,
+                disponibleParaCompra: true
+            };
+        });
     }
     
     let mercadoTransferencias = crearMercadoTransferencias();
@@ -204,7 +220,19 @@ document.addEventListener('DOMContentLoaded', function() {
     function llenarFiltroClub() {
         if (!clubFilter) return;
         
-        const clubesUnicos = [...new Set(mercadoTransferencias.map(j => j.club))];
+        // Limpiar opciones existentes (excepto la primera)
+        const firstOption = clubFilter.querySelector('option[value="all"]');
+        clubFilter.innerHTML = '';
+        if (firstOption) {
+            clubFilter.appendChild(firstOption);
+        } else {
+            const allOption = document.createElement('option');
+            allOption.value = 'all';
+            allOption.textContent = 'Todos los clubes';
+            clubFilter.appendChild(allOption);
+        }
+        
+        const clubesUnicos = [...new Set(mercadoTransferencias.map(j => j.club))].sort();
         clubesUnicos.forEach(club => {
             const option = document.createElement('option');
             option.value = club;
@@ -256,7 +284,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Mostrar jugadores en la interfaz
     function mostrarJugadores(jugadoresToShow = mercadoTransferencias) {
-        if (!playersGrid) return;
+        if (!playersGrid) {
+            console.log("⚠️ Elemento playersGrid no encontrado en el DOM");
+            return;
+        }
         
         playersGrid.innerHTML = '';
         
@@ -279,12 +310,17 @@ document.addEventListener('DOMContentLoaded', function() {
                 irANegociacion(jugadorId);
             });
         });
+        
+        console.log(`✓ Mostrando ${jugadoresDisponibles.length} jugadores en la interfaz`);
     }
     
     // Función para ir a la página de negociación
     function irANegociacion(jugadorId) {
         const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
-        if (!jugador) return;
+        if (!jugador) {
+            console.error(`❌ No se encontró el jugador con ID: ${jugadorId}`);
+            return;
+        }
         
         // Guardar datos del jugador seleccionado en localStorage para la página de negociación
         localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
@@ -344,9 +380,15 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Función para actualizar mercado (llamar después de una compra exitosa)
     function actualizarMercado() {
+        console.log("🔄 Actualizando mercado de transferencias...");
         mercadoTransferencias = crearMercadoTransferencias();
         llenarFiltroClub();
         aplicarFiltros();
+        
+        // También actualizar información del equipo
+        window.miEquipoInfo.actualizarPlantilla();
+        window.miEquipoInfo.actualizarPresupuesto();
+        
         console.log("📊 Mercado actualizado - Jugadores disponibles:", mercadoTransferencias.length);
     }
     
@@ -356,10 +398,12 @@ document.addEventListener('DOMContentLoaded', function() {
         actualizarMercado: actualizarMercado,
         mostrarMercado: function() {
             console.log("=== MERCADO DE TRANSFERENCIAS ===");
-            mercadoTransferencias.filter(j => j.disponibleParaCompra).forEach(jugador => {
+            const disponibles = mercadoTransferencias.filter(j => j.disponibleParaCompra);
+            disponibles.forEach(jugador => {
                 const costoTotal = jugador.precioTransferencia + jugador.bonusFirma;
-                console.log(`📋 ${jugador.nombre} (ID: ${jugador.id}) - ${formatearPrecio(costoTotal)}`);
+                console.log(`📋 ${jugador.nombre} (${jugador.posicion}) - ${jugador.club} - ${formatearPrecio(costoTotal)} [${jugador.estadoTransferencia}]`);
             });
+            console.log(`Total jugadores disponibles: ${disponibles.length}`);
         },
         buscarJugador: function(nombre) {
             return mercadoTransferencias.find(j => 
@@ -371,9 +415,9 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Listener para detectar cambios en localStorage (cuando se compra un jugador)
     window.addEventListener('storage', function(e) {
-        if (e.key === 'jugadores' || e.key === 'contratoFirmado') {
-            console.log("📈 Detectado cambio en jugadores o contrato firmado");
-            actualizarMercado();
+        if (e.key === 'jugadores' || e.key === 'contratoFirmado' || e.key.startsWith('presupuesto_')) {
+            console.log("📈 Detectado cambio en localStorage:", e.key);
+            setTimeout(actualizarMercado, 100); // Pequeño delay para asegurar que los cambios estén guardados
         }
     });
     
@@ -385,24 +429,30 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Detectar cuando se vuelve a la página (desde otra pestaña)
     window.addEventListener('focus', function() {
-        console.log("🔄 Página enfocada - Actualizando mercado");
+        console.log("🔄 Página enfocada - Verificando actualizaciones");
         actualizarMercado();
     });
     
     // Detectar cuando la página se vuelve visible
     document.addEventListener('visibilitychange', function() {
         if (!document.hidden) {
-            console.log("👁️ Página visible - Actualizando mercado");
+            console.log("👁️ Página visible - Verificando actualizaciones");
             actualizarMercado();
         }
     });
     
     // Inicializar la interfaz
-    llenarFiltroClub();
-    mostrarJugadores();
-    
-    console.log("💼 Sistema de transferencias inicializado");
-    console.log(`📊 Jugadores disponibles: ${mercadoTransferencias.filter(j => j.disponibleParaCompra).length}`);
-    console.log("📝 Usa sistemaTransferencias.mostrarMercado() para ver jugadores en consola");
-    console.log("🔄 Usa sistemaTransferencias.actualizarMercado() para refrescar el mercado");
+    if (mercadoTransferencias.length > 0) {
+        llenarFiltroClub();
+        mostrarJugadores();
+        
+        console.log("💼 Sistema de transferencias inicializado correctamente");
+        console.log(`📊 Jugadores disponibles: ${mercadoTransferencias.filter(j => j.disponibleParaCompra).length}`);
+        console.log("📝 Comandos disponibles en consola:");
+        console.log("   - sistemaTransferencias.mostrarMercado() // Ver jugadores disponibles");
+        console.log("   - sistemaTransferencias.actualizarMercado() // Refrescar el mercado");
+        console.log("   - miEquipoInfo.mostrarInfo() // Ver información del equipo");
+    } else {
+        console.error("❌ No se pudieron cargar jugadores para el mercado");
+    }
 });
