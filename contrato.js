@@ -393,6 +393,42 @@ document.addEventListener('DOMContentLoaded', function() {
         return sugerencias.length > 0 ? sugerencias.join(' y ') : 'podríamos ajustar algunos detalles';
     }
     
+    // Actualizar botones según el estado de la negociación
+    function actualizarBotones(estado) {
+        const makeOfferBtn = document.getElementById('makeOfferBtn');
+        const backToSquadBtn = document.getElementById('backToSquadBtn');
+        
+        if (estado === 'negociando') {
+            // Durante la negociación
+            if (makeOfferBtn) {
+                makeOfferBtn.style.display = 'inline-block';
+                makeOfferBtn.disabled = false;
+            }
+            if (backToSquadBtn) {
+                backToSquadBtn.textContent = 'Cancelar Negociación';
+                backToSquadBtn.className = 'btn btn-warning';
+            }
+        } else if (estado === 'exitosa') {
+            // Negociación exitosa
+            if (makeOfferBtn) {
+                makeOfferBtn.style.display = 'none'; // Ocultar botón de oferta
+            }
+            if (backToSquadBtn) {
+                backToSquadBtn.textContent = 'Ir a Plantilla';
+                backToSquadBtn.className = 'btn btn-success';
+            }
+        } else if (estado === 'fallida') {
+            // Negociación fallida
+            if (makeOfferBtn) {
+                makeOfferBtn.style.display = 'none'; // Ocultar botón de oferta
+            }
+            if (backToSquadBtn) {
+                backToSquadBtn.textContent = 'Volver a Plantilla';
+                backToSquadBtn.className = 'btn btn-danger';
+            }
+        }
+    }
+    
     // Finalizar negociación
     function finalizarNegociacion(exitosa) {
         negociacionActiva = false;
@@ -411,6 +447,9 @@ document.addEventListener('DOMContentLoaded', function() {
             
             localStorage.setItem('contratoFirmado', JSON.stringify(contratoFinal));
             
+            // Actualizar botones para estado exitoso
+            actualizarBotones('exitosa');
+            
             if (successModal) {
                 if (finalContractTerms) {
                     finalContractTerms.innerHTML = `
@@ -424,6 +463,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 successModal.style.display = 'block';
             }
         } else {
+            // Actualizar botones para estado fallido
+            actualizarBotones('fallida');
+            
             if (failModal) {
                 failModal.style.display = 'block';
             }
@@ -439,15 +481,52 @@ document.addEventListener('DOMContentLoaded', function() {
         mostrarDetallesTransferencia();
         configurarFormulario();
         
-        // Agregar botón para hacer oferta si no existe
+        // Agregar botones para hacer oferta y volver a plantilla
         if (responseOptions && !document.getElementById('makeOfferBtn')) {
+            // Botón para hacer oferta
             const botonOferta = document.createElement('button');
             botonOferta.id = 'makeOfferBtn';
             botonOferta.textContent = 'Hacer Oferta';
             botonOferta.className = 'btn btn-primary';
             botonOferta.addEventListener('click', procesarOferta);
             responseOptions.appendChild(botonOferta);
+            
+            // Botón para volver a plantilla
+            const botonPlantilla = document.createElement('button');
+            botonPlantilla.id = 'backToSquadBtn';
+            botonPlantilla.textContent = 'Cancelar Negociación';
+            botonPlantilla.className = 'btn btn-warning';
+            botonPlantilla.style.marginLeft = '10px';
+            botonPlantilla.addEventListener('click', function() {
+                let mensaje = '¿Estás seguro de que quieres ';
+                let destino = ''; // Variable para el destino
+                
+                if (!negociacionActiva) {
+                    // Después de terminar la negociación
+                    if (negociacionProgreso >= 80) {
+                        // Negociación exitosa
+                        mensaje += 'ir a ver tu plantilla con el nuevo fichaje?';
+                        destino = 'plantilla.html'; // ← AQUÍ CAMBIAS A DÓNDE VA DESPUÉS DEL ÉXITO
+                    } else {
+                        // Negociación fallida
+                        mensaje += 'volver a la plantilla?';
+                        destino = 'plantilla.html'; // ← AQUÍ CAMBIAS A DÓNDE VA DESPUÉS DEL FRACASO
+                    }
+                } else {
+                    // Durante la negociación activa
+                    mensaje += 'cancelar la negociación? Se perderá todo el progreso.';
+                    destino = 'mercado.html'; // ← AQUÍ CAMBIAS A DÓNDE VA AL CANCELAR
+                }
+                
+                if (confirm(mensaje)) {
+                    window.location.href = destino;
+                }
+            });
+            responseOptions.appendChild(botonPlantilla);
         }
+        
+        // Establecer estado inicial de botones
+        actualizarBotones('negociando');
         
         // Mensaje inicial
         agregarMensaje(`Negociando contrato con ${jugador.nombre}. Ajusta los términos y haz tu oferta.`, 'system');
