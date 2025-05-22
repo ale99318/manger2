@@ -256,7 +256,7 @@ document.addEventListener('DOMContentLoaded', function() {
     btnContinue.addEventListener('click', function() {
         // Aquí redirigirás al siguiente HTML más adelante
         alert('Funcionalidad de continuar será implementada próximamente');
-        // window.location.href = 'siguiente-pagina.html';
+         window.location.href = 'contrato.html';
     });
     
     // Inicializar la negociación
