@@ -277,6 +277,26 @@ document.addEventListener('DOMContentLoaded', function() {
     if (clubFilter) {
         clubFilter.addEventListener('change', aplicarFiltros);
     }
+
+    // Función para ir a la página de negociación
+    function irANegociacion(jugadorId) {
+        const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
+        if (!jugador) return;
+        
+        // Guardar datos del jugador seleccionado en localStorage para la página de negociación
+        localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
+        
+        // Redirigir según el estado de transferencia
+        if (jugador.estadoTransferencia === 'disponible') {
+            window.location.href = 'negociar-club.html';
+        } else if (jugador.estadoTransferencia === 'libre') {
+            window.location.href = 'agente-libre.html';
+        } else if (jugador.estadoTransferencia === 'clausula') {
+            window.location.href = 'clausula-rescision.html';
+        }
+    }
+
+
     
     // Crear sistema global de transferencias (para consola)
     window.sistemaTransferencias = {
