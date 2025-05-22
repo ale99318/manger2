@@ -515,7 +515,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 } else {
                     // Durante la negociación activa
                     mensaje += 'cancelar la negociación? Se perderá todo el progreso.';
-                    destino = 'mercado.html'; // ← AQUÍ CAMBIAS A DÓNDE VA AL CANCELAR
+                    destino = 'menu.html'; // ← AQUÍ CAMBIAS A DÓNDE VA AL CANCELAR
                 }
                 
                 if (confirm(mensaje)) {
