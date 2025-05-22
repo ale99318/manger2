@@ -1,4 +1,4 @@
-// Inicialización del calendario 
+// Inicialización del calendario
 document.addEventListener("DOMContentLoaded", function() {
     inicializarFecha();
     actualizarDisplay();
@@ -39,6 +39,22 @@ function avanzarTiempo(dias) {
     
     actualizarDisplay();
     verificarContratos();
+    
+    // **NUEVA FUNCIÓN: Notificar cambio de fecha para sincronizar**
+    notificarCambioFecha();
+}
+
+// **NUEVA FUNCIÓN: Notificar cambio de fecha**
+function notificarCambioFecha() {
+    // Crear evento personalizado para notificar cambio de fecha
+    const evento = new CustomEvent('fechaCambiada', {
+        detail: { fecha: obtenerFechaJuego() }
+    });
+    
+    // Disparar el evento
+    window.dispatchEvent(evento);
+    
+    console.log('Evento de cambio de fecha disparado');
 }
 
 // Función para actualizar el display de fecha
@@ -55,40 +71,67 @@ function actualizarDisplay() {
     document.getElementById("fecha-display").textContent = fechaFormateada;
 }
 
-// Función para verificar contratos
+// **FUNCIÓN MODIFICADA: Verificar contratos y sincronizar con plantilla**
 function verificarContratos() {
-    const jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+    let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
     const fechaActual = obtenerFechaJuego();
     
     let contratosVencidos = [];
     let contratosPorVencer = [];
     let contratosActivos = 0;
     let contratosSinFecha = 0;
+    let jugadoresEliminados = [];
     
-    jugadores.forEach(jugador => {
+    // Procesar cada jugador
+    for (let i = jugadores.length - 1; i >= 0; i--) {
+        const jugador = jugadores[i];
+        
         if (jugador.contrato && jugador.contrato.fechaVencimiento) {
             const fechaVencimiento = new Date(jugador.contrato.fechaVencimiento);
             const diasParaVencer = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
             
             if (diasParaVencer < 0) {
-                // Contrato vencido
+                // Contrato vencido - eliminar jugador
                 contratosVencidos.push({
                     jugador: jugador,
                     diasVencido: Math.abs(diasParaVencer)
                 });
+                
+                // Guardar información para historial
+                jugadoresEliminados.push({
+                    nombre: jugador.nombre,
+                    posicion: jugador.posicion,
+                    club: jugador.club,
+                    fechaEliminacion: fechaActual.toISOString(),
+                    motivo: "Contrato vencido"
+                });
+                
+                // Eliminar jugador de la plantilla
+                jugadores.splice(i, 1);
+                
+                console.log(`Jugador eliminado por contrato vencido: ${jugador.nombre}`);
+                
             } else if (diasParaVencer <= 30) {
                 // Contrato por vencer en 30 días
                 contratosPorVencer.push({
                     jugador: jugador,
                     diasRestantes: diasParaVencer
                 });
+                contratosActivos++;
             } else {
                 contratosActivos++;
             }
         } else if (jugador.contrato) {
             contratosSinFecha++;
         }
-    });
+    }
+    
+    // Si se eliminaron jugadores, actualizar localStorage y historial
+    if (jugadoresEliminados.length > 0) {
+        localStorage.setItem("jugadores", JSON.stringify(jugadores));
+        guardarHistorialEliminados(jugadoresEliminados);
+        console.log(`${jugadoresEliminados.length} jugador(es) eliminado(s) por contrato vencido`);
+    }
     
     // Actualizar información general
     actualizarInfoContratos(contratosActivos, contratosSinFecha, jugadores.length);
@@ -98,20 +141,19 @@ function verificarContratos() {
     
     // Mostrar contratos por vencer
     mostrarContratosPorVencer(contratosPorVencer);
-    
-    // Procesar contratos vencidos automáticamente
-    procesarContratosVencidos(contratosVencidos);
 }
 
 // Función para actualizar información general de contratos
 function actualizarInfoContratos(activos, sinFecha, total) {
     const infoElement = document.getElementById("contratos-info");
     
-    infoElement.innerHTML = `
-        <p><strong>Total de jugadores:</strong> ${total}</p>
-        <p><strong>Contratos activos:</strong> ${activos}</p>
-        <p><strong>Contratos sin fecha:</strong> ${sinFecha}</p>
-    `;
+    if (infoElement) {
+        infoElement.innerHTML = `
+            <p><strong>Total de jugadores:</strong> ${total}</p>
+            <p><strong>Contratos activos:</strong> ${activos}</p>
+            <p><strong>Contratos sin fecha:</strong> ${sinFecha}</p>
+        `;
+    }
 }
 
 // Función para mostrar contratos vencidos
@@ -119,22 +161,24 @@ function mostrarContratosVencidos(contratosVencidos) {
     const contenedor = document.getElementById("contratos-vencidos");
     const lista = document.getElementById("lista-vencidos");
     
-    if (contratosVencidos.length > 0) {
-        contenedor.style.display = "block";
-        lista.innerHTML = "";
-        
-        contratosVencidos.forEach(item => {
-            const div = document.createElement("div");
-            div.innerHTML = `
-                <p><strong>${item.jugador.nombre}</strong> - ${item.jugador.posicion}</p>
-                <p>🚫 ELIMINADO - Contrato vencido hace ${item.diasVencido} día(s)</p>
-                <p>Ex-Club: ${item.jugador.club}</p>
-                <hr>
-            `;
-            lista.appendChild(div);
-        });
-    } else {
-        contenedor.style.display = "none";
+    if (contenedor && lista) {
+        if (contratosVencidos.length > 0) {
+            contenedor.style.display = "block";
+            lista.innerHTML = "";
+            
+            contratosVencidos.forEach(item => {
+                const div = document.createElement("div");
+                div.innerHTML = `
+                    <p><strong>${item.jugador.nombre}</strong> - ${item.jugador.posicion}</p>
+                    <p>🚫 ELIMINADO - Contrato vencido hace ${item.diasVencido} día(s)</p>
+                    <p>Ex-Club: ${item.jugador.club}</p>
+                    <hr>
+                `;
+                lista.appendChild(div);
+            });
+        } else {
+            contenedor.style.display = "none";
+        }
     }
 }
 
@@ -143,60 +187,24 @@ function mostrarContratosPorVencer(contratosPorVencer) {
     const contenedor = document.getElementById("contratos-proximos");
     const lista = document.getElementById("lista-proximos");
     
-    if (contratosPorVencer.length > 0) {
-        contenedor.style.display = "block";
-        lista.innerHTML = "";
-        
-        contratosPorVencer.forEach(item => {
-            const div = document.createElement("div");
-            div.innerHTML = `
-                <p><strong>${item.jugador.nombre}</strong> - ${item.jugador.posicion}</p>
-                <p>Contrato vence en ${item.diasRestantes} día(s)</p>
-                <p>Club: ${item.jugador.club}</p>
-                <hr>
-            `;
-            lista.appendChild(div);
-        });
-    } else {
-        contenedor.style.display = "none";
-    }
-}
-
-// Función para procesar contratos vencidos
-function procesarContratosVencidos(contratosVencidos) {
-    if (contratosVencidos.length === 0) return;
-    
-    let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
-    let jugadoresEliminados = [];
-    
-    contratosVencidos.forEach(item => {
-        const jugadorIndex = jugadores.findIndex(j => j.id === item.jugador.id);
-        
-        if (jugadorIndex !== -1) {
-            // Guardar información del jugador eliminado para el historial
-            jugadoresEliminados.push({
-                nombre: jugadores[jugadorIndex].nombre,
-                posicion: jugadores[jugadorIndex].posicion,
-                club: jugadores[jugadorIndex].club,
-                fechaEliminacion: new Date().toISOString(),
-                motivo: "Contrato vencido"
+    if (contenedor && lista) {
+        if (contratosPorVencer.length > 0) {
+            contenedor.style.display = "block";
+            lista.innerHTML = "";
+            
+            contratosPorVencer.forEach(item => {
+                const div = document.createElement("div");
+                div.innerHTML = `
+                    <p><strong>${item.jugador.nombre}</strong> - ${item.jugador.posicion}</p>
+                    <p>Contrato vence en ${item.diasRestantes} día(s)</p>
+                    <p>Club: ${item.jugador.club}</p>
+                    <hr>
+                `;
+                lista.appendChild(div);
             });
-            
-            // Eliminar jugador de la plantilla
-            jugadores.splice(jugadorIndex, 1);
-            
-            console.log(`Jugador eliminado por contrato vencido: ${item.jugador.nombre}`);
+        } else {
+            contenedor.style.display = "none";
         }
-    });
-    
-    if (jugadoresEliminados.length > 0) {
-        // Guardar lista actualizada de jugadores
-        localStorage.setItem("jugadores", JSON.stringify(jugadores));
-        
-        // Guardar historial de jugadores eliminados
-        guardarHistorialEliminados(jugadoresEliminados);
-        
-        console.log(`${jugadoresEliminados.length} jugador(es) eliminado(s) por contrato vencido`);
     }
 }
 
@@ -208,6 +216,7 @@ function resetearCalendario() {
         
         actualizarDisplay();
         verificarContratos();
+        notificarCambioFecha();
         
         console.log("Calendario reseteado al 01/01/2025");
     }
