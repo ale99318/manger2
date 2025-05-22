@@ -90,3 +90,36 @@ h2 {
 .btn-reset:hover {
     background-color: #d32f2f;
 }
+
+.nuevo-fichaje {
+    border-left: 4px solid #4CAF50;
+    background-color: #f0f8f0;
+}
+
+.badge-nuevo {
+    background: #4CAF50;
+    color: white;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.fichajes-recientes {
+    background: #f9f9f9;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+.fichaje-item {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+.info-contrato {
+    color: #666;
+    font-style: italic;
+    margin-top: 5px;
+}
+
