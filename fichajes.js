@@ -78,6 +78,39 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log("⚠️ No se encontraron datos de jugadores - Sistema de transferencias no disponible");
         return;
     }
+
+    // **NUEVA FUNCIÓN: Sincronizar jugadores contratados**
+    function sincronizarJugadoresContratados() {
+        // Obtener jugadores actualizados del localStorage
+        const jugadoresActualizados = JSON.parse(localStorage.getItem("jugadores") || "[]");
+        const historialFichajes = JSON.parse(localStorage.getItem('historialFichajes') || '[]');
+        
+        // Crear lista de jugadores ya fichados por todos los clubes
+        const jugadoresFichados = new Set();
+        
+        // Agregar jugadores que cambiaron de club o fueron contratados
+        jugadoresActualizados.forEach(jugador => {
+            const jugadorOriginal = window.jugadores.find(j => j.nombre === jugador.nombre);
+            if (jugadorOriginal && jugadorOriginal.club !== jugador.club) {
+                jugadoresFichados.add(jugador.nombre);
+            }
+        });
+        
+        // Agregar jugadores del historial de fichajes
+        historialFichajes.forEach(fichaje => {
+            jugadoresFichados.add(fichaje.jugador);
+        });
+        
+        // Obtener jugadores vendidos
+        const jugadoresVendidos = JSON.parse(localStorage.getItem("jugadoresVendidos") || "[]");
+        jugadoresVendidos.forEach(nombreJugador => {
+            jugadoresFichados.add(nombreJugador);
+        });
+        
+        console.log(`🔄 Sincronizando mercado - Jugadores ya fichados: ${jugadoresFichados.size}`);
+        
+        return jugadoresFichados;
+    }
     
     // Generar estados de transferencia para cada jugador
     function generarEstadoTransferencia() {
@@ -116,24 +149,44 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // Crear mercado de transferencias (excluyendo jugadores del equipo actual)
-    const mercadoTransferencias = window.jugadores
-        .filter(jugador => jugador.club !== equipoNombre)
-        .map(jugador => {
-            const estadoTransferencia = generarEstadoTransferencia();
-            const precioTransferencia = calcularPrecioTransferencia(jugador, estadoTransferencia);
-            const bonus = generarBonus(jugador);
-            
-            return {
-                ...jugador,
-                estadoTransferencia: estadoTransferencia,
-                precioTransferencia: precioTransferencia,
-                bonusGol: bonus.gol,
-                bonusArcoEnCero: bonus.arcoEnCero,
-                bonusFirma: bonus.firma,
-                disponibleParaCompra: true
-            };
-        });
+    // **FUNCIÓN MODIFICADA: Crear mercado de transferencias con sincronización**
+    function crearMercadoTransferencias() {
+        // Obtener jugadores ya fichados
+        const jugadoresFichados = sincronizarJugadoresContratados();
+        
+        // Crear mercado excluyendo jugadores del equipo actual y ya fichados
+        const mercado = window.jugadores
+            .filter(jugador => {
+                // Excluir jugadores del equipo actual
+                if (jugador.club === equipoNombre) return false;
+                
+                // Excluir jugadores ya fichados
+                if (jugadoresFichados.has(jugador.nombre)) return false;
+                
+                return true;
+            })
+            .map(jugador => {
+                const estadoTransferencia = generarEstadoTransferencia();
+                const precioTransferencia = calcularPrecioTransferencia(jugador, estadoTransferencia);
+                const bonus = generarBonus(jugador);
+                
+                return {
+                    ...jugador,
+                    estadoTransferencia: estadoTransferencia,
+                    precioTransferencia: precioTransferencia,
+                    bonusGol: bonus.gol,
+                    bonusArcoEnCero: bonus.arcoEnCero,
+                    bonusFirma: bonus.firma,
+                    disponibleParaCompra: true
+                };
+            });
+        
+        console.log(`📊 Mercado actualizado - Jugadores disponibles: ${mercado.length}`);
+        return mercado;
+    }
+    
+    // Crear mercado de transferencias actualizado
+    const mercadoTransferencias = crearMercadoTransferencias();
     
     // Variables para los elementos del DOM
     const playersGrid = document.getElementById('playersGrid');
@@ -196,13 +249,17 @@ document.addEventListener('DOMContentLoaded', function() {
         return tarjeta;
     }
     
-    // Mostrar jugadores en la interfaz
+    // **FUNCIÓN MODIFICADA: Mostrar jugadores con verificación en tiempo real**
     function mostrarJugadores(jugadoresToShow = mercadoTransferencias) {
         if (!playersGrid) return;
         
         playersGrid.innerHTML = '';
         
-        const jugadoresDisponibles = jugadoresToShow.filter(j => j.disponibleParaCompra);
+        // Verificar disponibilidad en tiempo real
+        const jugadoresFichados = sincronizarJugadoresContratados();
+        const jugadoresDisponibles = jugadoresToShow.filter(j => {
+            return j.disponibleParaCompra && !jugadoresFichados.has(j.nombre);
+        });
         
         if (jugadoresDisponibles.length === 0) {
             playersGrid.innerHTML = '<p class="no-players">No hay jugadores disponibles con los filtros actuales</p>';
@@ -228,11 +285,26 @@ document.addEventListener('DOMContentLoaded', function() {
         const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
         if (!jugador) return;
         
+        // Verificar nuevamente que el jugador esté disponible
+        const jugadoresFichados = sincronizarJugadoresContratados();
+        if (jugadoresFichados.has(jugador.nombre)) {
+            alert("Este jugador ya no está disponible en el mercado.");
+            // Refrescar la vista
+            mostrarJugadores();
+            return;
+        }
+        
         // Guardar datos del jugador seleccionado en localStorage para la página de negociación
         localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
         
-        // Redirigir a la página de negociación
-        window.location.href = 'negociacion.html';
+        // Redirigir según el estado de transferencia
+        if (jugador.estadoTransferencia === 'disponible') {
+            window.location.href = 'negociarclub.html';
+        } else if (jugador.estadoTransferencia === 'libre') {
+            window.location.href = 'agente-libre.html';
+        } else if (jugador.estadoTransferencia === 'clausula') {
+            window.location.href = 'clausula-rescision.html';
+        }
     }
     
     // Aplicar filtros
@@ -277,42 +349,57 @@ document.addEventListener('DOMContentLoaded', function() {
     if (clubFilter) {
         clubFilter.addEventListener('change', aplicarFiltros);
     }
-
-    // Función para ir a la página de negociación
-    function irANegociacion(jugadorId) {
-        const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
-        if (!jugador) return;
+    
+    // **NUEVA FUNCIÓN: Refrescar mercado periódicamente**
+    function refrescarMercado() {
+        const mercadoActualizado = crearMercadoTransferencias();
         
-        // Guardar datos del jugador seleccionado en localStorage para la página de negociación
-        localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
+        // Actualizar el mercado global
+        mercadoTransferencias.length = 0;
+        mercadoTransferencias.push(...mercadoActualizado);
         
-        // Redirigir según el estado de transferencia
-        if (jugador.estadoTransferencia === 'disponible') {
-            window.location.href = 'negociarclub.html';
-        } else if (jugador.estadoTransferencia === 'libre') {
-            window.location.href = 'agente-libre.html';
-        } else if (jugador.estadoTransferencia === 'clausula') {
-            window.location.href = 'clausula-rescision.html';
-        }
+        // Refrescar vista
+        aplicarFiltros();
+        
+        console.log("🔄 Mercado de transferencias actualizado");
     }
-
-
+    
+    // **EVENTO: Escuchar cambios en localStorage**
+    window.addEventListener('storage', function(e) {
+        if (e.key === 'jugadores' || e.key === 'historialFichajes' || e.key === 'jugadoresVendidos') {
+            console.log("📱 Detectado cambio en plantillas - Actualizando mercado...");
+            setTimeout(refrescarMercado, 500); // Pequeño delay para asegurar que los datos estén actualizados
+        }
+    });
+    
+    // **FUNCIÓN GLOBAL: Refrescar manualmente**
+    window.refrescarMercadoTransferencias = refrescarMercado;
     
     // Crear sistema global de transferencias (para consola)
     window.sistemaTransferencias = {
         mercado: mercadoTransferencias,
         mostrarMercado: function() {
             console.log("=== MERCADO DE TRANSFERENCIAS ===");
-            mercadoTransferencias.filter(j => j.disponibleParaCompra).forEach(jugador => {
+            const jugadoresFichados = sincronizarJugadoresContratados();
+            const disponibles = mercadoTransferencias.filter(j => 
+                j.disponibleParaCompra && !jugadoresFichados.has(j.nombre)
+            );
+            
+            disponibles.forEach(jugador => {
                 const costoTotal = jugador.precioTransferencia + jugador.bonusFirma;
                 console.log(`📋 ${jugador.nombre} (ID: ${jugador.id}) - ${formatearPrecio(costoTotal)}`);
             });
+            console.log(`Total disponibles: ${disponibles.length}`);
         },
         buscarJugador: function(nombre) {
+            const jugadoresFichados = sincronizarJugadoresContratados();
             return mercadoTransferencias.find(j => 
-                j.nombre.toLowerCase().includes(nombre.toLowerCase()) && j.disponibleParaCompra
+                j.nombre.toLowerCase().includes(nombre.toLowerCase()) && 
+                j.disponibleParaCompra && 
+                !jugadoresFichados.has(j.nombre)
             );
         },
+        refrescar: refrescarMercado,
         formatearPrecio: formatearPrecio
     };
     
@@ -320,7 +407,8 @@ document.addEventListener('DOMContentLoaded', function() {
     llenarFiltroClub();
     mostrarJugadores();
     
-    console.log("💼 Sistema de transferencias inicializado");
+    console.log("💼 Sistema de transferencias inicializado con sincronización");
     console.log(`📊 Jugadores disponibles: ${mercadoTransferencias.filter(j => j.disponibleParaCompra).length}`);
     console.log("📝 Usa sistemaTransferencias.mostrarMercado() para ver jugadores en consola");
+    console.log("🔄 Usa sistemaTransferencias.refrescar() para actualizar manualmente");
 });
