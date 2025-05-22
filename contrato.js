@@ -22,6 +22,11 @@ document.addEventListener('DOMContentLoaded', function() {
     const finalContractTerms = document.getElementById('finalContractTerms');
     const contractSummary = document.getElementById('contractSummary');
     
+    // Botones del modal
+    const btnBackToSquad = document.getElementById('btnBackToSquad');
+    const btnRetry = document.getElementById('btnRetry');
+    const btnBackToTransfers = document.getElementById('btnBackToTransfers');
+    
     // Sliders
     const contractYears = document.getElementById('contractYears');
     const weeklySalary = document.getElementById('weeklySalary');
@@ -54,17 +59,19 @@ document.addEventListener('DOMContentLoaded', function() {
         flexibilidadSalario: Math.random() * 0.3 + 0.1 // 10-40% de flexibilidad
     };
     
-    // CORRECCIÓN: Verificar que los elementos existen antes de usarlos
-    function verificarElementos() {
-        const elementos = [
-            contractYears, weeklySalary, goalBonus, cleanSheetBonus, topScorerBonus,
-            yearsDisplay, salaryDisplay, goalBonusDisplay, cleanSheetBonusDisplay, topScorerBonusDisplay,
-            playerYearsPreference, playerSalaryPreference, contractSummary
+    // Verificar que los elementos críticos existen
+    function verificarElementosCriticos() {
+        const elementosCriticos = [
+            { elemento: contractYears, nombre: 'contractYears' },
+            { elemento: weeklySalary, nombre: 'weeklySalary' },
+            { elemento: yearsDisplay, nombre: 'yearsDisplay' },
+            { elemento: salaryDisplay, nombre: 'salaryDisplay' },
+            { elemento: contractSummary, nombre: 'contractSummary' }
         ];
         
-        for (let elemento of elementos) {
-            if (!elemento) {
-                console.error('Elemento faltante en el DOM:', elemento);
+        for (let item of elementosCriticos) {
+            if (!item.elemento) {
+                console.error('Elemento crítico faltante:', item.nombre);
                 return false;
             }
         }
@@ -134,7 +141,7 @@ document.addEventListener('DOMContentLoaded', function() {
         weeklySalary.max = Math.floor(jugadorPreferencias.salarioDeseado * 1.5);
         weeklySalary.value = Math.floor((parseInt(weeklySalary.min) + parseInt(weeklySalary.max)) / 2);
         
-        // CORRECCIÓN: Configurar años también
+        // Configurar años
         contractYears.min = 1;
         contractYears.max = 6;
         contractYears.value = 3; // Valor por defecto
@@ -200,8 +207,6 @@ document.addEventListener('DOMContentLoaded', function() {
         // Mostrar preferencias del jugador
         mostrarPreferenciasJugador(anos, salario);
         actualizarResumenContrato();
-        
-        console.log('Displays actualizados:', { anos, salario });
     }
     
     // Mostrar preferencias del jugador
@@ -293,7 +298,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // FUNCIÓN COMPLETADA - Evaluar oferta del contrato
+    // Evaluar oferta del contrato
     function evaluarOferta() {
         const anos = parseInt(contractYears.value);
         const salario = parseInt(weeklySalary.value);
@@ -429,6 +434,40 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
+    // Configurar eventos de los modales
+    function configurarModales() {
+        // Botón del modal de éxito
+        if (btnBackToSquad) {
+            btnBackToSquad.addEventListener('click', function() {
+                window.location.href = 'plantilla.html';
+            });
+        }
+        
+        // Botones del modal de fallo
+        if (btnRetry) {
+            btnRetry.addEventListener('click', function() {
+                // Reiniciar negociación
+                location.reload();
+            });
+        }
+        
+        if (btnBackToTransfers) {
+            btnBackToTransfers.addEventListener('click', function() {
+                window.location.href = 'transferencias.html';
+            });
+        }
+        
+        // Cerrar modal haciendo click fuera de él
+        window.addEventListener('click', function(event) {
+            if (event.target === successModal && successModal) {
+                successModal.style.display = 'none';
+            }
+            if (event.target === failModal && failModal) {
+                failModal.style.display = 'none';
+            }
+        });
+    }
+    
     // Finalizar negociación
     function finalizarNegociacion(exitosa) {
         negociacionActiva = false;
@@ -450,14 +489,23 @@ document.addEventListener('DOMContentLoaded', function() {
             // Actualizar botones para estado exitoso
             actualizarBotones('exitosa');
             
+            // Mostrar modal de éxito
             if (successModal) {
                 if (finalContractTerms) {
+                    const salarioAnual = contratoFinal.salarioSemanal * 52;
+                    const costoTotal = salarioAnual * contratoFinal.anos;
+                    
                     finalContractTerms.innerHTML = `
                         <h3>Contrato Firmado - ${jugador.nombre}</h3>
-                        <p><strong>Duración:</strong> ${contratoFinal.anos} años</p>
-                        <p><strong>Salario:</strong> ${formatearPrecio(contratoFinal.salarioSemanal)}/semana</p>
-                        <p><strong>Salario Anual:</strong> ${formatearPrecio(contratoFinal.salarioSemanal * 52)}</p>
-                        <p><strong>Costo Total:</strong> ${formatearPrecio(contratoFinal.salarioSemanal * 52 * contratoFinal.anos)}</p>
+                        <div class="contract-details">
+                            <p><strong>Duración:</strong> ${contratoFinal.anos} año${contratoFinal.anos > 1 ? 's' : ''}</p>
+                            <p><strong>Salario Semanal:</strong> ${formatearPrecio(contratoFinal.salarioSemanal)}</p>
+                            <p><strong>Salario Anual:</strong> ${formatearPrecio(salarioAnual)}</p>
+                            <p><strong>Costo Total del Contrato:</strong> ${formatearPrecio(costoTotal)}</p>
+                            ${contratoFinal.bonusGol > 0 ? `<p><strong>Bonus por Gol:</strong> ${formatearPrecio(contratoFinal.bonusGol)}</p>` : ''}
+                            ${contratoFinal.bonusPorteriaLimpia > 0 ? `<p><strong>Bonus Portería Limpia:</strong> ${formatearPrecio(contratoFinal.bonusPorteriaLimpia)}</p>` : ''}
+                            ${contratoFinal.bonusGoleador > 0 ? `<p><strong>Bonus Goleador:</strong> ${formatearPrecio(contratoFinal.bonusGoleador)}</p>` : ''}
+                        </div>
                     `;
                 }
                 successModal.style.display = 'block';
@@ -466,22 +514,15 @@ document.addEventListener('DOMContentLoaded', function() {
             // Actualizar botones para estado fallido
             actualizarBotones('fallida');
             
+            // Mostrar modal de fallo
             if (failModal) {
                 failModal.style.display = 'block';
             }
         }
     }
     
-    // Inicializar todo
-    function inicializar() {
-        console.log('Iniciando negociación de contrato para:', jugador.nombre);
-        console.log('Preferencias calculadas:', jugadorPreferencias);
-        
-        mostrarInfoJugador();
-        mostrarDetallesTransferencia();
-        configurarFormulario();
-        
-        // Agregar botones para hacer oferta y volver a plantilla
+    // Crear botones de acción
+    function crearBotones() {
         if (responseOptions && !document.getElementById('makeOfferBtn')) {
             // Botón para hacer oferta
             const botonOferta = document.createElement('button');
@@ -499,23 +540,23 @@ document.addEventListener('DOMContentLoaded', function() {
             botonPlantilla.style.marginLeft = '10px';
             botonPlantilla.addEventListener('click', function() {
                 let mensaje = '¿Estás seguro de que quieres ';
-                let destino = ''; // Variable para el destino
+                let destino = '';
                 
                 if (!negociacionActiva) {
                     // Después de terminar la negociación
                     if (negociacionProgreso >= 80) {
                         // Negociación exitosa
                         mensaje += 'ir a ver tu plantilla con el nuevo fichaje?';
-                        destino = 'plantilla.html'; // ← AQUÍ CAMBIAS A DÓNDE VA DESPUÉS DEL ÉXITO
+                        destino = 'plantilla.html';
                     } else {
                         // Negociación fallida
                         mensaje += 'volver a la plantilla?';
-                        destino = 'plantilla.html'; // ← AQUÍ CAMBIAS A DÓNDE VA DESPUÉS DEL FRACASO
+                        destino = 'plantilla.html';
                     }
                 } else {
                     // Durante la negociación activa
                     mensaje += 'cancelar la negociación? Se perderá todo el progreso.';
-                    destino = 'menu.html'; // ← AQUÍ CAMBIAS A DÓNDE VA AL CANCELAR
+                    destino = 'menu.html';
                 }
                 
                 if (confirm(mensaje)) {
@@ -524,6 +565,18 @@ document.addEventListener('DOMContentLoaded', function() {
             });
             responseOptions.appendChild(botonPlantilla);
         }
+    }
+    
+    // Inicializar todo
+    function inicializar() {
+        console.log('Iniciando negociación de contrato para:', jugador.nombre);
+        console.log('Preferencias calculadas:', jugadorPreferencias);
+        
+        mostrarInfoJugador();
+        mostrarDetallesTransferencia();
+        configurarFormulario();
+        configurarModales();
+        crearBotones();
         
         // Establecer estado inicial de botones
         actualizarBotones('negociando');
@@ -533,10 +586,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Verificar que todo esté listo e inicializar
-    if (verificarElementos()) {
+    if (verificarElementosCriticos()) {
         inicializar();
     } else {
-        console.error('Faltan elementos del DOM. Verifica tu HTML.');
+        console.error('Faltan elementos críticos del DOM. Verifica tu HTML.');
         alert('Error: Faltan elementos en la página. Verifica que todos los IDs estén correctos.');
     }
 });
