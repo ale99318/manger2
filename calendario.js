@@ -121,6 +121,41 @@ function verificarContratos() {
             } else {
                 contratosActivos++;
             }
+        } else if (jugador.contrato && typeof jugador.contrato === 'number') {
+            // Manejar contratos con formato antiguo (número de meses)
+            const fechaInicial = new Date("2025-01-01");
+            const fechaVencimiento = new Date(fechaInicial);
+            fechaVencimiento.setMonth(fechaVencimiento.getMonth() + jugador.contrato);
+            
+            const diasParaVencer = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
+            
+            if (diasParaVencer < 0) {
+                // Contrato vencido - eliminar jugador
+                contratosVencidos.push({
+                    jugador: jugador,
+                    diasVencido: Math.abs(diasParaVencer)
+                });
+                
+                jugadoresEliminados.push({
+                    nombre: jugador.nombre,
+                    posicion: jugador.posicion,
+                    club: jugador.club,
+                    fechaEliminacion: fechaActual.toISOString(),
+                    motivo: "Contrato vencido"
+                });
+                
+                jugadores.splice(i, 1);
+                console.log(`Jugador eliminado por contrato vencido: ${jugador.nombre}`);
+                
+            } else if (diasParaVencer <= 30) {
+                contratosPorVencer.push({
+                    jugador: jugador,
+                    diasRestantes: diasParaVencer
+                });
+                contratosActivos++;
+            } else {
+                contratosActivos++;
+            }
         } else if (jugador.contrato) {
             contratosSinFecha++;
         }
