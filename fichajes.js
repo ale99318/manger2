@@ -24,25 +24,73 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // **FUNCIÓN NUEVA: Sincronizar presupuesto con compras**
+    // **FUNCIÓN CORREGIDA: Sincronizar presupuesto con compras**
     function sincronizarPresupuesto() {
-        const finanzasGuardadas = localStorage.getItem("finanzasClub");
-        let presupuestoActual;
+        let presupuestoActual = miEquipo.presupuesto; // Valor inicial
         
+        // 1. Verificar finanzas principales (la más actualizada)
+        const finanzasGuardadas = localStorage.getItem("finanzasClub");
         if (finanzasGuardadas) {
-            const finanzas = JSON.parse(finanzasGuardadas);
-            presupuestoActual = finanzas.saldo;
-        } else {
-            // Si no hay finanzas guardadas, usar presupuesto original
-            const presupuestoGuardado = localStorage.getItem(`presupuesto_${equipoNombre}`);
-            presupuestoActual = presupuestoGuardado ? parseInt(presupuestoGuardado) : miEquipo.presupuesto;
+            try {
+                const finanzas = JSON.parse(finanzasGuardadas);
+                if (finanzas.saldo !== undefined && finanzas.saldo !== null) {
+                    presupuestoActual = finanzas.saldo;
+                    console.log("💰 Presupuesto obtenido de finanzasClub:", formatearPrecio(presupuestoActual));
+                    return presupuestoActual;
+                }
+            } catch (error) {
+                console.error("Error al leer finanzasClub:", error);
+            }
         }
+        
+        // 2. Verificar presupuesto específico del equipo
+        const presupuestoGuardado = localStorage.getItem(`presupuesto_${equipoNombre}`);
+        if (presupuestoGuardado) {
+            try {
+                presupuestoActual = parseInt(presupuestoGuardado);
+                console.log("💰 Presupuesto obtenido de presupuesto específico:", formatearPrecio(presupuestoActual));
+                return presupuestoActual;
+            } catch (error) {
+                console.error("Error al leer presupuesto específico:", error);
+            }
+        }
+        
+        // 3. Verificar historial de transacciones para calcular presupuesto
+        const historialFichajes = JSON.parse(localStorage.getItem('historialFichajes') || '[]');
+        const historialVentas = JSON.parse(localStorage.getItem('historialVentas') || '[]');
+        
+        if (historialFichajes.length > 0 || historialVentas.length > 0) {
+            let gastosTotal = 0;
+            let ingresosTotal = 0;
+            
+            // Calcular gastos en fichajes
+            historialFichajes.forEach(fichaje => {
+                if (fichaje.equipoDestino === equipoNombre || fichaje.equipo === equipoNombre) {
+                    const costo = (fichaje.precio || 0) + (fichaje.bonusFirma || 0);
+                    gastosTotal += costo;
+                }
+            });
+            
+            // Calcular ingresos por ventas
+            historialVentas.forEach(venta => {
+                if (venta.equipoVendedor === equipoNombre || venta.equipo === equipoNombre) {
+                    ingresosTotal += venta.precio || 0;
+                }
+            });
+            
+            presupuestoActual = miEquipo.presupuesto - gastosTotal + ingresosTotal;
+            console.log("💰 Presupuesto calculado por transacciones:");
+            console.log(`   Base: ${formatearPrecio(miEquipo.presupuesto)}`);
+            console.log(`   Gastos: -${formatearPrecio(gastosTotal)}`);
+            console.log(`   Ingresos: +${formatearPrecio(ingresosTotal)}`);
+            console.log(`   Total: ${formatearPrecio(presupuestoActual)}`);
+        }
+        
+        // Asegurar que el presupuesto no sea negativo
+        presupuestoActual = Math.max(0, presupuestoActual);
         
         return presupuestoActual;
     }
-    
-    // Obtener presupuesto sincronizado
-    const presupuestoActual = sincronizarPresupuesto();
     
     // **NUEVA FUNCIÓN: Obtener fecha del juego**
     function obtenerFechaJuego() {
@@ -68,6 +116,28 @@ document.addEventListener('DOMContentLoaded', function() {
             return `$${precio}`;
         }
     }
+    
+    // **FUNCIÓN MEJORADA: Actualizar presupuesto en tiempo real**
+    function actualizarPresupuestoTiempoReal() {
+        const presupuestoActual = sincronizarPresupuesto();
+        
+        // Actualizar elemento en DOM si existe
+        const elementoPresupuesto = document.getElementById('currentBudget');
+        if (elementoPresupuesto) {
+            elementoPresupuesto.textContent = formatearPrecio(presupuestoActual);
+        }
+        
+        // Actualizar objeto global
+        if (window.miEquipoInfo) {
+            window.miEquipoInfo.presupuesto = presupuestoActual;
+            window.miEquipoInfo.presupuestoFormateado = formatearPrecio(presupuestoActual);
+        }
+        
+        return presupuestoActual;
+    }
+    
+    // Obtener presupuesto inicial
+    let presupuestoActual = sincronizarPresupuesto();
     
     // Mostrar información en consola
     console.log("=== INFORMACIÓN DEL EQUIPO ===");
@@ -102,14 +172,12 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(`Equipo: ${this.nombre} | Presupuesto: ${this.presupuestoFormateado} | Fecha: ${this.fechaJuego.toLocaleDateString()}`);
         },
         
-        // **MÉTODO NUEVO: Actualizar presupuesto**
+        // **MÉTODO MEJORADO: Actualizar presupuesto**
         actualizarPresupuesto: function() {
-            this.presupuesto = sincronizarPresupuesto();
+            this.presupuesto = actualizarPresupuestoTiempoReal();
             this.presupuestoFormateado = formatearPrecio(this.presupuesto);
-            
-            if (elementoPresupuesto) {
-                elementoPresupuesto.textContent = this.presupuestoFormateado;
-            }
+            console.log("🔄 Presupuesto actualizado:", this.presupuestoFormateado);
+            return this.presupuesto;
         }
     };
     
@@ -316,7 +384,7 @@ document.addEventListener('DOMContentLoaded', function() {
         tarjeta.className = `player-card ${jugador.esJugadorLibre ? 'jugador-libre' : ''}`;
         tarjeta.innerHTML = `
             <div class="player-photo">
-                <img src="/api/placeholder/80/80" alt="${jugador.nombre}">
+                <div class="photo-placeholder">👤</div>
                 ${jugador.esJugadorLibre ? '<div class="badge-libre">LIBRE</div>' : ''}
             </div>
             <div class="player-details">
@@ -448,22 +516,24 @@ document.addEventListener('DOMContentLoaded', function() {
         clubFilter.addEventListener('change', aplicarFiltros);
     }
     
-    // **FUNCIÓN MODIFICADA: Refrescar mercado con sincronización completa**
+    // **FUNCIÓN MEJORADA: Refrescar mercado con sincronización completa**
     function refrescarMercado() {
+        // Actualizar presupuesto PRIMERO
+        const nuevoPresupuesto = actualizarPresupuestoTiempoReal();
+        
+        // Luego actualizar mercado
         const mercadoActualizado = crearMercadoTransferencias();
         
         // Actualizar el mercado global
         mercadoTransferencias.length = 0;
         mercadoTransferencias.push(...mercadoActualizado);
         
-        // **NUEVO: Actualizar presupuesto**
-        window.miEquipoInfo.actualizarPresupuesto();
-        
         // Refrescar vista
         aplicarFiltros();
         
-        console.log("🔄 Mercado de transferencias actualizado con fecha del juego:", obtenerFechaJuego().toLocaleDateString());
-        console.log("💰 Presupuesto actualizado:", window.miEquipoInfo.presupuestoFormateado);
+        console.log("🔄 Mercado de transferencias actualizado");
+        console.log("📅 Fecha del juego:", obtenerFechaJuego().toLocaleDateString());
+        console.log("💰 Presupuesto actualizado:", formatearPrecio(nuevoPresupuesto));
     }
     
     // **NUEVO: Escuchar cambios de fecha del calendario**
@@ -478,25 +548,51 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(refrescarMercado, 1000);
     });
     
-    // **EVENTO MODIFICADO: Escuchar cambios en localStorage incluyendo contratos y finanzas**
+    // **EVENTO MEJORADO: Escuchar cambios en localStorage con mayor frecuencia**
     window.addEventListener('storage', function(e) {
-        if (e.key === 'jugadores' || e.key === 'historialFichajes' || e.key === 'jugadoresVendidos' || e.key === 'historialEliminados' || e.key === 'finanzasClub') {
-            console.log("📱 Detectado cambio en plantillas/contratos/finanzas - Actualizando mercado...");
+        const keysToWatch = [
+            'jugadores', 
+            'historialFichajes', 
+            'jugadoresVendidos', 
+            'historialEliminados', 
+            'finanzasClub',
+            `presupuesto_${equipoNombre}`,
+            'historialVentas'
+        ];
+        
+        if (keysToWatch.includes(e.key)) {
+            console.log(`📱 Detectado cambio en ${e.key} - Actualizando sistema...`);
             setTimeout(refrescarMercado, 500);
         }
     });
     
+    // **NUEVO: Verificar cambios periódicamente**
+    let ultimoPresupuesto = presupuestoActual;
+    setInterval(() => {
+        const presupuestoNuevo = sincronizarPresupuesto();
+        if (presupuestoNuevo !== ultimoPresupuesto) {
+            console.log(`💰 Cambio de presupuesto detectado: ${formatearPrecio(ultimoPresupuesto)} → ${formatearPrecio(presupuestoNuevo)}`);
+            ultimoPresupuesto = presupuestoNuevo;
+            actualizarPresupuestoTiempoReal();
+        }
+    }, 2000); // Verificar cada 2 segundos
+    
     // **FUNCIÓN GLOBAL: Refrescar manualmente**
     window.refrescarMercadoTransferencias = refrescarMercado;
     
-    // **SISTEMA GLOBAL MODIFICADO: Con información de fecha del juego**
+    // **FUNCIÓN GLOBAL: Actualizar presupuesto manualmente**
+    window.actualizarPresupuesto = actualizarPresupuestoTiempoReal;
+    
+    // **SISTEMA GLOBAL MEJORADO: Con información de fecha del juego**
     window.sistemaTransferencias = {
         mercado: mercadoTransferencias,
         fechaJuego: obtenerFechaJuego(),
         mostrarMercado: function() {
             console.log("=== MERCADO DE TRANSFERENCIAS ===");
             console.log(`Fecha del juego: ${this.fechaJuego.toLocaleDateString()}`);
-            console.log(`Presupuesto disponible: ${window.miEquipoInfo.presupuestoFormateado}`);
+            
+            const presupuestoActual = actualizarPresupuestoTiempoReal();
+            console.log(`Presupuesto disponible: ${formatearPrecio(presupuestoActual)}`);
             
             const { jugadoresFichados, jugadoresLibres } = sincronizarJugadoresContratados();
             const disponibles = mercadoTransferencias.filter(j => 
@@ -532,6 +628,42 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log(`🆓 Jugadores libres disponibles: ${libres.length}`);
             libres.forEach(j => console.log(`   ${j.nombre} - ${j.motivoLibre} (Ex: ${j.clubAnterior || j.club})`));
         },
+        mostrarPresupuesto: function() {
+            const presupuestoActual = actualizarPresupuestoTiempoReal();
+            console.log(`💰 Presupuesto actual: ${formatearPrecio(presupuestoActual)}`);
+            
+            // Mostrar desglose si hay transacciones
+            const historialFichajes = JSON.parse(localStorage.getItem('historialFichajes') || '[]');
+            const historialVentas = JSON.parse(localStorage.getItem('historialVentas') || '[]');
+            
+            if (historialFichajes.length > 0 || historialVentas.length > 0) {
+                console.log("📊 Desglose de transacciones:");
+                
+                let gastosTotal = 0;
+                historialFichajes.forEach(fichaje => {
+                    if (fichaje.equipoDestino === equipoNombre || fichaje.equipo === equipoNombre) {
+                        const costo = (fichaje.precio || 0) + (fichaje.bonusFirma || 0);
+                        gastosTotal += costo;
+                        console.log(`   ➡️ Fichaje: ${fichaje.jugador} - ${formatearPrecio(costo)}`);
+                    }
+                });
+                
+                let ingresosTotal = 0;
+                historialVentas.forEach(venta => {
+                    if (venta.equipoVendedor === equipoNombre || venta.equipo === equipoNombre) {
+                        ingresosTotal += venta.precio || 0;
+                        console.log(`   ⬅️ Venta: ${venta.jugador} - ${formatearPrecio(venta.precio)}`);
+                    }
+                });
+                
+                console.log(`   💰 Base: ${formatearPrecio(miEquipo.presupuesto)}`);
+                console.log(`   ➖ Gastos: ${formatearPrecio(gastosTotal)}`);
+                console.log(`   ➕ Ingresos: ${formatearPrecio(ingresosTotal)}`);
+                console.log(`   🏦 Total: ${formatearPrecio(presupuestoActual)}`);
+            }
+            
+            return presupuestoActual;
+        },
         refrescar: refrescarMercado,
         formatearPrecio: formatearPrecio
     };
@@ -545,7 +677,11 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log(`🆓 Jugadores libres: ${mercadoTransferencias.filter(j => j.esJugadorLibre).length}`);
     console.log(`📅 Fecha del juego: ${obtenerFechaJuego().toLocaleDateString()}`);
     console.log(`💰 Presupuesto actual: ${formatearPrecio(presupuestoActual)}`);
-    console.log("📝 Usa sistemaTransferencias.mostrarMercado() para ver jugadores en consola");
-    console.log("🆓 Usa sistemaTransferencias.mostrarLibres() para ver solo jugadores libres");
-    console.log("🔄 Usa sistemaTransferencias.refrescar() para actualizar manualmente");
+    console.log("📝 Comandos disponibles en consola:");
+    console.log("   🏪 sistemaTransferencias.mostrarMercado() - Ver jugadores disponibles");
+    console.log("   🆓 sistemaTransferencias.mostrarLibres() - Ver solo jugadores libres");
+    console.log("   💰 sistemaTransferencias.mostrarPresupuesto() - Ver presupuesto detallado");
+    console.log("   🔄 sistemaTransferencias.refrescar() - Actualizar manualmente");
+    console.log("   💰 actualizarPresupuesto() - Actualizar solo presupuesto");
+    console.log("   🔄 refrescarMercadoTransferencias() - Refrescar todo el sistema");
 });
