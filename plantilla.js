@@ -254,7 +254,7 @@ function procesarContratosFirmados(jugadores, selectedClub) {
                     id: jugadores.length + 1, // Asignar nuevo ID
                     club: selectedClub, // Asignar al club actual
                     nuevoFichaje: true, // Marcar como nuevo fichaje
-                    fechaContratacion: new Date().toISOString(),
+                    fechaContratacion: obtenerFechaJuego().toISOString(),
                     contrato: {
                         anos: contrato.anos,
                         salarioSemanal: contrato.salarioSemanal,
@@ -281,7 +281,7 @@ function procesarContratosFirmados(jugadores, selectedClub) {
                 // Si el jugador existe pero está en otro club, transferirlo
                 jugadorExistente.club = selectedClub;
                 jugadorExistente.nuevoFichaje = true;
-                jugadorExistente.fechaContratacion = new Date().toISOString();
+                jugadorExistente.fechaContratacion = obtenerFechaJuego().toISOString();
                 jugadorExistente.contrato = {
                     anos: contrato.anos,
                     salarioSemanal: contrato.salarioSemanal,
@@ -369,7 +369,7 @@ function guardarHistorialFichaje(jugador, contrato) {
         jugador: jugador.nombre,
         posicion: jugador.posicion,
         club: jugador.club,
-        fecha: new Date().toISOString(),
+        fecha: obtenerFechaJuego().toISOString(),
         contrato: {
             anos: contrato.anos,
             salarioSemanal: contrato.salarioSemanal,
