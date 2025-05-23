@@ -24,9 +24,25 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    // Obtener presupuesto (puede haber sido modificado previamente)
-    const presupuestoGuardado = localStorage.getItem(`presupuesto_${equipoNombre}`);
-    const presupuestoActual = presupuestoGuardado ? parseInt(presupuestoGuardado) : miEquipo.presupuesto;
+    // **FUNCIÓN NUEVA: Sincronizar presupuesto con compras**
+    function sincronizarPresupuesto() {
+        const finanzasGuardadas = localStorage.getItem("finanzasClub");
+        let presupuestoActual;
+        
+        if (finanzasGuardadas) {
+            const finanzas = JSON.parse(finanzasGuardadas);
+            presupuestoActual = finanzas.saldo;
+        } else {
+            // Si no hay finanzas guardadas, usar presupuesto original
+            const presupuestoGuardado = localStorage.getItem(`presupuesto_${equipoNombre}`);
+            presupuestoActual = presupuestoGuardado ? parseInt(presupuestoGuardado) : miEquipo.presupuesto;
+        }
+        
+        return presupuestoActual;
+    }
+    
+    // Obtener presupuesto sincronizado
+    const presupuestoActual = sincronizarPresupuesto();
     
     // **NUEVA FUNCIÓN: Obtener fecha del juego**
     function obtenerFechaJuego() {
@@ -84,6 +100,16 @@ document.addEventListener('DOMContentLoaded', function() {
         // Método para mostrar información
         mostrarInfo: function() {
             console.log(`Equipo: ${this.nombre} | Presupuesto: ${this.presupuestoFormateado} | Fecha: ${this.fechaJuego.toLocaleDateString()}`);
+        },
+        
+        // **MÉTODO NUEVO: Actualizar presupuesto**
+        actualizarPresupuesto: function() {
+            this.presupuesto = sincronizarPresupuesto();
+            this.presupuestoFormateado = formatearPrecio(this.presupuesto);
+            
+            if (elementoPresupuesto) {
+                elementoPresupuesto.textContent = this.presupuestoFormateado;
+            }
         }
     };
     
@@ -430,10 +456,14 @@ document.addEventListener('DOMContentLoaded', function() {
         mercadoTransferencias.length = 0;
         mercadoTransferencias.push(...mercadoActualizado);
         
+        // **NUEVO: Actualizar presupuesto**
+        window.miEquipoInfo.actualizarPresupuesto();
+        
         // Refrescar vista
         aplicarFiltros();
         
         console.log("🔄 Mercado de transferencias actualizado con fecha del juego:", obtenerFechaJuego().toLocaleDateString());
+        console.log("💰 Presupuesto actualizado:", window.miEquipoInfo.presupuestoFormateado);
     }
     
     // **NUEVO: Escuchar cambios de fecha del calendario**
@@ -448,10 +478,10 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(refrescarMercado, 1000);
     });
     
-    // **EVENTO MODIFICADO: Escuchar cambios en localStorage incluyendo contratos**
+    // **EVENTO MODIFICADO: Escuchar cambios en localStorage incluyendo contratos y finanzas**
     window.addEventListener('storage', function(e) {
-        if (e.key === 'jugadores' || e.key === 'historialFichajes' || e.key === 'jugadoresVendidos' || e.key === 'historialEliminados') {
-            console.log("📱 Detectado cambio en plantillas/contratos - Actualizando mercado...");
+        if (e.key === 'jugadores' || e.key === 'historialFichajes' || e.key === 'jugadoresVendidos' || e.key === 'historialEliminados' || e.key === 'finanzasClub') {
+            console.log("📱 Detectado cambio en plantillas/contratos/finanzas - Actualizando mercado...");
             setTimeout(refrescarMercado, 500);
         }
     });
@@ -466,6 +496,7 @@ document.addEventListener('DOMContentLoaded', function() {
         mostrarMercado: function() {
             console.log("=== MERCADO DE TRANSFERENCIAS ===");
             console.log(`Fecha del juego: ${this.fechaJuego.toLocaleDateString()}`);
+            console.log(`Presupuesto disponible: ${window.miEquipoInfo.presupuestoFormateado}`);
             
             const { jugadoresFichados, jugadoresLibres } = sincronizarJugadoresContratados();
             const disponibles = mercadoTransferencias.filter(j => 
@@ -513,6 +544,7 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log(`📊 Jugadores disponibles: ${mercadoTransferencias.filter(j => j.disponibleParaCompra).length}`);
     console.log(`🆓 Jugadores libres: ${mercadoTransferencias.filter(j => j.esJugadorLibre).length}`);
     console.log(`📅 Fecha del juego: ${obtenerFechaJuego().toLocaleDateString()}`);
+    console.log(`💰 Presupuesto actual: ${formatearPrecio(presupuestoActual)}`);
     console.log("📝 Usa sistemaTransferencias.mostrarMercado() para ver jugadores en consola");
     console.log("🆓 Usa sistemaTransferencias.mostrarLibres() para ver solo jugadores libres");
     console.log("🔄 Usa sistemaTransferencias.refrescar() para actualizar manualmente");
