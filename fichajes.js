@@ -189,7 +189,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
 
-    // **FUNCIÓN MODIFICADA: Sincronizar jugadores contratados y contratos vencidos**
+    // **FUNCIÓN CORREGIDA: Sincronizar jugadores contratados y contratos vencidos**
     function sincronizarJugadoresContratados() {
         const fechaActualJuego = obtenerFechaJuego();
         
@@ -201,38 +201,54 @@ document.addEventListener('DOMContentLoaded', function() {
         // Crear lista de jugadores ya fichados por todos los clubes
         const jugadoresFichados = new Set();
         const jugadoresLibres = new Set(); // **NUEVO: Jugadores que quedaron libres**
+        const jugadoresRetirados = new Set(); // **NUEVO: Jugadores retirados**
         
-        // Agregar jugadores que cambiaron de club o fueron contratados
+        // **NUEVA VERIFICACIÓN: Identificar jugadores retirados**
         jugadoresActualizados.forEach(jugador => {
-            const jugadorOriginal = window.jugadores.find(j => j.nombre === jugador.nombre);
-            if (jugadorOriginal && jugadorOriginal.club !== jugador.club) {
-                jugadoresFichados.add(jugador.nombre);
+            if (jugador.retirado === true) {
+                jugadoresRetirados.add(jugador.nombre);
+                console.log(`🏆 Jugador retirado: ${jugador.nombre} - ${jugador.motivoRetiro || 'Sin motivo especificado'}`);
             }
         });
         
-        // Agregar jugadores del historial de fichajes
-        historialFichajes.forEach(fichaje => {
-            jugadoresFichados.add(fichaje.jugador);
+        // Agregar jugadores que cambiaron de club o fueron contratados (solo si no están retirados)
+        jugadoresActualizados.forEach(jugador => {
+            if (!jugador.retirado) {
+                const jugadorOriginal = window.jugadores.find(j => j.nombre === jugador.nombre);
+                if (jugadorOriginal && jugadorOriginal.club !== jugador.club) {
+                    jugadoresFichados.add(jugador.nombre);
+                }
+            }
         });
         
-        // **NUEVO: Procesar jugadores eliminados por contrato vencido**
+        // Agregar jugadores del historial de fichajes (solo si no están retirados)
+        historialFichajes.forEach(fichaje => {
+            if (!jugadoresRetirados.has(fichaje.jugador)) {
+                jugadoresFichados.add(fichaje.jugador);
+            }
+        });
+        
+        // **NUEVO: Procesar jugadores eliminados por contrato vencido (solo si no están retirados)**
         historialEliminados.forEach(eliminado => {
-            if (eliminado.motivo === "Contrato vencido") {
+            if (eliminado.motivo === "Contrato vencido" && !jugadoresRetirados.has(eliminado.nombre)) {
                 jugadoresLibres.add(eliminado.nombre);
                 console.log(`🆓 Jugador disponible como libre: ${eliminado.nombre}`);
             }
         });
         
-        // Obtener jugadores vendidos
+        // Obtener jugadores vendidos (solo si no están retirados)
         const jugadoresVendidos = JSON.parse(localStorage.getItem("jugadoresVendidos") || "[]");
         jugadoresVendidos.forEach(nombreJugador => {
-            jugadoresFichados.add(nombreJugador);
+            if (!jugadoresRetirados.has(nombreJugador)) {
+                jugadoresFichados.add(nombreJugador);
+            }
         });
         
+        console.log(`🔄 Sincronizando mercado - Jugadores retirados: ${jugadoresRetirados.size}`);
         console.log(`🔄 Sincronizando mercado - Jugadores ya fichados: ${jugadoresFichados.size}`);
         console.log(`🆓 Jugadores libres disponibles: ${jugadoresLibres.size}`);
         
-        return { jugadoresFichados, jugadoresLibres };
+        return { jugadoresFichados, jugadoresLibres, jugadoresRetirados };
     }
     
     // **FUNCIÓN MODIFICADA: Generar estados de transferencia considerando jugadores libres**
@@ -277,14 +293,20 @@ document.addEventListener('DOMContentLoaded', function() {
         };
     }
     
-    // **FUNCIÓN MODIFICADA: Crear mercado de transferencias con sincronización completa**
+    // **FUNCIÓN CORREGIDA: Crear mercado de transferencias excluyendo jugadores retirados**
     function crearMercadoTransferencias() {
-        // Obtener jugadores ya fichados y libres
-        const { jugadoresFichados, jugadoresLibres } = sincronizarJugadoresContratados();
+        // Obtener jugadores ya fichados, libres y retirados
+        const { jugadoresFichados, jugadoresLibres, jugadoresRetirados } = sincronizarJugadoresContratados();
         
-        // Crear mercado excluyendo jugadores del equipo actual y ya fichados
+        // Crear mercado excluyendo jugadores del equipo actual, ya fichados y RETIRADOS
         const mercado = window.jugadores
             .filter(jugador => {
+                // **NUEVO: Excluir jugadores retirados**
+                if (jugadoresRetirados.has(jugador.nombre)) {
+                    console.log(`🏆 Excluyendo jugador retirado del mercado: ${jugador.nombre}`);
+                    return false;
+                }
+                
                 // Excluir jugadores del equipo actual
                 if (jugador.club === equipoNombre) return false;
                 
@@ -325,6 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log(`📊 Mercado actualizado - Jugadores disponibles: ${mercado.length}`);
         console.log(`🆓 Jugadores libres en mercado: ${mercado.filter(j => j.esJugadorLibre).length}`);
+        console.log(`🏆 Jugadores retirados excluidos: ${jugadoresRetirados.size}`);
         return mercado;
     }
     
@@ -409,15 +432,18 @@ document.addEventListener('DOMContentLoaded', function() {
         return tarjeta;
     }
     
-    // **FUNCIÓN MODIFICADA: Mostrar jugadores con verificación en tiempo real**
+    // **FUNCIÓN CORREGIDA: Mostrar jugadores con verificación de retiros en tiempo real**
     function mostrarJugadores(jugadoresToShow = mercadoTransferencias) {
         if (!playersGrid) return;
         
         playersGrid.innerHTML = '';
         
-        // Verificar disponibilidad en tiempo real
-        const { jugadoresFichados, jugadoresLibres } = sincronizarJugadoresContratados();
+        // Verificar disponibilidad en tiempo real incluyendo retiros
+        const { jugadoresFichados, jugadoresLibres, jugadoresRetirados } = sincronizarJugadoresContratados();
         const jugadoresDisponibles = jugadoresToShow.filter(j => {
+            // Excluir jugadores retirados
+            if (jugadoresRetirados.has(j.nombre)) return false;
+            
             return j.disponibleParaCompra && (!jugadoresFichados.has(j.nombre) || jugadoresLibres.has(j.nombre));
         });
         
@@ -440,13 +466,21 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // **FUNCIÓN MODIFICADA: Ir a negociación con información actualizada**
+    // **FUNCIÓN CORREGIDA: Ir a negociación con verificación de retiro**
     function irANegociacion(jugadorId) {
         const jugador = mercadoTransferencias.find(j => j.id === jugadorId);
         if (!jugador) return;
         
-        // Verificar nuevamente que el jugador esté disponible
-        const { jugadoresFichados, jugadoresLibres } = sincronizarJugadoresContratados();
+        // Verificar nuevamente que el jugador esté disponible y no retirado
+        const { jugadoresFichados, jugadoresLibres, jugadoresRetirados } = sincronizarJugadoresContratados();
+        
+        if (jugadoresRetirados.has(jugador.nombre)) {
+            alert("Este jugador se ha retirado del fútbol y ya no está disponible.");
+            // Refrescar la vista
+            mostrarJugadores();
+            return;
+        }
+        
         if (jugadoresFichados.has(jugador.nombre) && !jugadoresLibres.has(jugador.nombre)) {
             alert("Este jugador ya no está disponible en el mercado.");
             // Refrescar la vista
