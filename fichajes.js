@@ -1,4 +1,4 @@
-// Sistema simple para mostrar equipo y presupuesto + Sistema de transferencias SINCRONIZADO CON CALENDARIO 
+// Sistema simple para mostrar equipo y presupuesto + Sistema de transferencias SINCRONIZADO CON CALENDARIO  
 document.addEventListener('DOMContentLoaded', function() {
     // Obtener datos del localStorage
     const equipoNombre = localStorage.getItem("selectedClub") || "Mi Equipo";
