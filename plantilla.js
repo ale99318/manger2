@@ -26,9 +26,6 @@ document.addEventListener("DOMContentLoaded", function() {
     // Obtener la lista de jugadores
     let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
     
-    // **NUEVA FUNCIONALIDAD: Asignar contratos a jugadores existentes sin contrato**
-    asignarContratosExistentes(jugadores, selectedClub);
-    
     // **NUEVA FUNCIONALIDAD: Procesar contratos firmados**
     procesarContratosFirmados(jugadores, selectedClub);
     
@@ -79,9 +76,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const infoJugador = document.createElement("div");
         infoJugador.classList.add("info-jugador");
         
-        // **MODIFICACIÓN: Mostrar información del contrato**
+        // **MODIFICACIÓN: Mostrar información del contrato adaptada al calendario del juego**
         let infoContrato = '';
-        if (jugador.contrato && jugador.contrato.fechaVencimiento && jugador.contrato.anos && jugador.contrato.salarioSemanal) {
+        if (jugador.contrato && jugador.contrato.fechaVencimiento) {
             const fechaActual = obtenerFechaJuego();
             const fechaVencimiento = new Date(jugador.contrato.fechaVencimiento);
             const diasRestantes = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
@@ -89,6 +86,20 @@ document.addEventListener("DOMContentLoaded", function() {
             infoContrato = `
                 <div class="info-contrato">
                     <small>Contrato: ${jugador.contrato.anos} años - ${formatearPrecio(jugador.contrato.salarioSemanal)}/sem</small>
+                    <small>Vence en: ${diasRestantes} días</small>
+                </div>
+            `;
+        } else if (jugador.contrato) {
+            // Para jugadores existentes sin estructura de contrato, calcular basado en el campo 'contrato' original
+            const fechaActual = obtenerFechaJuego();
+            const mesesRestantes = jugador.contrato || 12;
+            const fechaVencimiento = new Date(fechaActual);
+            fechaVencimiento.setMonth(fechaVencimiento.getMonth() + mesesRestantes);
+            const diasRestantes = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
+            
+            infoContrato = `
+                <div class="info-contrato">
+                    <small>Contrato: ${mesesRestantes} meses - ${formatearPrecio(jugador.sueldo)}/mes</small>
                     <small>Vence en: ${diasRestantes} días</small>
                 </div>
             `;
@@ -143,69 +154,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// **NUEVA FUNCIÓN: Asignar contratos a jugadores existentes**
-function asignarContratosExistentes(jugadores, selectedClub) {
-    let cambiosRealizados = false;
-    const fechaActual = obtenerFechaJuego();
-    
-    jugadores.forEach(jugador => {
-        // Solo asignar contrato si pertenece al club seleccionado y no tiene contrato
-        if (jugador.club === selectedClub && !jugador.contrato) {
-            // Generar datos de contrato basados en la edad y valor del jugador
-            const anos = generarAnosContrato(jugador.edad);
-            const salarioSemanal = calcularSalarioSemanal(jugador.valor, jugador.general, jugador.edad);
-            
-            jugador.contrato = {
-                anos: anos,
-                salarioSemanal: salarioSemanal,
-                salarioAnual: salarioSemanal * 52,
-                bonusGol: 0,
-                bonusPorteriaLimpia: 0,
-                bonusGoleador: 0,
-                fechaFirma: fechaActual.toISOString(),
-                fechaVencimiento: calcularFechaVencimiento(fechaActual.toISOString(), anos)
-            };
-            
-            cambiosRealizados = true;
-        }
-    });
-    
-    if (cambiosRealizados) {
-        localStorage.setItem("jugadores", JSON.stringify(jugadores));
-        console.log("Contratos asignados a jugadores existentes del club");
-    }
-}
-
-// **NUEVA FUNCIÓN: Generar años de contrato basado en edad**
-function generarAnosContrato(edad) {
-    if (edad <= 20) return Math.floor(Math.random() * 3) + 3; // 3-5 años
-    if (edad <= 25) return Math.floor(Math.random() * 3) + 2; // 2-4 años
-    if (edad <= 30) return Math.floor(Math.random() * 2) + 2; // 2-3 años
-    if (edad <= 35) return Math.floor(Math.random() * 2) + 1; // 1-2 años
-    return 1; // 1 año para mayores de 35
-}
-
-// **NUEVA FUNCIÓN: Calcular salario semanal basado en valor y stats**
-function calcularSalarioSemanal(valor, general, edad) {
-    // Base salarial según el valor del jugador
-    let salarioBase = valor * 0.0001; // 0.01% del valor como base
-    
-    // Ajustar por rating general
-    const multiplicadorGeneral = general / 70; // Normalizar basado en rating 70
-    salarioBase *= multiplicadorGeneral;
-    
-    // Ajustar por edad (jugadores jóvenes y experimentados ganan más)
-    let multiplicadorEdad = 1;
-    if (edad <= 21) multiplicadorEdad = 1.2; // Jóvenes promesa
-    else if (edad >= 28 && edad <= 32) multiplicadorEdad = 1.3; // Prime
-    else if (edad >= 33) multiplicadorEdad = 0.8; // Veteranos
-    
-    salarioBase *= multiplicadorEdad;
-    
-    // Redondear a miles
-    return Math.round(salarioBase / 1000) * 1000;
-}
-
 // **NUEVA FUNCIÓN: Mostrar fecha del juego**
 function mostrarFechaJuego() {
     const fechaJuego = obtenerFechaJuego();
@@ -259,6 +207,24 @@ function verificarContratosVencidos(jugadores) {
             
             if (fechaActual > fechaVencimiento) {
                 // Contrato vencido, eliminar jugador
+                jugadoresEliminados.push({
+                    nombre: jugador.nombre,
+                    posicion: jugador.posicion,
+                    club: jugador.club,
+                    fechaEliminacion: fechaActual.toISOString(),
+                    motivo: "Contrato vencido"
+                });
+                
+                jugadores.splice(i, 1);
+                console.log(`Jugador eliminado por contrato vencido: ${jugador.nombre}`);
+            }
+        } else if (jugador.contrato) {
+            // Para jugadores con el sistema antiguo, verificar también
+            const fechaInicial = new Date("2025-01-01");
+            const fechaVencimiento = new Date(fechaInicial);
+            fechaVencimiento.setMonth(fechaVencimiento.getMonth() + jugador.contrato);
+            
+            if (fechaActual > fechaVencimiento) {
                 jugadoresEliminados.push({
                     nombre: jugador.nombre,
                     posicion: jugador.posicion,
