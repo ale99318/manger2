@@ -50,27 +50,30 @@ function evaluarRetiro(jugador) {
 
 // Función para evaluar retiro de todos los jugadores
 function evaluarRetirosGenerales() {
-  if (typeof window.jugadores !== 'undefined') {
-    window.jugadores.forEach(jugador => {
-      if (!jugador.retirado) {
-        evaluarRetiro(jugador);
+  let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+  let huboRetiros = false;
+  
+  jugadores.forEach(jugador => {
+    if (!jugador.retirado) {
+      if (evaluarRetiro(jugador)) {
+        huboRetiros = true;
       }
-    });
+    }
+  });
+  
+  if (huboRetiros) {
+    localStorage.setItem("jugadores", JSON.stringify(jugadores));
   }
 }
 
 // Función para obtener jugadores retirados
 function obtenerJugadoresRetirados() {
-  if (typeof window.jugadores !== 'undefined') {
-    return window.jugadores.filter(jugador => jugador.retirado);
-  }
-  return [];
+  const jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+  return jugadores.filter(jugador => jugador.retirado);
 }
 
 // Función para obtener jugadores activos
 function obtenerJugadoresActivos() {
-  if (typeof window.jugadores !== 'undefined') {
-    return window.jugadores.filter(jugador => !jugador.retirado);
-  }
-  return [];
+  const jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+  return jugadores.filter(jugador => !jugador.retirado);
 }
