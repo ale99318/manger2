@@ -86,21 +86,22 @@ document.addEventListener("DOMContentLoaded", function() {
             infoContrato = `
                 <div class="info-contrato">
                     <small>Contrato: ${jugador.contrato.anos} años - ${formatearPrecio(jugador.contrato.salarioSemanal)}/sem</small>
-                    <small>Vence en: ${diasRestantes} días</small>
+                    <small>Vence en: ${diasRestantes > 0 ? diasRestantes : 0} días</small>
                 </div>
             `;
         } else if (jugador.contrato) {
             // Para jugadores existentes sin estructura de contrato, calcular basado en el campo 'contrato' original
             const fechaActual = obtenerFechaJuego();
+            const fechaInicial = new Date("2025-01-01");
             const mesesRestantes = jugador.contrato || 12;
-            const fechaVencimiento = new Date(fechaActual);
+            const fechaVencimiento = new Date(fechaInicial);
             fechaVencimiento.setMonth(fechaVencimiento.getMonth() + mesesRestantes);
             const diasRestantes = Math.ceil((fechaVencimiento - fechaActual) / (1000 * 60 * 60 * 24));
             
             infoContrato = `
                 <div class="info-contrato">
                     <small>Contrato: ${mesesRestantes} meses - ${formatearPrecio(jugador.sueldo)}/mes</small>
-                    <small>Vence en: ${diasRestantes} días</small>
+                    <small>Vence en: ${diasRestantes > 0 ? diasRestantes : 0} días</small>
                 </div>
             `;
         }
