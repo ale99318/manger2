@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Jugadores</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Lista de Jugadores</h1>
+            <p>Equipo: <span id="teamName">Mi Equipo</span></p>
+        </header>
+
+        <div class="controls">
+            <button id="avanzarAno">Avanzar 1 Año</button>
+            <p>Año actual del juego: <span id="anoActual">1</span></p>
+        </div>
+
+        <div class="stats">
+            <p>Total de jugadores disponibles: <span id="totalJugadores">0</span></p>
+        </div>
+
+        <div id="playersGrid" class="players-grid">
+            <!-- Los jugadores se cargarán aquí -->
+        </div>
+    </div>
+
+    <script src="jugadores.js"></script>
+</body>
+</html>
