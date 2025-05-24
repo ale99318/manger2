@@ -1,4 +1,4 @@
-// gameManager.js - Maneja la integración con el sistema de calendario y envejecimiento
+// años.js- Maneja la integración con el sistema de calendario y envejecimiento
 
 document.addEventListener("DOMContentLoaded", function() {
     inicializarJugadores();
@@ -48,42 +48,43 @@ function verificarEnvejecimientoJugadores() {
     console.log('🔄 Actualizando vista de jugadores...');
 }
 
-// Mostrar jugadores en el DOM
+// Mostrar jugadores en el DOM (TODOS los jugadores, activos y retirados)
 function mostrarJugadores() {
     let jugadoresGuardados = JSON.parse(localStorage.getItem("jugadores") || "[]");
-    let jugadoresActivos = jugadoresGuardados.filter(j => !j.retirado);
     
     const playersGrid = document.getElementById("playersGrid");
     const totalJugadores = document.getElementById("totalJugadores");
     
     if (!playersGrid || !totalJugadores) return;
     
-    // Actualizar contador
-    totalJugadores.textContent = jugadoresActivos.length;
+    // Actualizar contador con TODOS los jugadores
+    totalJugadores.textContent = jugadoresGuardados.length;
     
     // Limpiar grid
     playersGrid.innerHTML = "";
     
-    if (jugadoresActivos.length === 0) {
+    if (jugadoresGuardados.length === 0) {
         playersGrid.innerHTML = "<p>No hay jugadores disponibles</p>";
         return;
     }
     
-    // Mostrar cada jugador
-    jugadoresActivos.forEach(jugador => {
+    // Mostrar cada jugador (activos y retirados)
+    jugadoresGuardados.forEach(jugador => {
         const playerCard = document.createElement("div");
-        playerCard.className = "player-card";
+        playerCard.className = `player-card ${jugador.retirado ? 'retirado' : ''}`;
         
         playerCard.innerHTML = `
             <div class="player-header">
                 <h3>${jugador.nombre}</h3>
                 <span class="club">${jugador.club}</span>
+                ${jugador.retirado ? '<span class="estado-retiro">RETIRADO</span>' : ''}
             </div>
             <div class="player-info">
                 <p><strong>Posición:</strong> ${jugador.posicion}</p>
                 <p><strong>Edad:</strong> ${jugador.edad} años</p>
                 <p><strong>General:</strong> ${jugador.general}</p>
                 <p><strong>Potencial:</strong> ${jugador.potencial}</p>
+                ${jugador.retirado ? `<p><strong>Motivo retiro:</strong> ${jugador.motivoRetiro}</p>` : ''}
             </div>
             <div class="player-stats">
                 <div class="stat-row">
