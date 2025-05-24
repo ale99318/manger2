@@ -29,19 +29,70 @@ function obtenerFechaJuego() {
     return new Date(fechaString);
 }
 
-// === SISTEMA DE RETIROS (COPIADO DEL MERCADO) ===
+// === SISTEMA DE ENVEJECIMIENTO ===
+function envejecerJugadores(dias) {
+    let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+    let huboEnvejecimiento = false;
+    
+    // Solo envejecer si pasa un año completo (365 días acumulados)
+    let diasAcumulados = parseInt(localStorage.getItem("diasAcumuladosEnvejecimiento") || "0");
+    diasAcumulados += dias;
+    
+    if (diasAcumulados >= 365) {
+        const añosQuePasan = Math.floor(diasAcumulados / 365);
+        diasAcumulados = diasAcumulados % 365; // Resto
+        
+        console.log(`📈 Envejeciendo jugadores: +${añosQuePasan} año(s)`);
+        
+        jugadores.forEach(jugador => {
+            if (!jugador.retirado) {
+                const edadAnterior = jugador.edad;
+                jugador.edad += añosQuePasan;
+                
+                if (jugador.edad !== edadAnterior) {
+                    console.log(`🎂 ${jugador.nombre}: ${edadAnterior} → ${jugador.edad} años`);
+                    huboEnvejecimiento = true;
+                }
+            }
+        });
+        
+        if (huboEnvejecimiento) {
+            localStorage.setItem("jugadores", JSON.stringify(jugadores));
+            console.log(`✅ ${jugadores.filter(j => !j.retirado).length} jugadores envejecieron`);
+        }
+    }
+    
+    // Guardar días acumulados
+    localStorage.setItem("diasAcumuladosEnvejecimiento", diasAcumulados.toString());
+    
+    return huboEnvejecimiento;
+}
+// === SISTEMA DE RETIROS (MEJORADO) ===
 function evaluarRetiro(jugador) {
     // Retiro forzoso por edad
-    if (jugador.edad >= 45) {
+    if (jugador.edad >= 42) {
         jugador.retirado = true;
         jugador.motivoRetiro = "Edad máxima alcanzada";
         jugador.fechaRetiro = obtenerFechaJuego().toISOString();
         return true;
     }
     
-    // Posible retiro desde los 36 años en adelante
-    if (jugador.edad >= 36) {
-        const probabilidadBase = Math.pow((jugador.edad - 35), 2) / 100; // crece con la edad
+    // Posible retiro desde los 35 años en adelante (MEJORADO)
+    if (jugador.edad >= 35) {
+        let probabilidadBase;
+        
+        // Probabilidades más realistas por edad
+        switch(jugador.edad) {
+            case 35: probabilidadBase = 0.02; break;  // 2%
+            case 36: probabilidadBase = 0.05; break;  // 5%
+            case 37: probabilidadBase = 0.10; break;  // 10%
+            case 38: probabilidadBase = 0.18; break;  // 18%
+            case 39: probabilidadBase = 0.30; break;  // 30%
+            case 40: probabilidadBase = 0.45; break;  // 45%
+            case 41: probabilidadBase = 0.65; break;  // 65%
+            default: probabilidadBase = 0.85; break; // 85%+
+        }
+        
         const suerte = Math.random();
         
         if (suerte < probabilidadBase) {
@@ -77,13 +128,23 @@ function evaluarRetiro(jugador) {
     return false; // No se retira
 }
 
-// NUEVA FUNCIÓN: Evaluar retiros de todos los jugadores
+// NUEVA FUNCIÓN: Evaluar retiros de todos los jugadores (MEJORADA)
 function evaluarRetiros() {
     let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
     let jugadoresRetirados = [];
     let huboRetiros = false;
     
     console.log("🔍 Evaluando retiros de jugadores...");
+    
+    // Contar jugadores por edad para estadísticas
+    const edades = {};
+    const candidatos = jugadores.filter(j => !j.retirado && j.edad >= 35);
+    
+    candidatos.forEach(j => {
+        edades[j.edad] = (edades[j.edad] || 0) + 1;
+    });
+    
+    console.log("👥 Candidatos a retiro por edad:", edades);
     
     jugadores.forEach(jugador => {
         if (!jugador.retirado) {
@@ -108,7 +169,7 @@ function evaluarRetiros() {
         mostrarRetirosRecientes(jugadoresRetirados);
         console.log(`✅ ${jugadoresRetirados.length} jugador(es) se retiró/retiraron`);
     } else {
-        console.log("✅ No hubo retiros en esta evaluación");
+        console.log(`✅ No hubo retiros (${candidatos.length} candidatos evaluados)`);
     }
     
     return jugadoresRetirados;
@@ -164,19 +225,22 @@ function avanzarTiempo(dias) {
     console.log(`⏰ Tiempo avanzado ${dias} día(s). Nueva fecha: ${fechaActual.toLocaleDateString()}`);
     
     // ORDEN IMPORTANTE:
-    // 1. Primero evaluar retiros
+    // 1. PRIMERO ENVEJECER JUGADORES
+    envejecerJugadores(dias);
+    
+    // 2. Evaluar retiros
     const retirosRecientes = evaluarRetiros();
     
-    // 2. Luego verificar contratos
+    // 3. Verificar contratos
     verificarContratos();
     
-    // 3. Actualizar display
+    // 4. Actualizar display
     actualizarDisplay();
     
-    // 4. Notificar cambio
+    // 5. Notificar cambio
     notificarCambioFecha();
     
-    // 5. Mostrar resumen si hubo cambios importantes
+    // 6. Mostrar resumen si hubo cambios importantes
     if (retirosRecientes.length > 0) {
         console.log(`📊 RESUMEN: ${retirosRecientes.length} retiro(s) procesado(s)`);
     }
@@ -402,12 +466,39 @@ function resetearCalendario() {
         const fechaInicio = new Date("2025-01-01");
         localStorage.setItem("fechaJuego", fechaInicio.toISOString());
         
+        // RESETEAR TAMBIÉN el contador de envejecimiento
+        localStorage.setItem("diasAcumuladosEnvejecimiento", "0");
+        
         actualizarDisplay();
         evaluarRetiros(); // NUEVO: Evaluar retiros al resetear
         verificarContratos();
         notificarCambioFecha();
         
         console.log("📅 Calendario reseteado al 01/01/2025");
+    }
+}
+
+// NUEVA FUNCIÓN: Forzar envejecimiento para testing
+function forzarEnvejecimiento(años = 1) {
+    if (confirm(`¿Forzar envejecimiento de ${años} año(s) a todos los jugadores?`)) {
+        let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+        
+        jugadores.forEach(jugador => {
+            if (!jugador.retirado) {
+                jugador.edad += años;
+                console.log(`🎂 ${jugador.nombre}: +${años} año(s) → ${jugador.edad} años`);
+            }
+        });
+        
+        localStorage.setItem("jugadores", JSON.stringify(jugadores));
+        
+        // Evaluar retiros después del envejecimiento
+        const retiros = evaluarRetiros();
+        
+        console.log(`✅ Envejecimiento forzado completado. ${retiros.length} retiro(s)`);
+        
+        actualizarDisplay();
+        verificarContratos();
     }
 }
 
