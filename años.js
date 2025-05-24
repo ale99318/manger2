@@ -1,27 +1,127 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Jugadores</title>
-</head>
-<body>
-    <div class="container">
-        <header>
-            <h1>Lista de Jugadores</h1>
-            <p>Equipo: <span id="teamName">Mi Equipo</span></p>
-        </header>
+// gameManager.js - Maneja la integración con el sistema de calendario y envejecimiento
 
-        <div class="stats">
-            <p>Total de jugadores disponibles: <span id="totalJugadores">0</span></p>
-            <p><em>Los jugadores envejecen automáticamente cada año según el calendario del juego</em></p>
-        </div>
+document.addEventListener("DOMContentLoaded", function() {
+    inicializarJugadores();
+    mostrarJugadores();
+    
+    // Escuchar el evento de cambio de fecha del sistema de calendario
+    window.addEventListener('fechaCambiada', function(evento) {
+        console.log('📅 Fecha cambió, verificando envejecimiento de jugadores...');
+        verificarEnvejecimientoJugadores();
+        mostrarJugadores(); // Actualizar la vista
+    });
+});
 
-        <div id="playersGrid" class="players-grid">
-            <!-- Los jugadores se cargarán aquí -->
-        </div>
-    </div>
+// Inicializar jugadores en localStorage si no existen
+function inicializarJugadores() {
+    let jugadoresGuardados = localStorage.getItem("jugadores");
+    
+    if (!jugadoresGuardados) {
+        // Primera vez: guardar los jugadores iniciales
+        localStorage.setItem("jugadores", JSON.stringify(jugadores));
+        console.log("✅ Jugadores inicializados en localStorage");
+    } else {
+        // Verificar si hay jugadores nuevos para agregar
+        let jugadoresExistentes = JSON.parse(jugadoresGuardados);
+        let jugadoresAgregados = [];
+        
+        jugadores.forEach(jugadorNuevo => {
+            let existe = jugadoresExistentes.find(j => j.id === jugadorNuevo.id);
+            if (!existe) {
+                jugadoresExistentes.push(jugadorNuevo);
+                jugadoresAgregados.push(jugadorNuevo.nombre);
+            }
+        });
+        
+        if (jugadoresAgregados.length > 0) {
+            localStorage.setItem("jugadores", JSON.stringify(jugadoresExistentes));
+            console.log(`✅ ${jugadoresAgregados.length} jugadores nuevos agregados: ${jugadoresAgregados.join(', ')}`);
+        }
+    }
+}
 
-    <script src="jugadores.js"></script>
-</body>
-</html>
+// Verificar envejecimiento basado en el sistema de calendario existente
+function verificarEnvejecimientoJugadores() {
+    // Esta función se ejecuta cuando el sistema de calendario dispara el evento 'fechaCambiada'
+    // El envejecimiento ya se maneja en el sistema de calendario existente
+    // Solo necesitamos actualizar la vista aquí
+    console.log('🔄 Actualizando vista de jugadores...');
+}
+
+// Mostrar jugadores en el DOM
+function mostrarJugadores() {
+    let jugadoresGuardados = JSON.parse(localStorage.getItem("jugadores") || "[]");
+    let jugadoresActivos = jugadoresGuardados.filter(j => !j.retirado);
+    
+    const playersGrid = document.getElementById("playersGrid");
+    const totalJugadores = document.getElementById("totalJugadores");
+    
+    if (!playersGrid || !totalJugadores) return;
+    
+    // Actualizar contador
+    totalJugadores.textContent = jugadoresActivos.length;
+    
+    // Limpiar grid
+    playersGrid.innerHTML = "";
+    
+    if (jugadoresActivos.length === 0) {
+        playersGrid.innerHTML = "<p>No hay jugadores disponibles</p>";
+        return;
+    }
+    
+    // Mostrar cada jugador
+    jugadoresActivos.forEach(jugador => {
+        const playerCard = document.createElement("div");
+        playerCard.className = "player-card";
+        
+        playerCard.innerHTML = `
+            <div class="player-header">
+                <h3>${jugador.nombre}</h3>
+                <span class="club">${jugador.club}</span>
+            </div>
+            <div class="player-info">
+                <p><strong>Posición:</strong> ${jugador.posicion}</p>
+                <p><strong>Edad:</strong> ${jugador.edad} años</p>
+                <p><strong>General:</strong> ${jugador.general}</p>
+                <p><strong>Potencial:</strong> ${jugador.potencial}</p>
+            </div>
+            <div class="player-stats">
+                <div class="stat-row">
+                    <span>Sprint: ${jugador.sprint}</span>
+                    <span>Regate: ${jugador.regate}</span>
+                </div>
+                <div class="stat-row">
+                    <span>Pase: ${jugador.pase}</span>
+                    <span>Tiro: ${jugador.tiro}</span>
+                </div>
+                <div class="stat-row">
+                    <span>Defensa: ${jugador.defensa}</span>
+                    <span>Liderazgo: ${jugador.liderazgo}</span>
+                </div>
+            </div>
+            <div class="player-status">
+                <p><strong>Estado:</strong> ${jugador.estado_animo} ${jugador.personalidad}</p>
+                <p><strong>Energía:</strong> ${jugador.energia}%</p>
+                <p><strong>Titular:</strong> ${jugador.titular ? 'Sí' : 'No'}</p>
+                <p><strong>Valor:</strong> $${jugador.valor.toLocaleString()}</p>
+            </div>
+        `;
+        
+        playersGrid.appendChild(playerCard);
+    });
+}
+
+// Función para obtener jugadores actuales (útil para otros scripts)
+function obtenerJugadores() {
+    return JSON.parse(localStorage.getItem("jugadores") || "[]");
+}
+
+// Función para obtener solo jugadores activos
+function obtenerJugadoresActivos() {
+    return obtenerJugadores().filter(j => !j.retirado);
+}
+
+// Exportar funciones globalmente para compatibilidad
+window.obtenerJugadores = obtenerJugadores;
+window.obtenerJugadoresActivos = obtenerJugadoresActivos;
+window.mostrarJugadores = mostrarJugadores;
