@@ -53,9 +53,17 @@ function verificarEnvejecimientoJugadores() {
     const fechaActual = new Date(localStorage.getItem("fechaJuego"));
     const fechaReferencia = new Date(localStorage.getItem("fechaReferenciaEnvejecimiento"));
     
-    // Calcular años transcurridos
-    const diferenciaEnMs = fechaActual - fechaReferencia;
-    const añosTranscurridos = Math.floor(diferenciaEnMs / (1000 * 60 * 60 * 24 * 365));
+    // Calcular años transcurridos de forma más precisa
+    let añosTranscurridos = fechaActual.getFullYear() - fechaReferencia.getFullYear();
+    
+    // Ajustar si aún no ha llegado el mes/día del cumpleaños
+    if (fechaActual.getMonth() < fechaReferencia.getMonth() || 
+        (fechaActual.getMonth() === fechaReferencia.getMonth() && fechaActual.getDate() < fechaReferencia.getDate())) {
+        añosTranscurridos--;
+    }
+    
+    console.log(`🔍 Verificando envejecimiento: ${fechaReferencia.toLocaleDateString()} → ${fechaActual.toLocaleDateString()}`);
+    console.log(`📊 Años calculados: ${añosTranscurridos}`);
     
     if (añosTranscurridos > 0) {
         console.log(`📈 Han transcurrido ${añosTranscurridos} año(s) desde la última actualización`);
