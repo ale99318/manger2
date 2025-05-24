@@ -3,42 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario - Simulador de Fútbol</title>
+    <title>Calendario del Juego</title>
 </head>
 <body>
-    <div class="calendario-container">
-        <h1>Calendario del Simulador</h1>
-        
-        <div class="fecha-actual">
-            <h2 id="fecha-display">01 de Enero de 2025</h2>
-        </div>
-        
-        <div class="controles-tiempo">
-            <button id="avanzar-dia">Avanzar 1 Día</button>
-            <button id="avanzar-semana">Avanzar 1 Semana</button>
-            <button id="avanzar-mes">Avanzar 1 Mes</button>
-        </div>
-        
-        <div class="info-contratos">
-            <h3>Estado de Contratos</h3>
-            <div id="contratos-info">
-                <p>Cargando información de contratos...</p>
+    <div id="calendar-container">
+        <div id="calendar-display">
+            <div id="current-date"></div>
+            <div id="calendar-info">
+                <span id="day-name"></span>
+                <span id="season"></span>
             </div>
         </div>
         
-        <div class="contratos-vencidos" id="contratos-vencidos" style="display: none;">
-            <h3>⚠️ Jugadores Eliminados por Contrato Vencido</h3>
-            <div id="lista-vencidos"></div>
+        <div id="calendar-controls">
+            <button id="advance-day">Pasar Día</button>
+            <button id="advance-month">Pasar Mes</button>
+            <button id="advance-year">Pasar Año</button>
         </div>
         
-        <div class="contratos-proximos" id="contratos-proximos" style="display: none;">
-            <h3>⏰ Contratos por Vencer (próximos 30 días)</h3>
-            <div id="lista-proximos"></div>
+        <div id="calendar-stats">
+            <div>Días transcurridos: <span id="days-elapsed">0</span></div>
+            <div>Semana del año: <span id="week-number">1</span></div>
         </div>
-        
-        <div class="navegacion">
-            <button onclick="window.location.href='index.html'">Volver al Menú Principal</button>
-        </div>
+    </div>
+
+    <!-- Área de ejemplo para mostrar cómo otros elementos pueden usar el calendario -->
+    <div id="game-example">
+        <h3>Ejemplo de uso en el juego:</h3>
+        <div id="character-age">Edad del personaje: <span id="age-display">20</span> años</div>
+        <div id="event-timer">Próximo evento en: <span id="next-event">30</span> días</div>
+        <div id="season-effect">Efecto estacional: <span id="season-bonus">Normal</span></div>
     </div>
 
     <script src="calendario.js"></script>
