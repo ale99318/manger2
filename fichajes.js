@@ -1,4 +1,4 @@
-// Sistema simplificado de equipo y transferencias
+// Mercado simple de transferencias - Solo mostrar jugadores y presupuesto
 document.addEventListener('DOMContentLoaded', function() {
     // === CONFIGURACIÓN INICIAL ===
     const equipoNombre = localStorage.getItem("selectedClub") || "Mi Equipo";
@@ -18,7 +18,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // === GESTIÓN DE PRESUPUESTO ===
     function obtenerPresupuesto() {
-        // 1. Finanzas principales (prioritario)
+        // 1. Finanzas principales
         const finanzas = JSON.parse(localStorage.getItem("finanzasClub") || "{}");
         if (finanzas.saldo !== undefined) return Math.max(0, finanzas.saldo);
         
@@ -54,14 +54,8 @@ document.addEventListener('DOMContentLoaded', function() {
         return presupuesto;
     }
     
-    // === GESTIÓN DE FECHAS ===
-    function obtenerFechaJuego() {
-        const fecha = localStorage.getItem("fechaJuego");
-        return fecha ? new Date(fecha) : new Date("2025-01-01");
-    }
-    
     // === SINCRONIZACIÓN DE JUGADORES ===
-    function obtenerEstadoJugadores() {
+    function obtenerJugadoresNoDisponibles() {
         const jugadoresActualizados = JSON.parse(localStorage.getItem("jugadores") || "[]");
         const historialFichajes = JSON.parse(localStorage.getItem('historialFichajes') || '[]');
         const historialEliminados = JSON.parse(localStorage.getItem('historialEliminados') || '[]');
@@ -71,17 +65,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const fichados = new Set();
         const libres = new Set();
         
-        // Identificar retirados
+        // Jugadores retirados
         jugadoresActualizados.forEach(j => {
             if (j.retirado) retirados.add(j.nombre);
         });
         
-        // Identificar fichados (excluir retirados)
+        // Jugadores ya fichados
         [...historialFichajes.map(f => f.jugador), ...jugadoresVendidos].forEach(nombre => {
             if (!retirados.has(nombre)) fichados.add(nombre);
         });
         
-        // Identificar libres por contrato vencido (excluir retirados)
+        // Jugadores que no renovaron (quedaron libres)
         historialEliminados.forEach(e => {
             if (e.motivo === "Contrato vencido" && !retirados.has(e.nombre)) {
                 libres.add(e.nombre);
@@ -99,32 +93,27 @@ document.addEventListener('DOMContentLoaded', function() {
         return { retirados, fichados, libres };
     }
     
-    // === MERCADO DE TRANSFERENCIAS ===
-    function generarDatosTransferencia(jugador, esLibre) {
-        const estados = esLibre ? ['libre'] : ['disponible', 'clausula', 'libre'];
-        const random = Math.random();
-        const estado = esLibre ? 'libre' : 
-            (random < 0.6 ? 'disponible' : random < 0.9 ? 'clausula' : 'libre');
+    // === MERCADO SIMPLE ===
+    function generarEstadoTransferencia(jugador, esLibre) {
+        if (esLibre) return 'libre';
         
+        const random = Math.random();
+        if (random < 0.6) return 'disponible';     // 60% - Negociable
+        if (random < 0.9) return 'clausula';      // 30% - Cláusula
+        return 'libre';                            // 10% - Libre
+    }
+    
+    function calcularPrecio(jugador, estado) {
         const multiplicadores = {
             'disponible': 0.8 + Math.random() * 0.4,  // 80-120%
             'clausula': 1.5 + Math.random() * 0.5,    // 150-200%
             'libre': 0.05 + Math.random() * 0.1       // 5-15%
         };
-        
-        const precio = Math.floor(jugador.valor * multiplicadores[estado]);
-        const bonusFirma = Math.floor(jugador.sueldo * 0.1 * (0.2 + Math.random() * 0.8));
-        
-        return {
-            estado,
-            precio,
-            bonusFirma,
-            costoTotal: precio + bonusFirma
-        };
+        return Math.floor(jugador.valor * multiplicadores[estado]);
     }
     
     function crearMercado() {
-        const { retirados, fichados, libres } = obtenerEstadoJugadores();
+        const { retirados, fichados, libres } = obtenerJugadoresNoDisponibles();
         
         return window.jugadores
             .filter(j => {
@@ -135,35 +124,37 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .map(jugador => {
                 const esLibre = libres.has(jugador.nombre);
-                const transferData = generarDatosTransferencia(jugador, esLibre);
+                const estado = generarEstadoTransferencia(jugador, esLibre);
+                const precio = calcularPrecio(jugador, estado);
                 
                 return {
                     ...jugador,
-                    ...transferData,
-                    esLibre,
-                    disponible: true
+                    estado,
+                    precio,
+                    esLibre
                 };
             });
     }
     
-    // === INTERFAZ DE USUARIO ===
-    function obtenerDescripcionEstado(estado, esLibre) {
-        if (esLibre) return 'Agente libre (Contrato vencido)';
+    // === MOSTRAR JUGADORES ===
+    function obtenerDescripcion(estado, esLibre) {
+        if (esLibre) return 'No renovó - Agente libre';
+        
         const descripciones = {
             'disponible': 'Precio negociable',
             'clausula': 'Cláusula de rescisión',
             'libre': 'Agente libre'
         };
-        return descripciones[estado] || 'No disponible';
+        return descripciones[estado];
     }
     
     function crearTarjetaJugador(jugador) {
         const tarjeta = document.createElement('div');
-        tarjeta.className = `player-card ${jugador.esLibre ? 'jugador-libre' : ''}`;
+        tarjeta.className = `player-card ${jugador.esLibre ? 'no-renovo' : ''}`;
         tarjeta.innerHTML = `
             <div class="player-photo">
                 <div class="photo-placeholder">👤</div>
-                ${jugador.esLibre ? '<div class="badge-libre">LIBRE</div>' : ''}
+                ${jugador.esLibre ? '<div class="badge-libre">NO RENOVÓ</div>' : ''}
             </div>
             <div class="player-details">
                 <h3>${jugador.nombre}</h3>
@@ -173,11 +164,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <span>POT: ${jugador.potencial}</span>
                 </div>
                 <div class="transfer-info">
-                    <p>${obtenerDescripcionEstado(jugador.estado, jugador.esLibre)}</p>
-                    <p><strong>${formatearPrecio(jugador.costoTotal)}</strong></p>
+                    <p>${obtenerDescripcion(jugador.estado, jugador.esLibre)}</p>
+                    <p><strong>${formatearPrecio(jugador.precio)}</strong></p>
                 </div>
-                <button class="btn-negotiation" data-player-id="${jugador.id}">
-                    Negociar
+                <button class="btn-transfer" data-player-id="${jugador.id}">
+                    ${jugador.estado === 'disponible' ? 'Negociar con Club' : 'Contratar Directo'}
                 </button>
             </div>
         `;
@@ -189,29 +180,61 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!grid) return;
         
         // Verificar disponibilidad en tiempo real
-        const { retirados, fichados, libres } = obtenerEstadoJugadores();
+        const { retirados, fichados, libres } = obtenerJugadoresNoDisponibles();
         const disponibles = jugadores.filter(j => {
             if (retirados.has(j.nombre)) return false;
             return !fichados.has(j.nombre) || libres.has(j.nombre);
         });
         
         grid.innerHTML = disponibles.length === 0 ? 
-            '<p class="no-players">No hay jugadores disponibles</p>' :
-            '';
+            '<p class="no-players">No hay jugadores disponibles</p>' : '';
         
         disponibles.forEach(jugador => {
             grid.appendChild(crearTarjetaJugador(jugador));
         });
         
-        // Event listeners para negociación
-        grid.querySelectorAll('.btn-negotiation').forEach(btn => {
+        // Event listeners
+        grid.querySelectorAll('.btn-transfer').forEach(btn => {
             btn.addEventListener('click', function() {
-                iniciarNegociacion(parseInt(this.dataset.playerId));
+                redirigirSegunTipo(parseInt(this.dataset.playerId));
             });
         });
     }
     
-    // === FILTROS ===
+    // === REDIRECCIÓN SEGÚN TIPO ===
+    function redirigirSegunTipo(jugadorId) {
+        const jugador = mercado.find(j => j.id === jugadorId);
+        if (!jugador) return;
+        
+        // Verificar que siga disponible
+        const { retirados, fichados, libres } = obtenerJugadoresNoDisponibles();
+        
+        if (retirados.has(jugador.nombre)) {
+            alert("Este jugador se ha retirado del fútbol.");
+            refrescarMercado();
+            return;
+        }
+        
+        if (fichados.has(jugador.nombre) && !libres.has(jugador.nombre)) {
+            alert("Este jugador ya no está disponible.");
+            refrescarMercado();
+            return;
+        }
+        
+        // Guardar datos del jugador
+        localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugador));
+        
+        // Redirigir según el tipo
+        if (jugador.estado === 'disponible') {
+            // Precio negociable → Negociar con el club
+            window.location.href = 'negociarclub.html';
+        } else {
+            // Cláusula o agente libre → Contrato directo
+            window.location.href = 'contrato.html';
+        }
+    }
+    
+    // === FILTROS SIMPLES ===
     function aplicarFiltros() {
         const posicion = document.getElementById('positionFilter')?.value;
         const precioMax = parseInt(document.getElementById('priceFilter')?.value || Infinity);
@@ -223,7 +246,7 @@ document.addEventListener('DOMContentLoaded', function() {
             filtrados = filtrados.filter(j => j.posicion === posicion);
         }
         if (precioMax < Infinity) {
-            filtrados = filtrados.filter(j => j.costoTotal <= precioMax);
+            filtrados = filtrados.filter(j => j.precio <= precioMax);
         }
         if (club && club !== 'all') {
             filtrados = filtrados.filter(j => j.club === club);
@@ -259,89 +282,31 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // === NEGOCIACIÓN ===
-    function iniciarNegociacion(jugadorId) {
-        const jugador = mercado.find(j => j.id === jugadorId);
-        if (!jugador) return;
-        
-        // Verificar disponibilidad
-        const { retirados, fichados, libres } = obtenerEstadoJugadores();
-        
-        if (retirados.has(jugador.nombre)) {
-            alert("Este jugador se ha retirado del fútbol.");
-            refrescarSistema();
-            return;
-        }
-        
-        if (fichados.has(jugador.nombre) && !libres.has(jugador.nombre)) {
-            alert("Este jugador ya no está disponible.");
-            refrescarSistema();
-            return;
-        }
-        
-        // Preparar datos para negociación
-        const jugadorNegociacion = {
-            ...jugador,
-            fechaJuegoActual: obtenerFechaJuego().toISOString()
-        };
-        
-        localStorage.setItem('jugadorSeleccionado', JSON.stringify(jugadorNegociacion));
-        
-        // Redirigir según tipo
-        const paginas = {
-            'disponible': 'negociarclub.html',
-            'libre': 'agente-libre.html',
-            'clausula': 'clausula-rescision.html'
-        };
-        
-        window.location.href = paginas[jugador.estado] || 'negociarclub.html';
-    }
-    
-    // === INICIALIZACIÓN Y ACTUALIZACIÓN ===
+    // === INICIALIZACIÓN ===
     let mercado = crearMercado();
     let presupuestoActual = actualizarPresupuestoDOM();
     
-    // Actualizar elementos DOM iniciales
+    // Actualizar nombre del equipo
     const elementoEquipo = document.getElementById('teamName');
     if (elementoEquipo) elementoEquipo.textContent = equipoNombre;
     
-    // Configurar filtros y mostrar jugadores
+    // Configurar y mostrar
     configurarFiltros();
     mostrarJugadores();
     
-    // Log inicial
-    console.log(`=== ${equipoNombre} ===`);
-    console.log(`Entrenador: ${entrenadorNombre}`);
+    console.log(`=== MERCADO ${equipoNombre} ===`);
     console.log(`Presupuesto: ${formatearPrecio(presupuestoActual)}`);
     console.log(`Jugadores disponibles: ${mercado.length}`);
     
-    // === OBJETO GLOBAL ===
-    window.miEquipoInfo = {
-        nombre: equipoNombre,
-        entrenador: entrenadorNombre,
-        presupuesto: presupuestoActual,
-        fechaJuego: obtenerFechaJuego(),
-        
-        mostrarInfo() {
-            console.log(`${this.nombre} | ${formatearPrecio(this.presupuesto)} | ${this.fechaJuego.toLocaleDateString()}`);
-        },
-        
-        actualizarPresupuesto() {
-            this.presupuesto = actualizarPresupuestoDOM();
-            console.log("🔄 Presupuesto actualizado:", formatearPrecio(this.presupuesto));
-            return this.presupuesto;
-        }
-    };
-    
     // === SISTEMA DE ACTUALIZACIÓN ===
-    function refrescarSistema() {
+    function refrescarMercado() {
         mercado = crearMercado();
         actualizarPresupuestoDOM();
         aplicarFiltros();
-        console.log("🔄 Sistema actualizado");
+        console.log("🔄 Mercado actualizado");
     }
     
-    // Escuchar cambios
+    // Escuchar cambios importantes
     const keysToWatch = [
         'jugadores', 'historialFichajes', 'jugadoresVendidos', 
         'historialEliminados', 'finanzasClub', 'historialVentas',
@@ -350,27 +315,20 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.addEventListener('storage', function(e) {
         if (keysToWatch.includes(e.key)) {
-            setTimeout(refrescarSistema, 500);
+            setTimeout(refrescarMercado, 500);
         }
     });
     
-    // Escuchar cambios de fecha
-    window.addEventListener('fechaCambiada', function(e) {
-        window.miEquipoInfo.fechaJuego = e.detail.fecha;
-        setTimeout(refrescarSistema, 1000);
-    });
-    
-    // Verificación periódica de presupuesto
-    let ultimoPresupuesto = presupuestoActual;
+    // Verificación periódica del presupuesto
     setInterval(() => {
         const nuevo = obtenerPresupuesto();
-        if (nuevo !== ultimoPresupuesto) {
-            ultimoPresupuesto = nuevo;
+        if (nuevo !== presupuestoActual) {
+            presupuestoActual = nuevo;
             actualizarPresupuestoDOM();
         }
     }, 3000);
     
     // Funciones globales
-    window.refrescarMercadoTransferencias = refrescarSistema;
+    window.refrescarMercadoTransferencias = refrescarMercado;
     window.actualizarPresupuesto = actualizarPresupuestoDOM;
 });
