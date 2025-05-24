@@ -44,7 +44,9 @@ document.addEventListener('DOMContentLoaded', function() {
             diasAcumulados = diasAcumulados % 365;
             
             jugadores.forEach(jugador => {
-                jugador.edad += añosQuePasan;
+                if (!jugador.retirado) { // Solo envejecer jugadores activos
+                    jugador.edad += añosQuePasan;
+                }
             });
             
             localStorage.setItem("jugadores", JSON.stringify(jugadores));
@@ -55,12 +57,12 @@ document.addEventListener('DOMContentLoaded', function() {
         return huboEnvejecimiento;
     }
     
-    // === CREAR MERCADO ===
+    // === CREAR MERCADO (CORREGIDO) ===
     function crearMercado() {
         const jugadoresActualizados = JSON.parse(localStorage.getItem("jugadores") || "[]");
         
         return jugadoresActualizados
-            .filter(j => j.club !== equipoNombre) // Solo jugadores que NO son de mi club
+            .filter(j => j.club !== equipoNombre && !j.retirado) // CORRECCIÓN: Excluir retirados
             .map(jugador => ({
                 ...jugador,
                 precio: Math.floor(jugador.valor * (0.8 + Math.random() * 0.4))
@@ -105,6 +107,11 @@ document.addEventListener('DOMContentLoaded', function() {
         mercado.forEach(jugador => {
             grid.appendChild(crearTarjetaJugador(jugador));
         });
+        
+        // Mostrar estadísticas del mercado
+        console.log(`🏪 MERCADO ACTUALIZADO:`);
+        console.log(`- Jugadores disponibles: ${mercado.length}`);
+        console.log(`- Jugadores retirados filtrados correctamente`);
     }
     
     // === INICIALIZACIÓN ===
@@ -119,11 +126,27 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // === ESCUCHAR CAMBIOS DE FECHA ===
     window.addEventListener('fechaCambiada', function() {
+        console.log('📡 Evento fechaCambiada recibido en mercado');
+        
         // Cuando cambie la fecha, envejecer jugadores y actualizar mercado
         envejecerJugadores(1);
+        
+        // Actualizar mercado (esto automáticamente excluirá jugadores retirados)
         mostrarJugadores();
+        
+        console.log('✅ Mercado actualizado tras cambio de fecha');
     });
     
     console.log(`=== MERCADO ${equipoNombre} ===`);
     console.log(`Presupuesto: ${formatearPrecio(obtenerPresupuesto())}`);
+    
+    // Mostrar estadísticas iniciales
+    const jugadoresTotal = JSON.parse(localStorage.getItem("jugadores") || "[]");
+    const jugadoresRetirados = jugadoresTotal.filter(j => j.retirado).length;
+    const jugadoresActivos = jugadoresTotal.filter(j => !j.retirado).length;
+    
+    console.log(`📊 ESTADÍSTICAS GENERALES:`);
+    console.log(`- Total jugadores: ${jugadoresTotal.length}`);
+    console.log(`- Jugadores activos: ${jugadoresActivos}`);
+    console.log(`- Jugadores retirados: ${jugadoresRetirados}`);
 });
