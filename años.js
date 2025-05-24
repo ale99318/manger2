@@ -19,6 +19,8 @@ function inicializarJugadores() {
     if (!jugadoresGuardados) {
         // Primera vez: guardar los jugadores iniciales
         localStorage.setItem("jugadores", JSON.stringify(jugadores));
+        // Inicializar fecha de referencia para envejecimiento
+        localStorage.setItem("fechaReferenciaEnvejecimiento", new Date("2025-01-01").toISOString());
         console.log("✅ Jugadores inicializados en localStorage");
     } else {
         // Verificar si hay jugadores nuevos para agregar
@@ -37,15 +39,53 @@ function inicializarJugadores() {
             localStorage.setItem("jugadores", JSON.stringify(jugadoresExistentes));
             console.log(`✅ ${jugadoresAgregados.length} jugadores nuevos agregados: ${jugadoresAgregados.join(', ')}`);
         }
+        
+        // Inicializar fecha de referencia si no existe
+        if (!localStorage.getItem("fechaReferenciaEnvejecimiento")) {
+            localStorage.setItem("fechaReferenciaEnvejecimiento", new Date("2025-01-01").toISOString());
+        }
     }
 }
 
-// Verificar envejecimiento basado en el sistema de calendario existente
+// Verificar envejecimiento basado en el sistema de calendario
 function verificarEnvejecimientoJugadores() {
-    // Esta función se ejecuta cuando el sistema de calendario dispara el evento 'fechaCambiada'
-    // El envejecimiento ya se maneja en el sistema de calendario existente
-    // Solo necesitamos actualizar la vista aquí
-    console.log('🔄 Actualizando vista de jugadores...');
+    // Obtener fecha actual del juego y fecha de referencia
+    const fechaActual = new Date(localStorage.getItem("fechaJuego"));
+    const fechaReferencia = new Date(localStorage.getItem("fechaReferenciaEnvejecimiento"));
+    
+    // Calcular años transcurridos
+    const diferenciaEnMs = fechaActual - fechaReferencia;
+    const añosTranscurridos = Math.floor(diferenciaEnMs / (1000 * 60 * 60 * 24 * 365));
+    
+    if (añosTranscurridos > 0) {
+        console.log(`📈 Han transcurrido ${añosTranscurridos} año(s) desde la última actualización`);
+        
+        // Obtener jugadores
+        let jugadores = JSON.parse(localStorage.getItem("jugadores") || "[]");
+        let jugadoresEnvejecidos = 0;
+        
+        // Envejecer cada jugador
+        jugadores.forEach(jugador => {
+            if (!jugador.retirado) {
+                const edadAnterior = jugador.edad;
+                jugador.edad += añosTranscurridos;
+                
+                console.log(`🎂 ${jugador.nombre}: ${edadAnterior} → ${jugador.edad} años (+${añosTranscurridos})`);
+                jugadoresEnvejecidos++;
+            }
+        });
+        
+        // Guardar jugadores actualizados
+        localStorage.setItem("jugadores", JSON.stringify(jugadores));
+        
+        // Actualizar fecha de referencia para próximo envejecimiento
+        fechaReferencia.setFullYear(fechaReferencia.getFullYear() + añosTranscurridos);
+        localStorage.setItem("fechaReferenciaEnvejecimiento", fechaReferencia.toISOString());
+        
+        console.log(`✅ ${jugadoresEnvejecidos} jugadores envejecieron ${añosTranscurridos} año(s)`);
+    } else {
+        console.log('🔄 No ha pasado suficiente tiempo para envejecer jugadores');
+    }
 }
 
 // Mostrar jugadores en el DOM (TODOS los jugadores, activos y retirados)
