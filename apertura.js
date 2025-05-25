@@ -1,4 +1,4 @@
-// AperturaGenerator.js
+// AperturaGenerator.js 
 
 function generarFixtureApertura(clubes) {
   const fechas = [];
