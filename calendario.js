@@ -1,8 +1,11 @@
-// SIMULADOR DE FUTBOL - CALENDARIO 
+// calendarios.js
 // Fecha de inicio: 01/01/2025 - Fecha límite: 31/12/2040
 
 // Variable global para almacenar la fecha actual del juego
 let fechaActualJuego = new Date(2025, 0, 1); // 01/01/2025
+
+// ✅ NUEVO: Variable para el torneo
+let torneoPeruano = null;
 
 // Nombres de los meses en español
 const nombresMeses = [
@@ -45,10 +48,40 @@ function formatearFecha(fecha) {
     return `${dia} de ${mes} de ${ano}`;
 }
 
+// ✅ NUEVO: Función para inicializar el torneo
+function inicializarTorneo() {
+    // Verificar que clubes esté disponible y que TorneoPeruano exista
+    if (typeof clubes !== 'undefined' && typeof TorneoPeruano !== 'undefined') {
+        torneoPeruano = new TorneoPeruano(clubes, fechaActualJuego);
+        console.log('Torneo Peruano inicializado');
+        verificarPartidosHoy();
+    }
+}
+
+// ✅ NUEVO: Verificar si hay partidos hoy
+function verificarPartidosHoy() {
+    if (!torneoPeruano) return;
+    
+    if (torneoPeruano.hayPartidosHoy(fechaActualJuego)) {
+        const partidosHoy = torneoPeruano.obtenerPartidosHoy(fechaActualJuego);
+        
+        // Agregar cada partido como evento
+        partidosHoy.forEach(partido => {
+            agregarEvento(
+                `⚽ ${partido.nombreLocal} vs ${partido.nombreVisitante}`,
+                `${partido.torneo} - Jornada ${partido.jornadaNumero}`,
+                fechaActualJuego
+            );
+        });
+    }
+}
+
 // Función para actualizar la visualización de la fecha
 function actualizarVisualizacion() {
     fechaActualElement.textContent = formatearFecha(fechaActualJuego);
     mostrarEventosDelDia();
+    // ✅ NUEVO: Verificar partidos después de cambiar fecha
+    verificarPartidosHoy();
 }
 
 // Función para verificar si hemos llegado al límite de fecha (31/12/2040)
@@ -152,6 +185,11 @@ btnPasarAno.addEventListener('click', pasarAno);
 // Inicializar la visualización al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     actualizarVisualizacion();
+    
+    // ✅ NUEVO: Inicializar torneo después de cargar todo
+    setTimeout(() => {
+        inicializarTorneo();
+    }, 100); // Pequeño delay para asegurar que todos los scripts estén cargados
 });
 
 // Cargar datos del entrenador desde localStorage
@@ -181,4 +219,3 @@ window.mostrarEventosActuales = function() {
     console.log('Eventos actuales:', eventosJuego);
     return eventosJuego;
 };
-
