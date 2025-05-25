@@ -4,12 +4,23 @@
 // Variable global para almacenar la fecha actual del juego
 let fechaActualJuego = new Date(2025, 0, 1); // 01/01/2025
 
+// Nombres de los meses en español
+const nombresMeses = [
+    'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+];
+
 // Elementos del DOM
 const fechaActualElement = document.getElementById('fechaActual');
 const eventosElement = document.getElementById('eventosDelDia');
 const btnPasarDia = document.getElementById('pasarDia');
 const btnPasarMes = document.getElementById('pasarMes');
 const btnPasarAno = document.getElementById('pasarAno');
+
+// Elementos del entrenador
+const coachImageElement = document.getElementById('coachImage');
+const coachNameElement = document.getElementById('coachName');
+const clubNameElement = document.getElementById('clubName');
 
 // Array para almacenar eventos recibidos desde otros JS
 let eventosJuego = [];
@@ -26,12 +37,12 @@ function obtenerFechaJuego() {
     };
 }
 
-// Función para formatear la fecha como DD/MM/YYYY
+// Función para formatear la fecha como "1 de Enero de 2025"
 function formatearFecha(fecha) {
-    const dia = fecha.getDate().toString().padStart(2, '0');
-    const mes = (fecha.getMonth() + 1).toString().padStart(2, '0');
+    const dia = fecha.getDate();
+    const mes = nombresMeses[fecha.getMonth()];
     const ano = fecha.getFullYear();
-    return `${dia}/${mes}/${ano}`;
+    return `${dia} de ${mes} de ${ano}`;
 }
 
 // Función para actualizar la visualización de la fecha
@@ -141,6 +152,24 @@ btnPasarAno.addEventListener('click', pasarAno);
 // Inicializar la visualización al cargar la página
 document.addEventListener('DOMContentLoaded', function() {
     actualizarVisualizacion();
+});
+
+// Cargar datos del entrenador desde localStorage
+window.addEventListener("DOMContentLoaded", () => {
+    const dtNombre = localStorage.getItem("coachName");
+    const clubNombre = localStorage.getItem("selectedClub");
+    const imagen = localStorage.getItem("coachImage");
+    
+    if (!dtNombre || !clubNombre || !imagen) {
+        alert("Faltan datos del entrenador. Redirigiendo al login...");
+        window.location.href = "login.html";
+        return;
+    }
+    
+    // Mostrar datos del entrenador
+    coachNameElement.textContent = dtNombre;
+    clubNameElement.textContent = clubNombre;
+    coachImageElement.src = imagen;
 });
 
 // IMPORTANTE: Esta función debe ser accesible globalmente para otros HTML/JS
