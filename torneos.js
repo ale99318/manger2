@@ -5,7 +5,7 @@ function separarPorTorneos(clubes) {
     argentina: { inicio: "54-1", fin: "54-28", lista: "lista-argentina" },
     venezuela: { inicio: "58-1", fin: "58-14", lista: "lista-venezuela" },
     colombia: { inicio: "57-1", fin: "57-20", lista: "lista-colombia" },
-    paraguay: { inicio: "592-1", fin: "592-12", lista: "lista-paraguay" },
+    paraguay: { inicio: "592-2", fin: "592-12", lista: "lista-paraguay" },
     chile: { inicio: "56-1", fin: "56-16", lista: "lista-chile" },
     bolivia: { inicio: "591-1", fin: "591-16", lista: "lista-bolivia" },
     brasil: { inicio: "55-1", fin: "55-20", lista: "lista-brasil" },
