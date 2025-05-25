@@ -1,39 +1,136 @@
-/* Estilos básicos para el calendario */
+/* SIMULADOR DE FUTBOL - ESTILOS DEL CALENDARIO */
+
+/* Estilos generales */
 body {
-  font-family: sans-serif;
-  background: #f0f0f0;
-  display: flex;
-  justify-content: center;
-  padding: 40px;
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+    background-color: #f0f0f0;
 }
 
-#calendario {
-  background: white;
-  padding: 30px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  width: 400px;
-  text-align: center;
+/* Contenedor principal del calendario */
+.calendario-container {
+    max-width: 600px;
+    margin: 0 auto;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 30px;
 }
 
-.botones {
-  margin: 20px 0;
+/* Mostrar la fecha actual del juego */
+.fecha-actual {
+    text-align: center;
+    margin-bottom: 30px;
 }
 
-.botones button {
-  margin: 0 10px;
-  padding: 10px 20px;
-  cursor: pointer;
+.fecha-actual h1 {
+    font-size: 48px;
+    color: #333;
+    margin: 0;
+    font-weight: bold;
 }
 
-#eventos {
-  margin-top: 20px;
-  text-align: left;
+/* Contenedor de los botones de control */
+.controles {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-bottom: 30px;
 }
 
-#listaEventos {
-  background: #eee;
-  padding: 10px;
-  border-radius: 5px;
-  min-height: 50px;
+/* Estilos para los botones de control de tiempo */
+.btn-control {
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+/* Botón pasar día */
+#pasarDia {
+    background-color: #4CAF50;
+    color: white;
+}
+
+#pasarDia:hover {
+    background-color: #45a049;
+}
+
+/* Botón pasar mes */
+#pasarMes {
+    background-color: #2196F3;
+    color: white;
+}
+
+#pasarMes:hover {
+    background-color: #1976D2;
+}
+
+/* Botón pasar año */
+#pasarAno {
+    background-color: #FF9800;
+    color: white;
+}
+
+#pasarAno:hover {
+    background-color: #F57C00;
+}
+
+/* Contenedor de eventos */
+.eventos-container {
+    border-top: 2px solid #ddd;
+    padding-top: 20px;
+}
+
+.eventos-container h3 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 20px;
+}
+
+/* Lista de eventos */
+.eventos-lista {
+    min-height: 100px;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 15px;
+    background-color: #f9f9f9;
+}
+
+/* Elemento individual de evento */
+.evento-item {
+    background-color: white;
+    padding: 10px;
+    margin-bottom: 10px;
+    border-left: 4px solid #4CAF50;
+    border-radius: 3px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.evento-item:last-child {
+    margin-bottom: 0;
+}
+
+.evento-item strong {
+    color: #333;
+    font-size: 14px;
+}
+
+.evento-item span {
+    color: #666;
+    font-size: 12px;
+}
+
+/* Mensaje cuando no hay eventos */
+.eventos-lista p {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    margin: 0;
 }
