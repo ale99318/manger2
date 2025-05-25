@@ -1,0 +1,24 @@
+<!DOCTYPE html> <!-- Define que este archivo es HTML5 -->
+<html lang="es"> <!-- Inicia el documento HTML y especifica que está en español -->
+<head>
+  <meta charset="UTF-8"> <!-- Configura el conjunto de caracteres, para mostrar tildes, ñ, etc. -->
+  <title>Lista de Clubes</title> <!-- Título que aparece en la pestaña del navegador -->
+</head>
+<body> <!-- Cuerpo de la página, donde irá el contenido visible -->
+
+  <h1>Clubes del torneo</h1> <!-- Título principal de la página -->
+
+  <ul id="lista-clubes"></ul> 
+  <!-- Lista desordenada (ul). Este es el contenedor donde se mostrarán los nombres de los clubes -->
+
+  <!-- Primero cargamos los datos de los clubes -->
+  <script src="clubes.js"></script>
+  <!-- Aquí importamos el archivo donde están definidos todos los clubes.
+       Debe cargarse primero para que la variable "clubes" esté disponible. -->
+
+  <!-- Luego el script que los muestra en pantalla -->
+  <script src="lista.js"></script>
+  <!-- Este archivo usa la variable "clubes" y crea la lista en el HTML. -->
+
+</body>
+</html>
