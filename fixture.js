@@ -196,7 +196,7 @@ function generarPartidosEliminacion(equipos, fechaInicio, fase, tipoTorneo) {
         
         // Si es ida y vuelta, generar vuelta
         if (fase.partidos === 'ida_vuelta') {
-            const fechaVuelta = new Date(fecha);
+            let fechaVuelta = new Date(fecha);
             fechaVuelta.setDate(fechaVuelta.getDate() + DURACION_IDA_VUELTA);
             fechaVuelta = ajustarDiaPartido(fechaVuelta, tipoTorneo);
             
