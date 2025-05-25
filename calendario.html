@@ -1,24 +1,35 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Simulador de Fútbol - Calendario</title>
-  <link rel="stylesheet" href="calendario.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simulador de Fútbol - Calendario</title>
+    <link rel="stylesheet" href="calendario.css">
 </head>
 <body>
-  <div id="calendario">
-    <h1 id="fechaActual">01/01/2025</h1>
-    <div class="botones">
-      <button id="pasarDia">Pasar Día</button>
-      <button id="pasarMes">Pasar Mes</button>
-      <button id="pasarAnio">Pasar Año</button>
+    <!-- Contenedor principal del calendario -->
+    <div class="calendario-container">
+        <!-- Mostrar fecha actual del juego -->
+        <div class="fecha-actual">
+            <h1 id="fechaActual">01/01/2025</h1>
+        </div>
+        
+        <!-- Botones de control de tiempo -->
+        <div class="controles">
+            <button id="pasarDia" class="btn-control">Pasar Día</button>
+            <button id="pasarMes" class="btn-control">Pasar Mes</button>
+            <button id="pasarAno" class="btn-control">Pasar Año</button>
+        </div>
+        
+        <!-- Cuadro para mostrar eventos -->
+        <div class="eventos-container">
+            <h3>Eventos del Día</h3>
+            <div id="eventosDelDia" class="eventos-lista">
+                <!-- Los eventos se mostrarán aquí -->
+            </div>
+        </div>
     </div>
-    <div id="eventos">
-      <h2>Eventos del Día</h2>
-      <div id="listaEventos"><!-- Aquí se mostrarán los eventos recibidos --></div>
-    </div>
-  </div>
-  <script src="calendario.js"></script>
+    
+    <script src="calendario.js"></script>
 </body>
 </html>
