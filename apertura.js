@@ -1,66 +1,22 @@
-// Apertura.js 
+function mostrarClubes(clubes) {
+  // Buscamos el elemento <ul id="lista-clubes"> del HTML
+  const lista = document.getElementById("lista");
 
-function generarFixtureApertura(clubes) {
-  const fechas = [];
-  const totalFechas = clubes.length - 1; // 18 fechas si hay 19 clubes
-  const equipos = [...clubes];
-  const librePorFecha = [];
+  // Limpiamos el contenido anterior (por si ya había algo)
+  lista.innerHTML = "";
 
-  // Algoritmo Round-Robin modificado para número impar
-  if (equipos.length % 2 !== 0) {
-    equipos.push({ id: "libre", nombre: "LIBRE" }); // agregar equipo ficticio
-  }
+  // Recorremos cada club del array "clubes"
+  clubes.forEach(club => {
+    // Creamos un nuevo elemento <li> (un ítem de lista)
+    const li = document.createElement("li");
 
-  const totalEquipos = equipos.length;
-  const mitad = totalEquipos / 2;
+    // Le ponemos como texto el nombre del club
+    li.textContent = club.nombre;
 
-  // Fecha inicial
-  let fechaBase = new Date("2025-02-01");
-
-  for (let r = 0; r < totalFechas; r++) {
-    const partidos = [];
-    for (let i = 0; i < mitad; i++) {
-      const equipoA = equipos[i];
-      const equipoB = equipos[totalEquipos - 1 - i];
-
-      // Evitar partido con equipo ficticio
-      if (equipoA.id === "libre") {
-        librePorFecha.push(equipoB.nombre);
-        continue;
-      }
-      if (equipoB.id === "libre") {
-        librePorFecha.push(equipoA.nombre);
-        continue;
-      }
-
-      // Local y visitante alternado por fecha
-      const local = (r + i) % 2 === 0 ? equipoA : equipoB;
-      const visitante = local === equipoA ? equipoB : equipoA;
-
-      partidos.push({
-        local: local.nombre,
-        visitante: visitante.nombre,
-        estadio: local.estadio,
-        ciudad: local.ciudad,
-        escudoLocal: local.escudoUrl,
-        escudoVisitante: visitante.escudoUrl,
-        estadioUrl: local.estadioUrl,
-        esClasico: local.clasico === visitante.id || visitante.clasico === local.id,
-        fechaPartido: formatoFecha(new Date(fechaBase.getTime() + r * 7 * 24 * 60 * 60 * 1000)), // cada 7 días
-        hora: "15:30",
-      });
-    }
-
-    fechas.push({
-      fecha: r + 1,
-      partidos,
-      libre: librePorFecha[r] || null,
-    });
-  }
-
-  return fechas;
+    // Agregamos el <li> dentro del <ul>
+    lista.appendChild(li);
+  });
 }
 
-function formatoFecha(date) {
-  return date.toISOString().split("T")[0]; // "2025-02-01"
-}
+// Ejecutamos la función pasándole el array "clubes"
+mostrarClubes(clubes);
