@@ -20,3 +20,6 @@ function mostrarClubes(clubes) {
 
 // Ejecutamos la función pasándole el array "clubes"
 mostrarClubes(clubes);
+
+// Aquí guardamos el array para usarlo en otro archivo o página
+localStorage.setItem("clubes", JSON.stringify(clubes));
