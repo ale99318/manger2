@@ -1,4 +1,4 @@
-// SIMULADOR DE FUTBOL - CALENDARIO
+// SIMULADOR DE FUTBOL - CALENDARIO 
 // Fecha de inicio: 01/01/2025 - Fecha límite: 31/12/2040
 
 // Variable global para almacenar la fecha actual del juego
