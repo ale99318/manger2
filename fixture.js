@@ -1,5 +1,6 @@
 // GENERADOR DE FIXTURES AUTOMÁTICO PARA TORNEOS
 // Se integra con calendario.js para fechas exactas
+// MEJORADO: Detecta el club del jugador y muestra fixtures relevantes
 
 // Configuración de días de la semana para partidos
 const DIAS_PARTIDOS = {
@@ -15,6 +16,58 @@ const DURACION_ENTRE_FECHAS = 7; // 1 semana entre fechas de liga
 // Almacén global de fixtures generados
 let fixturesGenerados = {};
 let proximosPartidos = [];
+let clubJugador = null; // Club seleccionado por el jugador
+let nombreJugador = null; // Nombre del entrenador
+
+// NUEVA FUNCIÓN: Inicializar datos del jugador
+function inicializarDatosJugador() {
+    try {
+        nombreJugador = localStorage.getItem("coachName");
+        const clubNombre = localStorage.getItem("selectedClub");
+        
+        if (!nombreJugador || !clubNombre) {
+            console.warn("No se encontraron datos del jugador en localStorage");
+            return false;
+        }
+        
+        // Buscar el club en la base de datos
+        if (window.ClubesData && window.ClubesData.clubes) {
+            clubJugador = window.ClubesData.clubes.find(club => club.nombre === clubNombre);
+            if (clubJugador) {
+                console.log(`Club del jugador detectado: ${clubJugador.nombre} (ID: ${clubJugador.id})`);
+                return true;
+            } else {
+                console.error(`Club ${clubNombre} no encontrado en la base de datos`);
+            }
+        }
+        return false;
+    } catch (error) {
+        console.error("Error al inicializar datos del jugador:", error);
+        return false;
+    }
+}
+
+// NUEVA FUNCIÓN: Verificar si un equipo es el club del jugador
+function esClubDelJugador(equipoId) {
+    return clubJugador && clubJugador.id === equipoId;
+}
+
+// NUEVA FUNCIÓN: Obtener torneos donde participa el club del jugador
+function obtenerTorneosDelClub() {
+    if (!clubJugador) return [];
+    
+    const torneosDelClub = [];
+    if (window.TorneosData && window.TorneosData.torneos) {
+        window.TorneosData.torneos.forEach(torneo => {
+            if (torneo.equipos && torneo.equipos.includes(clubJugador.id)) {
+                torneosDelClub.push(torneo);
+            }
+        });
+    }
+    
+    console.log(`Torneos donde participa ${clubJugador.nombre}:`, torneosDelClub.map(t => t.nombre));
+    return torneosDelClub;
+}
 
 // FUNCIÓN PRINCIPAL: Generar fixture completo de un torneo
 function generarFixtureTorneo(torneoId, fechaInicio = null) {
@@ -39,7 +92,8 @@ function generarFixtureTorneo(torneoId, fechaInicio = null) {
         fechaInicio: fechaInicio,
         fases: [],
         partidos: [],
-        equipos: [...torneo.equipos]
+        equipos: [...torneo.equipos],
+        tieneClubJugador: clubJugador ? torneo.equipos.includes(clubJugador.id) : false
     };
 
     let fechaActual = new Date(fechaInicio);
@@ -63,8 +117,10 @@ function generarFixtureTorneo(torneoId, fechaInicio = null) {
     // Guardar fixture generado
     fixturesGenerados[torneoId] = fixture;
     
-    // Agregar eventos al calendario
-    agregarEventosAlCalendario(fixture);
+    // Agregar eventos al calendario solo si es relevante para el jugador
+    if (fixture.tieneClubJugador) {
+        agregarEventosAlCalendario(fixture);
+    }
     
     console.log(`Fixture generado para ${torneo.nombre}:`, fixture);
     return fixture;
@@ -121,14 +177,19 @@ function generarPartidosLiga(equipos, fechaInicio, fase, tipoTorneo) {
             const equipo2 = equiposArray[totalEquipos - 1 - i];
             
             if (equipo1 && equipo2) { // No incluir partidos con "bye"
-                partidosFecha.push({
+                const partido = {
                     local: equipo1,
                     visitante: equipo2,
                     fecha: new Date(fecha),
                     fase: fase.nombre,
                     jornada: fecha_num + 1,
-                    tipo: 'ida'
-                });
+                    tipo: 'ida',
+                    involucraClubJugador: esClubDelJugador(equipo1) || esClubDelJugador(equipo2),
+                    esLocal: esClubDelJugador(equipo1),
+                    esVisitante: esClubDelJugador(equipo2)
+                };
+                
+                partidosFecha.push(partido);
             }
         }
         
@@ -158,7 +219,10 @@ function generarPartidosLiga(equipos, fechaInicio, fase, tipoTorneo) {
                 fecha: new Date(fecha),
                 fase: fase.nombre,
                 jornada: totalFechas + index + 1,
-                tipo: 'vuelta'
+                tipo: 'vuelta',
+                involucraClubJugador: partido.involucraClubJugador,
+                esLocal: partido.esVisitante,
+                esVisitante: partido.esLocal
             }));
             
             partidos.push(...partidosVuelta);
@@ -185,14 +249,19 @@ function generarPartidosEliminacion(equipos, fechaInicio, fase, tipoTorneo) {
     
     emparejamientos.forEach((pareja, index) => {
         // Partido de ida
-        partidos.push({
+        const partidoIda = {
             local: pareja[0],
             visitante: pareja[1],
             fecha: new Date(fecha),
             fase: fase.nombre,
             llave: index + 1,
-            tipo: 'ida'
-        });
+            tipo: 'ida',
+            involucraClubJugador: esClubDelJugador(pareja[0]) || esClubDelJugador(pareja[1]),
+            esLocal: esClubDelJugador(pareja[0]),
+            esVisitante: esClubDelJugador(pareja[1])
+        };
+        
+        partidos.push(partidoIda);
         
         // Si es ida y vuelta, generar vuelta
         if (fase.partidos === 'ida_vuelta') {
@@ -206,7 +275,10 @@ function generarPartidosEliminacion(equipos, fechaInicio, fase, tipoTorneo) {
                 fecha: fechaVuelta,
                 fase: fase.nombre,
                 llave: index + 1,
-                tipo: 'vuelta'
+                tipo: 'vuelta',
+                involucraClubJugador: partidoIda.involucraClubJugador,
+                esLocal: partidoIda.esVisitante,
+                esVisitante: partidoIda.esLocal
             });
         }
         
@@ -227,14 +299,19 @@ function generarPartidoFinal(equipos, fechaInicio, fase, tipoTorneo) {
     
     if (equipos.length >= 2) {
         // Partido de ida
-        partidos.push({
+        const partidoFinal = {
             local: equipos[0],
             visitante: equipos[1],
             fecha: new Date(fecha),
             fase: fase.nombre,
             tipo: 'ida',
-            esFinal: true
-        });
+            esFinal: true,
+            involucraClubJugador: esClubDelJugador(equipos[0]) || esClubDelJugador(equipos[1]),
+            esLocal: esClubDelJugador(equipos[0]),
+            esVisitante: esClubDelJugador(equipos[1])
+        };
+        
+        partidos.push(partidoFinal);
         
         // Si es ida y vuelta
         if (fase.partidos === 'ida_vuelta') {
@@ -247,7 +324,10 @@ function generarPartidoFinal(equipos, fechaInicio, fase, tipoTorneo) {
                 fecha: fecha,
                 fase: fase.nombre,
                 tipo: 'vuelta',
-                esFinal: true
+                esFinal: true,
+                involucraClubJugador: partidoFinal.involucraClubJugador,
+                esLocal: partidoFinal.esVisitante,
+                esVisitante: partidoFinal.esLocal
             });
         }
     }
@@ -295,15 +375,28 @@ function calcularProximaFecha(partidos, fechaActual) {
 
 // Agregar eventos al calendario del juego
 function agregarEventosAlCalendario(fixture) {
-    fixture.partidos.forEach(partido => {
+    // Solo agregar partidos que involucran al club del jugador
+    const partidosRelevantes = fixture.partidos.filter(partido => partido.involucraClubJugador);
+    
+    partidosRelevantes.forEach(partido => {
         const nombreLocal = obtenerNombreEquipo(partido.local);
         const nombreVisitante = obtenerNombreEquipo(partido.visitante);
-        const descripcion = `${nombreLocal} vs ${nombreVisitante} - ${fixture.nombre}`;
+        
+        let titulo = '';
+        let descripcion = '';
+        
+        if (partido.esLocal) {
+            titulo = `🏠 ${nombreVisitante} (Casa)`;
+            descripcion = `${nombreLocal} vs ${nombreVisitante} - ${fixture.nombre} - Local`;
+        } else if (partido.esVisitante) {
+            titulo = `✈️ ${nombreLocal} (Visitante)`;
+            descripcion = `${nombreLocal} vs ${nombreVisitante} - ${fixture.nombre} - Visitante`;
+        }
         
         // Usar la función del calendario para agregar eventos
-        if (window.agregarEvento) {
+        if (window.agregarEvento && titulo) {
             window.agregarEvento(
-                `⚽ ${partido.fase}${partido.jornada ? ` - Jornada ${partido.jornada}` : ''}`,
+                `⚽ ${partido.fase}${partido.jornada ? ` - J${partido.jornada}` : ''}: ${titulo}`,
                 descripcion,
                 partido.fecha
             );
@@ -330,11 +423,57 @@ function obtenerTorneoPorId(torneoId) {
     return null;
 }
 
-// FUNCIONES PÚBLICAS PARA USO EXTERNO
+// FUNCIONES PÚBLICAS PARA USO EXTERNO - MEJORADAS
 
 // Obtener fixture de un torneo
 function obtenerFixture(torneoId) {
     return fixturesGenerados[torneoId] || null;
+}
+
+// NUEVA FUNCIÓN: Obtener fixture del club del jugador
+function obtenerFixtureDelClub() {
+    if (!clubJugador) return [];
+    
+    const fixturesDelClub = [];
+    Object.values(fixturesGenerados).forEach(fixture => {
+        if (fixture.tieneClubJugador) {
+            const partidosDelClub = fixture.partidos.filter(p => p.involucraClubJugador);
+            fixturesDelClub.push({
+                ...fixture,
+                partidos: partidosDelClub,
+                proximoPartido: partidosDelClub.find(p => p.fecha > new Date())
+            });
+        }
+    });
+    
+    return fixturesDelClub;
+}
+
+// NUEVA FUNCIÓN: Obtener próximo partido del club
+function obtenerProximoPartidoDelClub() {
+    if (!clubJugador) return null;
+    
+    const fechaActual = window.obtenerFechaJuego ? window.obtenerFechaJuego().fecha : new Date();
+    let proximoPartido = null;
+    let fechaProxima = null;
+    
+    Object.values(fixturesGenerados).forEach(fixture => {
+        fixture.partidos.forEach(partido => {
+            if (partido.involucraClubJugador && partido.fecha > fechaActual) {
+                if (!fechaProxima || partido.fecha < fechaProxima) {
+                    fechaProxima = partido.fecha;
+                    proximoPartido = {
+                        ...partido,
+                        torneo: fixture.nombre,
+                        nombreLocal: obtenerNombreEquipo(partido.local),
+                        nombreVisitante: obtenerNombreEquipo(partido.visitante)
+                    };
+                }
+            }
+        });
+    });
+    
+    return proximoPartido;
 }
 
 // Obtener partidos de una fecha específica
@@ -351,13 +490,23 @@ function obtenerPartidosPorFecha(fecha) {
             if (fechaPartido.getTime() === fechaBuscar.getTime()) {
                 partidos.push({
                     ...partido,
-                    torneo: fixture.nombre
+                    torneo: fixture.nombre,
+                    nombreLocal: obtenerNombreEquipo(partido.local),
+                    nombreVisitante: obtenerNombreEquipo(partido.visitante)
                 });
             }
         });
     });
     
     return partidos;
+}
+
+// NUEVA FUNCIÓN: Obtener partidos del club en una fecha específica
+function obtenerPartidosDelClubPorFecha(fecha) {
+    if (!clubJugador) return [];
+    
+    const todosLosPartidos = obtenerPartidosPorFecha(fecha);
+    return todosLosPartidos.filter(partido => partido.involucraClubJugador);
 }
 
 // Obtener próximos partidos (siguiente semana)
@@ -372,7 +521,9 @@ function obtenerProximosPartidos(dias = 7) {
             if (partido.fecha >= fechaActual && partido.fecha <= fechaLimite) {
                 proximosPartidos.push({
                     ...partido,
-                    torneo: fixture.nombre
+                    torneo: fixture.nombre,
+                    nombreLocal: obtenerNombreEquipo(partido.local),
+                    nombreVisitante: obtenerNombreEquipo(partido.visitante)
                 });
             }
         });
@@ -381,9 +532,22 @@ function obtenerProximosPartidos(dias = 7) {
     return proximosPartidos.sort((a, b) => a.fecha - b.fecha);
 }
 
+// NUEVA FUNCIÓN: Obtener próximos partidos del club
+function obtenerProximosPartidosDelClub(dias = 7) {
+    if (!clubJugador) return [];
+    
+    const todosLosProximos = obtenerProximosPartidos(dias);
+    return todosLosProximos.filter(partido => partido.involucraClubJugador);
+}
+
 // Generar todos los fixtures de torneos nacionales
 function generarTodosLosFixtures() {
     console.log('Generando fixtures para todos los torneos...');
+    
+    // Inicializar datos del jugador primero
+    if (!inicializarDatosJugador()) {
+        console.warn('No se pudieron inicializar los datos del jugador');
+    }
     
     const torneos = window.TorneosData ? window.TorneosData.torneos : [];
     const fechaBase = window.obtenerFechaJuego ? window.obtenerFechaJuego().fecha : new Date();
@@ -402,31 +566,60 @@ function generarTodosLosFixtures() {
     });
     
     console.log('Todos los fixtures generados:', fixturesGenerados);
+    
+    // Mostrar información específica del club del jugador
+    if (clubJugador) {
+        console.log(`=== INFORMACIÓN DEL CLUB ${clubJugador.nombre} ===`);
+        console.log('Fixtures del club:', obtenerFixtureDelClub());
+        console.log('Próximo partido:', obtenerProximoPartidoDelClub());
+        console.log('Próximos 7 días:', obtenerProximosPartidosDelClub());
+    }
 }
 
 // Event listener para cambios de fecha del calendario
 document.addEventListener('cambioFechaJuego', function(event) {
     console.log('Fecha del juego cambió:', event.detail);
-    // Aquí puedes agregar lógica para manejar cambios de fecha
-    // Por ejemplo, verificar si hay partidos hoy
+    
+    // Verificar si hay partidos del club hoy
+    if (clubJugador) {
+        const partidosHoy = obtenerPartidosDelClubPorFecha(event.detail.fecha);
+        if (partidosHoy.length > 0) {
+            console.log(`¡${clubJugador.nombre} tiene ${partidosHoy.length} partido(s) hoy!`, partidosHoy);
+        }
+    }
 });
 
-// Exportar funciones para uso global
+// Exportar funciones para uso global - AMPLIADO
 window.GeneradorFixtures = {
+    // Funciones originales
     generarFixtureTorneo,
     obtenerFixture,
     obtenerPartidosPorFecha,
     obtenerProximosPartidos,
     generarTodosLosFixtures,
-    fixturesGenerados
+    fixturesGenerados,
+    
+    // Nuevas funciones específicas del club
+    inicializarDatosJugador,
+    obtenerFixtureDelClub,
+    obtenerProximoPartidoDelClub,
+    obtenerPartidosDelClubPorFecha,
+    obtenerProximosPartidosDelClub,
+    obtenerTorneosDelClub,
+    
+    // Datos del jugador
+    get clubJugador() { return clubJugador; },
+    get nombreJugador() { return nombreJugador; }
 };
 
 // Generar fixtures automáticamente al cargar
 document.addEventListener('DOMContentLoaded', function() {
     // Esperar un poco para que se carguen otros scripts
     setTimeout(() => {
-        if (window.TorneosData) {
+        if (window.TorneosData && window.ClubesData) {
             generarTodosLosFixtures();
+        } else {
+            console.warn('TorneosData o ClubesData no están disponibles');
         }
     }, 1000);
 });
