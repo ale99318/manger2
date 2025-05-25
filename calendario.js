@@ -175,3 +175,10 @@ window.addEventListener("DOMContentLoaded", () => {
 // IMPORTANTE: Esta función debe ser accesible globalmente para otros HTML/JS
 window.obtenerFechaJuego = obtenerFechaJuego;
 window.agregarEvento = agregarEvento;
+
+// Función para debugging
+window.mostrarEventosActuales = function() {
+    console.log('Eventos actuales:', eventosJuego);
+    return eventosJuego;
+};
+
