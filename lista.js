@@ -1,6 +1,6 @@
 function mostrarClubes(clubes) {
   // Buscamos el elemento <ul id="lista-clubes"> del HTML
-  const lista = document.getElementById("lista");
+  const lista = document.getElementById("lista-clubes");
 
   // Limpiamos el contenido anterior (por si ya había algo)
   lista.innerHTML = "";
