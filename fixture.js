@@ -311,10 +311,13 @@ function agregarEventosAlCalendario(fixture) {
     });
 }
 
-// Función auxiliar para obtener nombre del equipo por ID
+// Función auxiliar para obtener nombre del equipo por ID - CORREGIDA
 function obtenerNombreEquipo(equipoId) {
-    // Esta función debería conectar con tu base de datos de clubes
-    // Por ahora retorna el ID
+    // Buscar en la lista de clubes
+    if (window.ClubesData && window.ClubesData.clubes) {
+        const club = window.ClubesData.clubes.find(c => c.id === equipoId);
+        return club ? club.nombre : `Equipo ${equipoId}`;
+    }
     return `Equipo ${equipoId}`;
 }
 
