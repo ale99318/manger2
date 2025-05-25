@@ -34,6 +34,7 @@ class TorneoPeruano {
     crearTablaInicial() {
         return this.equipos.map(equipo => ({
             equipo: equipo,
+            nombre: equipo.nombre, // ✅ AGREGADO: Campo nombre directo
             puntos: 0,
             partidosJugados: 0,
             partidosGanados: 0,
@@ -67,8 +68,22 @@ class TorneoPeruano {
                 
                 if (equipoLocal.id !== 'BYE' && equipoVisitante.id !== 'BYE') {
                     const partido = invertirLocalias ? 
-                        { local: equipoVisitante, visitante: equipoLocal, fecha: fecha + 1 } :
-                        { local: equipoLocal, visitante: equipoVisitante, fecha: fecha + 1 };
+                        { 
+                            local: equipoVisitante, 
+                            visitante: equipoLocal, 
+                            fecha: fecha + 1,
+                            // ✅ AGREGADO: Nombres directos para fácil acceso
+                            nombreLocal: equipoVisitante.nombre,
+                            nombreVisitante: equipoLocal.nombre
+                        } :
+                        { 
+                            local: equipoLocal, 
+                            visitante: equipoVisitante, 
+                            fecha: fecha + 1,
+                            // ✅ AGREGADO: Nombres directos para fácil acceso
+                            nombreLocal: equipoLocal.nombre,
+                            nombreVisitante: equipoVisitante.nombre
+                        };
                     partidosFecha.push(partido);
                 }
             }
@@ -109,6 +124,9 @@ class TorneoPeruano {
         return {
             equipoLocal,
             equipoVisitante,
+            // ✅ AGREGADO: Nombres para fácil acceso en HTML
+            nombreLocal: equipoLocal.nombre,
+            nombreVisitante: equipoVisitante.nombre,
             golesLocal,
             golesVisitante,
             tarjetasLocal: Math.floor(Math.random() * 4),
@@ -332,6 +350,17 @@ class TorneoPeruano {
         return {
             mensaje: "Función de resultados pendiente de implementación completa"
         };
+    }
+
+    // ✅ NUEVO MÉTODO: Para obtener nombres fácilmente
+    obtenerNombreEquipo(equipoId) {
+        const equipo = this.equipos.find(e => e.id === equipoId);
+        return equipo ? equipo.nombre : 'Equipo no encontrado';
+    }
+
+    // ✅ NUEVO MÉTODO: Para obtener información completa del equipo
+    obtenerEquipo(equipoId) {
+        return this.equipos.find(e => e.id === equipoId);
     }
 }
 
