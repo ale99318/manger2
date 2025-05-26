@@ -1,45 +1,6 @@
-import { clubes } from './clubes.js'; 
+import { clubes } from './clubes.js';
+import { obtenerClubesDelTorneo } from './torneos.js';
 import { ligaPeruana } from './ligaperuana.js';
-
-// Función para obtener clubes por país (basada en tu lógica de torneos.js)
-function obtenerClubesDelTorneo(pais, clubes) {
-    const torneos = {
-        peru: { inicio: "51-1", fin: "51-18" },
-        argentina: { inicio: "54-1", fin: "54-28" },
-        venezuela: { inicio: "58-1", fin: "58-14" },
-        colombia: { inicio: "57-1", fin: "57-20" },
-        paraguay: { inicio: "595-2", fin: "595-12" },
-        chile: { inicio: "56-1", fin: "56-16" },
-        bolivia: { inicio: "591-1", fin: "591-16" },
-        brasil: { inicio: "55-1", fin: "55-20" },
-        ecuador: { inicio: "593-1", fin: "593-16" },
-        uruguay: { inicio: "598-1", fin: "598-16" }
-    };
-
-    function parseId(id) {
-        const partes = id.split('-');
-        return [parseInt(partes[0]), parseInt(partes[1])];
-    }
-
-    function estaEnRango(id, inicio, fin) {
-        const [idPrefijo, idNumero] = parseId(id);
-        const [inicioPrefijo, inicioNumero] = parseId(inicio);
-        const [finPrefijo, finNumero] = parseId(fin);
-        
-        return idPrefijo === inicioPrefijo && 
-               idNumero >= inicioNumero && 
-               idNumero <= finNumero;
-    }
-
-    const torneo = torneos[pais];
-    if (!torneo) {
-        return [];
-    }
-
-    return clubes.filter(club => 
-        estaEnRango(club.id, torneo.inicio, torneo.fin)
-    );
-}
 
 function inicializarTest() {
     const resultsDiv = document.getElementById('results');
