@@ -3,33 +3,524 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Convertidor de Jugadores</title>
+    <title>Conversor de Jugadores de Fútbol</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+            border-bottom: 3px solid #007bff;
+            padding-bottom: 10px;
+        }
+        
+        .input-section, .output-section {
+            margin-bottom: 25px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+        
+        textarea {
+            width: 100%;
+            min-height: 200px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            resize: vertical;
+            box-sizing: border-box;
+        }
+        
+        textarea:focus {
+            border-color: #007bff;
+            outline: none;
+        }
+        
+        .button-group {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+        
+        .clear-btn {
+            background-color: #6c757d;
+        }
+        
+        .clear-btn:hover {
+            background-color: #545b62;
+        }
+        
+        .copy-btn {
+            background-color: #28a745;
+        }
+        
+        .copy-btn:hover {
+            background-color: #1e7e34;
+        }
+        
+        #status {
+            padding: 12px;
+            border-radius: 5px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: bold;
+            display: none;
+        }
+        
+        .instructions {
+            background-color: #e9ecef;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .instructions h3 {
+            margin-top: 0;
+            color: #007bff;
+        }
+        
+        .instructions ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
-        <h1>Convertidor de Jugadores - Alianza Lima</h1>
+    <div class="container">
+        <h1>⚽ Conversor de Jugadores de Fútbol</h1>
         
-        <div style="margin-bottom: 20px;">
-            <textarea id="inputData" placeholder="Pega aquí los datos de los jugadores..." style="width: 100%; height: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+        <div class="instructions">
+            <h3>📋 Instrucciones de uso:</h3>
+            <ul>
+                <li>Pega los datos de los jugadores copiados desde una tabla o hoja de cálculo</li>
+                <li>Los datos deben incluir: nombre, posición, fecha de nacimiento/edad, nacionalidad y valor</li>
+                <li>Cada jugador debe estar en una línea separada</li>
+                <li>Los campos pueden estar separados por tabulaciones o espacios múltiples</li>
+            </ul>
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <button onclick="convertPlayers()" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Convertir Jugadores</button>
-            <button onclick="clearAll()" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Limpiar</button>
+        <div class="input-section">
+            <label for="inputData">Datos de entrada (pegar desde Excel/tabla):</label>
+            <textarea id="inputData" placeholder="Pega aquí los datos de los jugadores..."></textarea>
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <h3>Resultado:</h3>
-            <textarea id="output" readonly style="width: 100%; height: 400px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 12px;"></textarea>
+        <div class="button-group">
+            <button onclick="convertPlayers()">🔄 Convertir Jugadores</button>
+            <button class="clear-btn" onclick="clearAll()">🗑️ Limpiar Todo</button>
+            <button class="copy-btn" onclick="copyToClipboard()">📋 Copiar Código</button>
         </div>
         
-        <div style="margin-bottom: 20px;">
-            <button onclick="copyToClipboard()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Copiar al Portapapeles</button>
-        </div>
+        <div id="status"></div>
         
-        <div id="status" style="margin-top: 10px; padding: 10px; border-radius: 4px; display: none;"></div>
+        <div class="output-section">
+            <label for="output">Código JavaScript generado:</label>
+            <textarea id="output" readonly placeholder="El código generado aparecerá aquí..."></textarea>
+        </div>
     </div>
 
-    <script src="converter.js"></script>
+    <script>
+        // Mapeo de posiciones
+        const positionMap = {
+            'Portero': 'Portero',
+            'Defensa central': 'Defensa central',
+            'Lateral izquierdo': 'Lateral izquierdo',
+            'Lateral derecho': 'Lateral derecho',
+            'Pivote': 'Mediocentro defensivo',
+            'Mediocentro': 'Mediocentro',
+            'Mediocentro ofensivo': 'Mediocentro ofensivo',
+            'Extremo izquierdo': 'Extremo izquierdo',
+            'Extremo derecho': 'Extremo derecho',
+            'Delantero centro': 'Delantero'
+        };
+
+        // Estados de ánimo aleatorios
+        const moods = ['😊', '😐', '🙂', '😤', '💪', '🎯'];
+
+        // Personalidades
+        const personalities = ['líder', 'motivador', 'tranquilo', 'ambicioso', 'veterano', 'promesa'];
+
+        // Función para calcular edad desde fecha de nacimiento
+        function calculateAge(birthDate) {
+            if (!birthDate) return 25; // Edad por defecto
+            
+            const parts = birthDate.split('/');
+            if (parts.length !== 3) return 25;
+            
+            const birth = new Date(parts[2], parts[1] - 1, parts[0]);
+            const today = new Date();
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            
+            return age;
+        }
+
+        // Función para extraer valor monetario
+        function parseValue(valueStr) {
+            if (!valueStr || valueStr === '-') return 50000;
+            
+            const cleanValue = valueStr.replace(/[^\d,]/g, '');
+            if (cleanValue.includes(',')) {
+                return parseFloat(cleanValue.replace(',', '.')) * 1000000;
+            }
+            return parseInt(cleanValue) * 1000 || 50000;
+        }
+
+        // Función para generar estadísticas basadas en posición y edad
+        function generateStats(position, age, value) {
+            const baseStat = Math.max(50, Math.min(85, 70 - (age - 25) * 0.5));
+            const valueFactor = Math.log10(value / 50000) * 5;
+            
+            let stats = {
+                general: Math.round(baseStat + valueFactor),
+                potencial: 0,
+                progreso: age < 23 ? Math.random() * 30 + 20 : Math.random() * 10,
+                sprint: Math.round(baseStat + Math.random() * 10 - 5),
+                regate: Math.round(baseStat + Math.random() * 10 - 5),
+                pase: Math.round(baseStat + Math.random() * 10 - 5),
+                tiro: Math.round(baseStat + Math.random() * 10 - 5),
+                defensa: Math.round(baseStat + Math.random() * 10 - 5),
+                liderazgo: Math.round(baseStat + (age - 25) * 2),
+                resistencia: Math.round(Math.max(50, baseStat - (age - 25) * 1.5))
+            };
+
+            // Ajustes por posición
+            switch(position) {
+                case 'Portero':
+                    stats.defensa += 15;
+                    stats.tiro -= 20;
+                    stats.regate -= 10;
+                    stats.sprint -= 5;
+                    break;
+                case 'Defensa central':
+                    stats.defensa += 10;
+                    stats.tiro -= 15;
+                    stats.liderazgo += 5;
+                    break;
+                case 'Lateral izquierdo':
+                case 'Lateral derecho':
+                    stats.sprint += 8;
+                    stats.pase += 5;
+                    stats.defensa += 5;
+                    break;
+                case 'Mediocentro defensivo':
+                    stats.defensa += 8;
+                    stats.pase += 5;
+                    stats.liderazgo += 3;
+                    break;
+                case 'Mediocentro':
+                case 'Mediocentro ofensivo':
+                    stats.pase += 10;
+                    stats.regate += 5;
+                    break;
+                case 'Extremo izquierdo':
+                case 'Extremo derecho':
+                    stats.sprint += 10;
+                    stats.regate += 8;
+                    stats.tiro += 5;
+                    break;
+                case 'Delantero':
+                    stats.tiro += 12;
+                    stats.regate += 5;
+                    stats.defensa -= 10;
+                    break;
+            }
+
+            // Calcular potencial
+            if (age < 21) {
+                stats.potencial = stats.general + Math.random() * 15 + 5;
+            } else if (age < 26) {
+                stats.potencial = stats.general + Math.random() * 8;
+            } else {
+                stats.potencial = Math.max(stats.general - 2, stats.general + Math.random() * 4 - 2);
+            }
+
+            // Asegurar que las estadísticas estén en rangos válidos
+            Object.keys(stats).forEach(key => {
+                if (key !== 'progreso') {
+                    stats[key] = Math.max(30, Math.min(95, Math.round(stats[key])));
+                }
+            });
+
+            return stats;
+        }
+
+        // Función principal para convertir jugadores
+        function convertPlayers() {
+            const inputData = document.getElementById('inputData').value.trim();
+            
+            if (!inputData) {
+                showStatus('Por favor, ingresa los datos de los jugadores.', 'error');
+                return;
+            }
+
+            try {
+                const lines = inputData.split('\n').filter(line => line.trim());
+                const players = [];
+                let id = 1;
+
+                for (let line of lines) {
+                    // Saltar líneas de encabezado o vacías
+                    if (line.includes('Jugadores') || line.includes('F. Nacim') || line.includes('Nac.') || !line.trim()) {
+                        continue;
+                    }
+
+                    // Parsear cada línea
+                    const parts = line.split('\t');
+                    if (parts.length < 4) continue;
+
+                    // Extraer información básica
+                    let playerName = '';
+                    let position = '';
+                    let birthInfo = '';
+                    let nationality = '';
+                    let value = '';
+
+                    // Buscar el nombre del jugador (puede estar duplicado)
+                    for (let i = 0; i < parts.length; i++) {
+                        if (parts[i] && parts[i].trim() && !parts[i].match(/^\d+$/)) {
+                            if (parts[i].includes('\t') || parts[i].includes('  ')) {
+                                const subParts = parts[i].split(/\s{2,}|\t/);
+                                playerName = subParts[0] || subParts[1];
+                                if (subParts.length > 1) {
+                                    position = subParts[subParts.length - 1];
+                                }
+                            } else {
+                                playerName = parts[i];
+                            }
+                            break;
+                        }
+                    }
+
+                    // Buscar posición si no se encontró
+                    if (!position) {
+                        const positionKeywords = ['Portero', 'Defensa', 'Lateral', 'Pivote', 'Mediocentro', 'Extremo', 'Delantero'];
+                        for (let part of parts) {
+                            for (let keyword of positionKeywords) {
+                                if (part && part.includes(keyword)) {
+                                    position = part.trim();
+                                    break;
+                                }
+                            }
+                            if (position) break;
+                        }
+                    }
+
+                    // Buscar información de fecha/edad
+                    for (let part of parts) {
+                        if (part && part.includes('/') && part.includes('(')) {
+                            birthInfo = part;
+                            break;
+                        }
+                    }
+
+                    // Buscar nacionalidad
+                    const countries = ['Perú', 'Bolivia', 'Argentina', 'Ecuador', 'Uruguay', 'Italia', 'Líbano'];
+                    for (let part of parts) {
+                        for (let country of countries) {
+                            if (part && part.includes(country)) {
+                                nationality = country;
+                                break;
+                            }
+                        }
+                        if (nationality) break;
+                    }
+
+                    // Buscar valor
+                    for (let part of parts) {
+                        if (part && (part.includes('mil €') || part.includes('mill. €'))) {
+                            value = part;
+                            break;
+                        }
+                    }
+
+                    // Si no encontramos datos suficientes, continuar
+                    if (!playerName || !position) continue;
+
+                    // Limpiar nombre
+                    playerName = playerName.replace(/\s+/g, ' ').trim();
+                    
+                    // Extraer edad
+                    let age = 25; // Edad por defecto
+                    if (birthInfo) {
+                        const ageMatch = birthInfo.match(/\((\d+)\)/);
+                        if (ageMatch) {
+                            age = parseInt(ageMatch[1]);
+                        }
+                    }
+
+                    // Limpiar posición y mapear
+                    position = position.trim();
+                    const mappedPosition = positionMap[position] || position;
+
+                    // Parsear valor
+                    const playerValue = parseValue(value);
+
+                    // Generar estadísticas
+                    const stats = generateStats(mappedPosition, age, playerValue);
+
+                    // Crear objeto jugador
+                    const player = {
+                        id: id++,
+                        nombre: playerName,
+                        club: "Alianza Lima",
+                        edad: age,
+                        posicion: mappedPosition,
+                        general: stats.general,
+                        potencial: stats.potencial,
+                        progreso: Math.round(stats.progreso),
+                        sprint: stats.sprint,
+                        regate: stats.regate,
+                        pase: stats.pase,
+                        tiro: stats.tiro,
+                        defensa: stats.defensa,
+                        liderazgo: stats.liderazgo,
+                        personalidad: personalities[Math.floor(Math.random() * personalities.length)],
+                        motivacion: Math.round(Math.random() * 20 + 70),
+                        estado_animo: moods[Math.floor(Math.random() * moods.length)],
+                        energia: Math.round(Math.random() * 20 + 80),
+                        resistencia: stats.resistencia,
+                        lesionado: false,
+                        felicidad: Math.round(Math.random() * 20 + 70),
+                        minutos_jugados: Math.round(Math.random() * 300),
+                        titular: Math.random() > 0.5,
+                        valor: playerValue,
+                        sueldo: Math.round(playerValue * 0.02),
+                        contrato: Math.round(Math.random() * 24 + 12)
+                    };
+
+                    players.push(player);
+                }
+
+                if (players.length === 0) {
+                    showStatus('No se pudieron procesar los datos. Verifica el formato.', 'error');
+                    return;
+                }
+
+                // Generar código JavaScript
+                let jsCode = 'const jugadores = [\n';
+                
+                players.forEach((player, index) => {
+                    jsCode += '  {\n';
+                    Object.entries(player).forEach(([key, value]) => {
+                        if (typeof value === 'string') {
+                            jsCode += `    ${key}: "${value}",\n`;
+                        } else {
+                            jsCode += `    ${key}: ${value},\n`;
+                        }
+                    });
+                    jsCode += '  }';
+                    if (index < players.length - 1) {
+                        jsCode += ',';
+                    }
+                    jsCode += '\n';
+                });
+                
+                jsCode += '];';
+
+                document.getElementById('output').value = jsCode;
+                showStatus(`Se procesaron ${players.length} jugadores exitosamente.`, 'success');
+
+            } catch (error) {
+                showStatus('Error al procesar los datos: ' + error.message, 'error');
+            }
+        }
+
+        // Función para limpiar todo
+        function clearAll() {
+            document.getElementById('inputData').value = '';
+            document.getElementById('output').value = '';
+            document.getElementById('status').style.display = 'none';
+        }
+
+        // Función para copiar al portapapeles
+        function copyToClipboard() {
+            const output = document.getElementById('output');
+            if (!output.value) {
+                showStatus('No hay contenido para copiar.', 'error');
+                return;
+            }
+            
+            output.select();
+            navigator.clipboard.writeText(output.value).then(() => {
+                showStatus('Código copiado al portapapeles.', 'success');
+            }).catch(() => {
+                // Fallback para navegadores más antiguos
+                document.execCommand('copy');
+                showStatus('Código copiado al portapapeles.', 'success');
+            });
+        }
+
+        // Función para mostrar mensajes de estado
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.textContent = message;
+            statusDiv.style.display = 'block';
+            
+            if (type === 'success') {
+                statusDiv.style.backgroundColor = '#d4edda';
+                statusDiv.style.color = '#155724';
+                statusDiv.style.border = '1px solid #c3e6cb';
+            } else {
+                statusDiv.style.backgroundColor = '#f8d7da';
+                statusDiv.style.color = '#721c24';
+                statusDiv.style.border = '1px solid #f5c6cb';
+            }
+            
+            setTimeout(() => {
+                statusDiv.style.display = 'none';
+            }, 5000);
+        }
+
+        // Cargar datos de ejemplo al cargar la página
+        window.onload = function() {
+            const exampleData = `1	Ángelo Campos	16/12/1993 (31)	Perú	Portero	3,5 mill. €
+2	Carlos Zambrano	10/07/1989 (35)	Perú	Defensa central	800 mil €
+3	Ricardo Lagos	15/03/1992 (32)	Perú	Lateral izquierdo	600 mil €
+4	Paolo Guerrero	01/01/1984 (41)	Perú	Delantero centro	2 mill. €`;
+            
+            document.getElementById('inputData').value = exampleData;
+        };
+    </script>
 </body>
 </html>
