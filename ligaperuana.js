@@ -86,3 +86,5 @@ const ligaPeruana = {
     destino: "Liga 2 2026"
   }
 };
+
+export { ligaPeruana };
