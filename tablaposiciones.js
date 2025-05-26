@@ -1,4 +1,4 @@
-import { clubes } from './clubes.js';
+import { clubes } from './clubes.js'; 
 import { ligaPeruana } from './ligaperuana.js';
 
 // Función para obtener clubes por país (basada en tu lógica de torneos.js)
