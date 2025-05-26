@@ -39,6 +39,32 @@ const ligaPeruana = {
     "Sorteo realizado por la Liga de Fútbol Profesional"
   ],
   
+  // Campeones de torneos individuales
+  campeonatos: {
+    apertura: {
+      tipo: "Torneo Apertura",
+      campeon: "Primer lugar tabla Apertura",
+      noHayDescenso: true,
+      soloTitulo: true
+    },
+    clausura: {
+      tipo: "Torneo Clausura", 
+      campeon: "Primer lugar tabla Clausura",
+      noHayDescenso: true,
+      soloTitulo: true
+    }
+  },
+  
+  // Tabla acumulada (suma de ambos torneos)
+  tablaAcumulada: {
+    criterio: "Suma de puntos Apertura + Clausura",
+    determina: [
+      "Descensos",
+      "Clasificación a copas internacionales",
+      "Playoff (si aplica)"
+    ]
+  },
+  
   playoff: {
     condicionCampeonDistinto: {
       participantes: 4,
@@ -59,22 +85,23 @@ const ligaPeruana = {
   
   clasificacionInternacional: {
     totalCupos: 8,
+    criterio: "Tabla acumulada final",
     copaLibertadores: {
       cupos: 4,
       posiciones: {
-        "Peru1": "Campeón",
-        "Peru2": "Subcampeón", 
-        "Peru3": "Tercer lugar",
-        "Peru4": "Cuarto lugar"
+        "Peru1": "Campeón nacional",
+        "Peru2": "Subcampeón nacional", 
+        "Peru3": "3° tabla acumulada",
+        "Peru4": "4° tabla acumulada"
       }
     },
     copaSudamericana: {
       cupos: 4,
       posiciones: {
-        "Peru1": "Quinto lugar",
-        "Peru2": "Sexto lugar",
-        "Peru3": "Séptimo lugar", 
-        "Peru4": "Octavo lugar"
+        "Peru1": "5° tabla acumulada",
+        "Peru2": "6° tabla acumulada",
+        "Peru3": "7° tabla acumulada", 
+        "Peru4": "8° tabla acumulada"
       }
     }
   },
@@ -82,8 +109,13 @@ const ligaPeruana = {
   descenso: {
     equiposDescienden: 3,
     posiciones: [17, 18, 19],
-    criterio: "Tabla acumulada",
-    destino: "Liga 2 2026"
+    criterio: "Tabla acumulada final",
+    destino: "Liga 2 2026",
+    noDescensoEnTorneos: {
+      apertura: true,
+      clausura: true,
+      aclaracion: "Solo descienden por tabla acumulada"
+    }
   }
 };
 
