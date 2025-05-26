@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Convertidor de Jugadores</title>
+</head>
+<body>
+    <div style="max-width: 1200px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+        <h1>Convertidor de Jugadores - Alianza Lima</h1>
+        
+        <div style="margin-bottom: 20px;">
+            <textarea id="inputData" placeholder="Pega aquí los datos de los jugadores..." style="width: 100%; height: 200px; padding: 10px; border: 1px solid #ccc; border-radius: 4px;"></textarea>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <button onclick="convertPlayers()" style="background: #007bff; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Convertir Jugadores</button>
+            <button onclick="clearAll()" style="background: #dc3545; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; margin-left: 10px;">Limpiar</button>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <h3>Resultado:</h3>
+            <textarea id="output" readonly style="width: 100%; height: 400px; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: monospace; font-size: 12px;"></textarea>
+        </div>
+        
+        <div style="margin-bottom: 20px;">
+            <button onclick="copyToClipboard()" style="background: #28a745; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Copiar al Portapapeles</button>
+        </div>
+        
+        <div id="status" style="margin-top: 10px; padding: 10px; border-radius: 4px; display: none;"></div>
+    </div>
+
+    <script src="converter.js"></script>
+</body>
+</html>
