@@ -1,17 +1,68 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>Buscar Jugador - TheSportsDB</title>
-  <link rel="stylesheet" href="buscador.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ligas Sudamericanas - Jugadores y Clubes</title>
+    <link rel="stylesheet" href="buscador.css">
 </head>
 <body>
-  <h1>Buscar Jugador (TheSportsDB)</h1>
-  <input type="text" id="nombreJugador" placeholder="Ejemplo: Christian Cueva" />
-  <button onclick="buscarJugador()">Buscar</button>
+    <div class="container">
+        <header>
+            <h1>⚽ Explorador de Ligas Sudamericanas</h1>
+            <p>Descubre jugadores y clubes de las principales ligas de Sudamérica</p>
+        </header>
 
-  <div id="resultado"></div>
+        <nav class="navigation">
+            <button id="btn-leagues" class="nav-btn active">Ligas</button>
+            <button id="btn-teams" class="nav-btn">Equipos</button>
+            <button id="btn-players" class="nav-btn">Jugadores</button>
+        </nav>
 
-  <script src="buscador.js"></script>
+        <div class="search-section">
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Buscar...">
+                <button id="search-btn">🔍</button>
+            </div>
+            <select id="league-select">
+                <option value="">Selecciona una liga</option>
+            </select>
+        </div>
+
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Cargando datos...</p>
+        </div>
+
+        <div class="error-message" id="error-message">
+            <p>❌ Error al cargar los datos. Por favor, intenta nuevamente.</p>
+        </div>
+
+        <main class="content">
+            <section id="leagues-section" class="section active">
+                <h2>Ligas Disponibles</h2>
+                <div id="leagues-grid" class="grid"></div>
+            </section>
+
+            <section id="teams-section" class="section">
+                <h2>Equipos</h2>
+                <div id="teams-grid" class="grid"></div>
+            </section>
+
+            <section id="players-section" class="section">
+                <h2>Jugadores</h2>
+                <div id="players-grid" class="grid"></div>
+            </section>
+        </main>
+
+        <div class="modal" id="modal">
+            <div class="modal-content">
+                <span class="close">&times;</span>
+                <div id="modal-body"></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="buscador.js"></script>
 </body>
 </html>
