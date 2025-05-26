@@ -6,13 +6,10 @@ class TorneoApertura {
         this.totalFechas = 18;
         this.partidosJugados = 0;
         this.torneoIniciado = false;
-        this.equipoSeleccionado = null;
-        this.diaActual = 1; // Día simulado del torneo
-        this.fechasTorneo = []; // Días asignados a cada fecha
+        this.equipoSeleccionado = null; // Equipo del usuario
         
         this.initEventListeners();
         this.cargarDatosEntrenador();
-        this.actualizarDiaActual();
     }
 
     cargarDatosEntrenador() {
@@ -42,36 +39,9 @@ class TorneoApertura {
 
     initEventListeners() {
         document.getElementById('btn-iniciar').addEventListener('click', () => this.iniciarTorneo());
-        document.getElementById('btn-simular-dia').addEventListener('click', () => this.simularDia());
+        document.getElementById('btn-simular-fecha').addEventListener('click', () => this.simularFecha());
         document.getElementById('btn-simular-todo').addEventListener('click', () => this.simularTodo());
         document.getElementById('btn-reiniciar').addEventListener('click', () => this.reiniciarTorneo());
-    }
-
-    actualizarDiaActual() {
-        const diaElement = document.getElementById('dia-actual');
-        if (diaElement) {
-            diaElement.textContent = `Día ${this.diaActual} del torneo`;
-        }
-    }
-
-    generarCalendarioTorneo() {
-        // Asignar días a cada fecha del torneo
-        this.fechasTorneo = [];
-        let diaAsignado = 3; // Primera fecha empieza en el día 3
-        
-        for (let i = 0; i < this.totalFechas; i++) {
-            this.fechasTorneo.push(diaAsignado);
-            
-            // Cada fecha se juega cada 7 días aproximadamente
-            diaAsignado += 7;
-            
-            // Pausa más larga entre primera y segunda vuelta (fecha 9)
-            if (i === 8) {
-                diaAsignado += 14; // 2 semanas extra de descanso
-            }
-        }
-        
-        console.log('Calendario del torneo generado:', this.fechasTorneo);
     }
 
     obtenerEquiposPeruanos() {
@@ -79,83 +49,6 @@ class TorneoApertura {
             const [prefijo] = club.id.split('-');
             return prefijo === '51';
         }).slice(0, 18); // Solo tomamos 18 equipos
-    }
-
-    verificarPartidosDisponibles() {
-        if (!this.torneoIniciado) return;
-        
-        // Verificar si hay partidos disponibles para jugar en el día actual
-        let hayPartidosHoy = false;
-        
-        for (let i = this.fechaActual; i < this.totalFechas; i++) {
-            if (this.fechasTorneo[i] === this.diaActual) {
-                hayPartidosHoy = true;
-                break;
-            }
-        }
-        
-        const btnSimular = document.getElementById('btn-simular-dia');
-        
-        if (hayPartidosHoy) {
-            btnSimular.disabled = false;
-            btnSimular.textContent = '🟢 Jugar Partidos del Día';
-            btnSimular.style.backgroundColor = '#4CAF50';
-        } else {
-            const proximaFecha = this.fechasTorneo[this.fechaActual];
-            if (proximaFecha) {
-                const diasRestantes = proximaFecha - this.diaActual;
-                if (diasRestantes > 0) {
-                    btnSimular.textContent = `⏳ Avanzar Día (Próximos partidos en ${diasRestantes} días)`;
-                    btnSimular.style.backgroundColor = '#2196F3';
-                } else {
-                    btnSimular.textContent = '🟢 Jugar Partidos del Día';
-                    btnSimular.style.backgroundColor = '#4CAF50';
-                }
-            } else {
-                btnSimular.textContent = 'Torneo Finalizado';
-                btnSimular.disabled = true;
-            }
-            btnSimular.disabled = false;
-        }
-        
-        this.actualizarIndicadorProximaFecha();
-    }
-
-    actualizarIndicadorProximaFecha() {
-        let indicador = document.getElementById('indicador-proxima-fecha');
-        if (!indicador) {
-            indicador = document.createElement('div');
-            indicador.id = 'indicador-proxima-fecha';
-            indicador.style.cssText = `
-                background: linear-gradient(135deg, #ff6b6b, #ee5a52);
-                color: white;
-                padding: 10px;
-                margin: 10px 0;
-                border-radius: 8px;
-                text-align: center;
-                font-weight: bold;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            `;
-            
-            const container = document.querySelector('.torneo-container') || document.body;
-            container.insertBefore(indicador, container.firstChild);
-        }
-        
-        if (this.fechaActual < this.totalFechas) {
-            const proximaFecha = this.fechasTorneo[this.fechaActual];
-            const diasRestantes = proximaFecha - this.diaActual;
-            
-            if (diasRestantes === 0) {
-                indicador.innerHTML = `🟢 <strong>¡Fecha ${this.fechaActual + 1} disponible para jugar!</strong>`;
-                indicador.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
-            } else if (diasRestantes > 0) {
-                indicador.innerHTML = `⏱️ <strong>Próxima fecha ${this.fechaActual + 1}:</strong> Día ${proximaFecha} (en ${diasRestantes} días)`;
-                indicador.style.background = 'linear-gradient(135deg, #ff6b6b, #ee5a52)';
-            } else {
-                indicador.innerHTML = `🟢 <strong>Fecha ${this.fechaActual + 1} disponible para jugar!</strong>`;
-                indicador.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
-            }
-        }
     }
 
     iniciarTorneo() {
@@ -169,20 +62,26 @@ class TorneoApertura {
         this.equipos = equiposPeruanos.map(club => ({
             id: club.id,
             nombre: club.nombre,
-            pj: 0, g: 0, e: 0, p: 0, gf: 0, gc: 0, dg: 0, pts: 0
+            pj: 0, // Partidos jugados
+            g: 0,  // Ganados
+            e: 0,  // Empatados
+            p: 0,  // Perdidos
+            gf: 0, // Goles a favor
+            gc: 0, // Goles en contra
+            dg: 0, // Diferencia de goles
+            pts: 0 // Puntos
         }));
 
-        this.generarCalendarioTorneo();
         this.generarFixture();
         this.actualizarTabla();
         this.mostrarFixture();
         this.torneoIniciado = true;
         
         document.getElementById('btn-iniciar').disabled = true;
-        this.verificarPartidosDisponibles();
+        document.getElementById('btn-simular-fecha').disabled = false;
+        document.getElementById('btn-simular-todo').disabled = false;
         
         console.log('Torneo Apertura iniciado con', this.equipos.length, 'equipos');
-        console.log('Primera fecha programada para el día:', this.fechasTorneo[0]);
     }
 
     generarFixture() {
@@ -197,7 +96,7 @@ class TorneoApertura {
                 let local, visitante;
                 
                 if (i === 0) {
-                    local = 0;
+                    local = 0; // El primer equipo siempre es local en la primera mitad
                     visitante = fecha === 0 ? numEquipos - 1 : fecha;
                 } else {
                     const pos1 = (fecha + i) % (numEquipos - 1);
@@ -222,8 +121,7 @@ class TorneoApertura {
             
             this.fixture.push({
                 numero: fecha + 1,
-                partidos: partidos,
-                diaProgramado: this.fechasTorneo[fecha]
+                partidos: partidos
             });
         }
     }
@@ -245,14 +143,17 @@ class TorneoApertura {
         visitante.gc += golesLocal;
         
         if (golesLocal > golesVisitante) {
+            // Gana local
             local.g++;
             local.pts += 3;
             visitante.p++;
         } else if (golesLocal < golesVisitante) {
+            // Gana visitante
             visitante.g++;
             visitante.pts += 3;
             local.p++;
         } else {
+            // Empate
             local.e++;
             visitante.e++;
             local.pts += 1;
@@ -266,7 +167,7 @@ class TorneoApertura {
         return { golesLocal, golesVisitante };
     }
 
-    simularDia() {
+    simularFecha() {
         if (!this.torneoIniciado) {
             alert('Primero debes iniciar el torneo');
             return;
@@ -277,48 +178,26 @@ class TorneoApertura {
             return;
         }
         
-        // Verificar si hay partidos programados para el día actual
-        let partidosJugadosHoy = false;
+        const fecha = this.fixture[this.fechaActual];
         
-        for (let i = this.fechaActual; i < this.totalFechas; i++) {
-            if (this.fechasTorneo[i] === this.diaActual) {
-                const fecha = this.fixture[i];
-                
-                // Simular todos los partidos de esta fecha
-                fecha.partidos.forEach(partido => {
-                    if (!partido.jugado) {
-                        const resultado = this.simularPartido(partido.local, partido.visitante);
-                        partido.resultado = `${resultado.golesLocal} - ${resultado.golesVisitante}`;
-                        partido.jugado = true;
-                        this.partidosJugados++;
-                    }
-                });
-                
-                partidosJugadosHoy = true;
-                this.fechaActual = i + 1; // Avanzar a la siguiente fecha
-                break;
+        fecha.partidos.forEach(partido => {
+            if (!partido.jugado) {
+                const resultado = this.simularPartido(partido.local, partido.visitante);
+                partido.resultado = `${resultado.golesLocal} - ${resultado.golesVisitante}`;
+                partido.jugado = true;
+                this.partidosJugados++;
             }
-        }
+        });
         
-        if (!partidosJugadosHoy) {
-            // Si no hay partidos hoy, solo avanzar el día
-            this.diaActual++;
-        }
-        
-        this.actualizarDiaActual();
+        this.fechaActual++;
         this.actualizarTabla();
         this.actualizarFixture();
-        this.verificarPartidosDisponibles();
         
         if (this.fechaActual >= this.totalFechas) {
             this.finalizarTorneo();
         }
         
-        if (partidosJugadosHoy) {
-            console.log(`Fecha ${this.fechaActual} simulada en el día ${this.diaActual}`);
-        } else {
-            console.log(`Avanzado al día ${this.diaActual}`);
-        }
+        console.log(`Fecha ${this.fechaActual} simulada`);
     }
 
     simularTodo() {
@@ -327,50 +206,28 @@ class TorneoApertura {
             return;
         }
         
-        // Simular todo el torneo de una vez
         while (this.fechaActual < this.totalFechas) {
-            const fecha = this.fixture[this.fechaActual];
-            
-            fecha.partidos.forEach(partido => {
-                if (!partido.jugado) {
-                    const resultado = this.simularPartido(partido.local, partido.visitante);
-                    partido.resultado = `${resultado.golesLocal} - ${resultado.golesVisitante}`;
-                    partido.jugado = true;
-                    this.partidosJugados++;
-                }
-            });
-            
-            this.fechaActual++;
+            this.simularFecha();
         }
-        
-        this.diaActual = this.fechasTorneo[this.totalFechas - 1]; // Ir al último día
-        this.actualizarDiaActual();
-        this.actualizarTabla();
-        this.actualizarFixture();
-        this.finalizarTorneo();
     }
 
     finalizarTorneo() {
-        document.getElementById('btn-simular-dia').disabled = true;
+        document.getElementById('btn-simular-fecha').disabled = true;
         document.getElementById('btn-simular-todo').disabled = true;
         
         const campeon = this.equipos[0];
+        
+        // Buscar la posición del equipo seleccionado
         const miEquipo = this.equipos.find(equipo => equipo.nombre === this.equipoSeleccionado);
         const posicionMiEquipo = this.equipos.indexOf(miEquipo) + 1;
         
-        let mensaje = `🏆 ¡Torneo Apertura finalizado!\n\nCampeón: ${campeon.nombre}\nPuntos: ${campeon.pts}`;
+        let mensaje = `¡Torneo Apertura finalizado!\n\nCampeón: ${campeon.nombre}\nPuntos: ${campeon.pts}`;
         
         if (miEquipo) {
-            mensaje += `\n\n⭐ Tu equipo (${miEquipo.nombre}):\nPosición: ${posicionMiEquipo}°\nPuntos: ${miEquipo.pts}\nPartidos: ${miEquipo.pj}`;
+            mensaje += `\n\nTu equipo (${miEquipo.nombre}):\nPosición: ${posicionMiEquipo}°\nPuntos: ${miEquipo.pts}\nPartidos: ${miEquipo.pj}`;
         }
         
         alert(mensaje);
-        
-        // Ocultar indicador
-        const indicador = document.getElementById('indicador-proxima-fecha');
-        if (indicador) {
-            indicador.style.display = 'none';
-        }
     }
 
     actualizarTabla() {
@@ -399,9 +256,9 @@ class TorneoApertura {
             // Resaltar el equipo seleccionado por el usuario
             if (equipo.nombre === this.equipoSeleccionado) {
                 row.classList.add('mi-equipo');
-                row.style.backgroundColor = '#ffeb3b';
+                row.style.backgroundColor = '#ffeb3b'; // Amarillo dorado
                 row.style.fontWeight = 'bold';
-                row.style.border = '2px solid #ff9800';
+                row.style.border = '2px solid #ff9800'; // Borde naranja
             }
             
             row.innerHTML = `
@@ -422,6 +279,7 @@ class TorneoApertura {
             tbody.appendChild(row);
         });
         
+        // Mostrar información del equipo seleccionado
         this.mostrarInfoMiEquipo();
     }
 
@@ -430,6 +288,7 @@ class TorneoApertura {
         if (miEquipo) {
             const posicion = this.equipos.indexOf(miEquipo) + 1;
             
+            // Buscar o crear contenedor para mostrar info del equipo
             let infoContainer = document.getElementById('mi-equipo-info');
             if (!infoContainer) {
                 infoContainer = document.createElement('div');
@@ -444,6 +303,7 @@ class TorneoApertura {
                     box-shadow: 0 4px 8px rgba(0,0,0,0.2);
                 `;
                 
+                // Insertar después de la tabla
                 const tabla = document.querySelector('table');
                 if (tabla && tabla.parentNode) {
                     tabla.parentNode.insertBefore(infoContainer, tabla.nextSibling);
@@ -469,34 +329,8 @@ class TorneoApertura {
         this.fixture.forEach((fecha, index) => {
             const fechaDiv = document.createElement('div');
             fechaDiv.className = 'fecha';
-            
-            // Determinar el estado de la fecha
-            let estadoFecha = '';
-            let colorFecha = '#f8f9fa';
-            
-            if (index < this.fechaActual) {
-                estadoFecha = '✅ Jugada';
-                colorFecha = '#d4edda';
-            } else if (fecha.diaProgramado === this.diaActual) {
-                estadoFecha = '🟢 Disponible Hoy';
-                colorFecha = '#d1ecf1';
-            } else if (fecha.diaProgramado < this.diaActual) {
-                estadoFecha = '✅ Jugada';
-                colorFecha = '#d4edda';
-            } else {
-                const diasRestantes = fecha.diaProgramado - this.diaActual;
-                estadoFecha = `⏳ En ${diasRestantes} días`;
-                colorFecha = '#fff3cd';
-            }
-            
-            fechaDiv.style.backgroundColor = colorFecha;
-            fechaDiv.style.border = '1px solid #dee2e6';
-            fechaDiv.style.borderRadius = '8px';
-            fechaDiv.style.padding = '10px';
-            fechaDiv.style.marginBottom = '10px';
-            
             fechaDiv.innerHTML = `
-                <h4>Fecha ${fecha.numero} - ${estadoFecha} (Día ${fecha.diaProgramado})</h4>
+                <h4>Fecha ${fecha.numero}</h4>
                 <div class="partidos">
                     ${fecha.partidos.map(partido => {
                         const localEsMiEquipo = partido.local.nombre === this.equipoSeleccionado;
@@ -535,8 +369,6 @@ class TorneoApertura {
         this.fechaActual = 0;
         this.partidosJugados = 0;
         this.torneoIniciado = false;
-        this.fechasTorneo = [];
-        this.diaActual = 1;
         
         document.getElementById('tabla-body').innerHTML = '';
         document.getElementById('fechas-container').innerHTML = '';
@@ -547,21 +379,9 @@ class TorneoApertura {
             infoContainer.remove();
         }
         
-        // Limpiar indicador de próxima fecha
-        const indicador = document.getElementById('indicador-proxima-fecha');
-        if (indicador) {
-            indicador.remove();
-        }
-        
         document.getElementById('btn-iniciar').disabled = false;
-        document.getElementById('btn-simular-dia').disabled = true;
-        document.getElementById('btn-simular-todo').disabled = false;
-        
-        // Restaurar texto del botón
-        document.getElementById('btn-simular-dia').textContent = 'Simular Día';
-        document.getElementById('btn-simular-dia').style.backgroundColor = '';
-        
-        this.actualizarDiaActual();
+        document.getElementById('btn-simular-fecha').disabled = true;
+        document.getElementById('btn-simular-todo').disabled = true;
         
         console.log('Torneo reiniciado');
     }
@@ -570,7 +390,7 @@ class TorneoApertura {
 // Inicializar el simulador cuando se carga la página
 document.addEventListener('DOMContentLoaded', () => {
     const torneo = new TorneoApertura();
-    console.log('Simulador del Torneo Apertura con sistema de días simulados cargado');
+    console.log('Simulador del Torneo Apertura cargado');
 });
 
 // Verificar que los datos estén disponibles
