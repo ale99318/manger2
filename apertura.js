@@ -6,8 +6,35 @@ class TorneoApertura {
         this.totalFechas = 18;
         this.partidosJugados = 0;
         this.torneoIniciado = false;
+        this.equipoSeleccionado = null; // Equipo del usuario
         
         this.initEventListeners();
+        this.cargarDatosEntrenador();
+    }
+
+    cargarDatosEntrenador() {
+        // Cargar datos del localStorage
+        const dtNombre = localStorage.getItem("coachName");
+        const clubNombre = localStorage.getItem("selectedClub");
+        const imagen = localStorage.getItem("coachImage");
+        
+        if (!dtNombre || !clubNombre || !imagen) {
+            alert("Faltan datos del entrenador. Redirigiendo al login...");
+            window.location.href = "login.html";
+            return;
+        }
+        
+        // Actualizar elementos del DOM si existen
+        const dtNombreElement = document.getElementById("dtNombre");
+        const clubNombreElement = document.getElementById("clubNombre");
+        
+        if (dtNombreElement) dtNombreElement.textContent = dtNombre;
+        if (clubNombreElement) clubNombreElement.textContent = clubNombre;
+        
+        // Guardar el club seleccionado para resaltarlo
+        this.equipoSeleccionado = clubNombre;
+        
+        console.log(`Entrenador: ${dtNombre}, Club: ${clubNombre}`);
     }
 
     initEventListeners() {
@@ -189,7 +216,18 @@ class TorneoApertura {
         document.getElementById('btn-simular-todo').disabled = true;
         
         const campeon = this.equipos[0];
-        alert(`¡Torneo Apertura finalizado!\n\nCampeón: ${campeon.nombre}\nPuntos: ${campeon.pts}\nPartidos: ${campeon.pj}`);
+        
+        // Buscar la posición del equipo seleccionado
+        const miEquipo = this.equipos.find(equipo => equipo.nombre === this.equipoSeleccionado);
+        const posicionMiEquipo = this.equipos.indexOf(miEquipo) + 1;
+        
+        let mensaje = `¡Torneo Apertura finalizado!\n\nCampeón: ${campeon.nombre}\nPuntos: ${campeon.pts}`;
+        
+        if (miEquipo) {
+            mensaje += `\n\nTu equipo (${miEquipo.nombre}):\nPosición: ${posicionMiEquipo}°\nPuntos: ${miEquipo.pts}\nPartidos: ${miEquipo.pj}`;
+        }
+        
+        alert(mensaje);
     }
 
     actualizarTabla() {
@@ -215,9 +253,19 @@ class TorneoApertura {
                 row.classList.add('pos-descenso');
             }
             
+            // Resaltar el equipo seleccionado por el usuario
+            if (equipo.nombre === this.equipoSeleccionado) {
+                row.classList.add('mi-equipo');
+                row.style.backgroundColor = '#ffeb3b'; // Amarillo dorado
+                row.style.fontWeight = 'bold';
+                row.style.border = '2px solid #ff9800'; // Borde naranja
+            }
+            
             row.innerHTML = `
                 <td>${index + 1}</td>
-                <td style="text-align: left; font-weight: bold;">${equipo.nombre}</td>
+                <td style="text-align: left; font-weight: ${equipo.nombre === this.equipoSeleccionado ? 'bold' : 'normal'};">
+                    ${equipo.nombre === this.equipoSeleccionado ? '⭐ ' : ''}${equipo.nombre}
+                </td>
                 <td>${equipo.pj}</td>
                 <td>${equipo.g}</td>
                 <td>${equipo.e}</td>
@@ -230,6 +278,48 @@ class TorneoApertura {
             
             tbody.appendChild(row);
         });
+        
+        // Mostrar información del equipo seleccionado
+        this.mostrarInfoMiEquipo();
+    }
+
+    mostrarInfoMiEquipo() {
+        const miEquipo = this.equipos.find(equipo => equipo.nombre === this.equipoSeleccionado);
+        if (miEquipo) {
+            const posicion = this.equipos.indexOf(miEquipo) + 1;
+            
+            // Buscar o crear contenedor para mostrar info del equipo
+            let infoContainer = document.getElementById('mi-equipo-info');
+            if (!infoContainer) {
+                infoContainer = document.createElement('div');
+                infoContainer.id = 'mi-equipo-info';
+                infoContainer.style.cssText = `
+                    background: linear-gradient(135deg, #2196f3, #21cbf3);
+                    color: white;
+                    padding: 15px;
+                    margin: 10px 0;
+                    border-radius: 10px;
+                    text-align: center;
+                    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+                `;
+                
+                // Insertar después de la tabla
+                const tabla = document.querySelector('table');
+                if (tabla && tabla.parentNode) {
+                    tabla.parentNode.insertBefore(infoContainer, tabla.nextSibling);
+                }
+            }
+            
+            infoContainer.innerHTML = `
+                <h3>⭐ Tu Equipo: ${miEquipo.nombre}</h3>
+                <div style="display: flex; justify-content: space-around; margin-top: 10px;">
+                    <div><strong>Posición:</strong> ${posicion}°</div>
+                    <div><strong>Puntos:</strong> ${miEquipo.pts}</div>
+                    <div><strong>Partidos:</strong> ${miEquipo.pj}</div>
+                    <div><strong>Dif. Goles:</strong> ${miEquipo.dg > 0 ? '+' : ''}${miEquipo.dg}</div>
+                </div>
+            `;
+        }
     }
 
     mostrarFixture() {
@@ -242,15 +332,26 @@ class TorneoApertura {
             fechaDiv.innerHTML = `
                 <h4>Fecha ${fecha.numero}</h4>
                 <div class="partidos">
-                    ${fecha.partidos.map(partido => `
-                        <div class="partido">
-                            <div class="equipo-local">${partido.local.nombre}</div>
-                            <div class="${partido.jugado ? 'resultado' : 'vs'}">
-                                ${partido.jugado ? partido.resultado : 'VS'}
+                    ${fecha.partidos.map(partido => {
+                        const localEsMiEquipo = partido.local.nombre === this.equipoSeleccionado;
+                        const visitanteEsMiEquipo = partido.visitante.nombre === this.equipoSeleccionado;
+                        const partidoDestacado = localEsMiEquipo || visitanteEsMiEquipo;
+                        
+                        return `
+                            <div class="partido${partidoDestacado ? ' mi-partido' : ''}" 
+                                 style="${partidoDestacado ? 'background-color: #fff3cd; border: 2px solid #ffc107; border-radius: 5px; padding: 5px;' : ''}">
+                                <div class="equipo-local" style="${localEsMiEquipo ? 'font-weight: bold; color: #ff9800;' : ''}">
+                                    ${localEsMiEquipo ? '⭐ ' : ''}${partido.local.nombre}
+                                </div>
+                                <div class="${partido.jugado ? 'resultado' : 'vs'}">
+                                    ${partido.jugado ? partido.resultado : 'VS'}
+                                </div>
+                                <div class="equipo-visitante" style="${visitanteEsMiEquipo ? 'font-weight: bold; color: #ff9800;' : ''}">
+                                    ${visitanteEsMiEquipo ? '⭐ ' : ''}${partido.visitante.nombre}
+                                </div>
                             </div>
-                            <div class="equipo-visitante">${partido.visitante.nombre}</div>
-                        </div>
-                    `).join('')}
+                        `;
+                    }).join('')}
                 </div>
             `;
             
@@ -271,6 +372,12 @@ class TorneoApertura {
         
         document.getElementById('tabla-body').innerHTML = '';
         document.getElementById('fechas-container').innerHTML = '';
+        
+        // Limpiar info del equipo
+        const infoContainer = document.getElementById('mi-equipo-info');
+        if (infoContainer) {
+            infoContainer.remove();
+        }
         
         document.getElementById('btn-iniciar').disabled = false;
         document.getElementById('btn-simular-fecha').disabled = true;
