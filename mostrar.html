@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Jugadores</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .jugador-card {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+            transition: transform 0.2s;
+        }
+        .jugador-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .jugador-nombre {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 10px;
+        }
+        .jugador-info {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .info-label {
+            font-weight: bold;
+            color: #666;
+        }
+        .info-value {
+            color: #333;
+        }
+        .no-jugadores {
+            text-align: center;
+            color: #666;
+            font-style: italic;
+            padding: 40px;
+        }
+        .refresh-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+        .refresh-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Lista de Jugadores</h1>
+        <button class="refresh-btn" onclick="cargarJugadores()">🔄 Actualizar Lista</button>
+        <div id="listaJugadores"></div>
+    </div>
+
+    <script>
+        function cargarJugadores() {
+            const jugadoresData = localStorage.getItem("jugadores");
+            const listaContainer = document.getElementById("listaJugadores");
+            
+            if (!jugadoresData) {
+                listaContainer.innerHTML = '<div class="no-jugadores">No hay jugadores guardados en localStorage</div>';
+                return;
+            }
+            
+            try {
+                const jugadores = JSON.parse(jugadoresData);
+                
+                if (!Array.isArray(jugadores) || jugadores.length === 0) {
+                    listaContainer.innerHTML = '<div class="no-jugadores">No hay jugadores en la lista</div>';
+                    return;
+                }
+                
+                let html = '';
+                jugadores.forEach((jugador, index) => {
+                    html += `
+                        <div class="jugador-card">
+                            <div class="jugador-nombre">${jugador.nombre || 'Sin nombre'}</div>
+                            <div class="jugador-info">
+                    `;
+                    
+                    // Mostrar todas las propiedades del jugador
+                    Object.keys(jugador).forEach(key => {
+                        if (key !== 'nombre') {
+                            html += `
+                                <div class="info-item">
+                                    <span class="info-label">${key}:</span>
+                                    <span class="info-value">${jugador[key]}</span>
+                                </div>
+                            `;
+                        }
+                    });
+                    
+                    html += `
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                listaContainer.innerHTML = html;
+                
+            } catch (error) {
+                listaContainer.innerHTML = '<div class="no-jugadores">Error al leer los datos de jugadores</div>';
+                console.error('Error parsing jugadores:', error);
+            }
+        }
+        
+        // Cargar jugadores al iniciar la página
+        window.addEventListener('load', cargarJugadores);
+        
+        // Actualizar automáticamente cada 5 segundos por si hay cambios
+        setInterval(cargarJugadores, 5000);
+    </script>
+</body>
+</html>
