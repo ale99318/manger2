@@ -2,644 +2,158 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Generador de Jugadores Mejorado</title>
+  <title>Generador de Jugadores Simple</title>
   <style>
-    * { box-sizing: border-box; }
-    
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 20px;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      min-height: 100vh;
-      color: #333;
-    }
-
-    .container {
-      max-width: 1400px;
-      margin: 0 auto;
-      background: white;
-      border-radius: 15px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-      overflow: hidden;
-    }
-
-    .header {
-      background: linear-gradient(135deg, #4CAF50, #45a049);
-      color: white;
-      padding: 30px;
-      text-align: center;
-    }
-
-    .header h1 {
-      margin: 0;
-      font-size: 2.5em;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-    }
-
-    .controls {
-      padding: 25px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #dee2e6;
-      display: flex;
-      gap: 15px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .control-group label {
-      font-weight: 600;
-      color: #495057;
-    }
-
-    input, select, button {
-      padding: 8px 12px;
-      border: 2px solid #ddd;
-      border-radius: 6px;
-      font-size: 14px;
-      transition: all 0.3s ease;
-    }
-
-    input:focus, select:focus {
-      outline: none;
-      border-color: #4CAF50;
-      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
-    }
-
-    button {
-      background: linear-gradient(135deg, #4CAF50, #45a049);
-      color: white;
-      border: none;
-      cursor: pointer;
-      font-weight: 600;
-      min-width: 100px;
-    }
-
-    button:hover {
-      background: linear-gradient(135deg, #45a049, #3d8b40);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-    }
-
-    .stats {
-      padding: 15px 25px;
-      background: #e3f2fd;
-      color: #1565c0;
-      font-weight: 600;
-      text-align: center;
-    }
-
-    .view-selector {
-      padding: 20px 25px;
-      background: #fff;
-      border-bottom: 1px solid #dee2e6;
-    }
-
-    .view-tabs {
-      display: flex;
-      gap: 10px;
-    }
-
-    .tab {
-      padding: 10px 20px;
-      background: #f8f9fa;
-      border: 2px solid #dee2e6;
-      border-radius: 25px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: 600;
-    }
-
-    .tab.active {
-      background: #4CAF50;
-      color: white;
-      border-color: #4CAF50;
-    }
-
-    .content {
-      padding: 25px;
-      max-height: 600px;
-      overflow-y: auto;
-    }
-
-    .cards-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-      gap: 20px;
-    }
-
-    .player-card {
-      background: white;
-      border: 2px solid #e9ecef;
-      border-radius: 12px;
-      padding: 20px;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-
-    .player-card:hover {
-      transform: translateY(-5px);
-      box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-      border-color: #4CAF50;
-    }
-
-    .player-header {
-      display: flex;
-      align-items: center;
-      gap: 15px;
-      margin-bottom: 15px;
-    }
-
-    .player-photo {
-      width: 60px;
-      height: 60px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, #667eea, #764ba2);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 24px;
-      font-weight: bold;
-      color: white;
-    }
-
-    .player-info h3 {
-      margin: 0;
-      color: #2c3e50;
-      font-size: 1.3em;
-    }
-
-    .player-info p {
-      margin: 5px 0 0 0;
-      color: #6c757d;
-    }
-
-    .attributes {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-    }
-
-    .attribute {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 10px;
-      background: #f8f9fa;
-      border-radius: 6px;
-      font-size: 13px;
-    }
-
-    .attribute-name {
-      font-weight: 600;
-      color: #495057;
-    }
-
-    .attribute-value {
-      font-weight: bold;
-      padding: 2px 8px;
-      border-radius: 12px;
-      color: white;
-      font-size: 12px;
-    }
-
-    .rating-excellent { background: #28a745; }
-    .rating-good { background: #17a2b8; }
-    .rating-average { background: #ffc107; color: #333; }
-    .rating-poor { background: #dc3545; }
-
-    .compact-table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 12px;
-    }
-
-    .compact-table th,
-    .compact-table td {
-      border: 1px solid #dee2e6;
-      padding: 8px 6px;
-      text-align: center;
-    }
-
-    .compact-table th {
-      background: #f8f9fa;
-      font-weight: 600;
-      position: sticky;
-      top: 0;
-    }
-
-    .compact-table input {
-      width: 60px;
-      padding: 4px;
-      border: 1px solid #ccc;
-      border-radius: 3px;
-      font-size: 11px;
-    }
-
-    .no-players {
-      text-align: center;
-      padding: 60px 20px;
-      color: #6c757d;
-    }
-
-    .no-players i {
-      font-size: 64px;
-      margin-bottom: 20px;
-      display: block;
-    }
-
-    @media (max-width: 768px) {
-      .controls {
-        flex-direction: column;
-        align-items: stretch;
-      }
-      
-      .cards-grid {
-        grid-template-columns: 1fr;
-      }
-      
-      .content {
-        padding: 15px;
-      }
-    }
+    body { font-family: Arial; padding: 10px; }
+    table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 10px; }
+    th, td { border: 1px solid #ccc; padding: 4px; text-align: center; }
+    input, select { width: 70px; font-size: 11px; padding: 2px; }
+    .controls { margin-bottom: 10px; }
+    button { padding: 5px 10px; margin-right: 5px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <h1>⚽ Generador de Jugadores Pro</h1>
-      <p>Crea y gestiona tu plantilla perfecta</p>
-    </div>
 
-    <div class="controls">
-      <div class="control-group">
-        <label for="numInput">Jugadores:</label>
-        <input id="numInput" type="number" value="20" min="1" max="500">
-      </div>
-      
-      <button onclick="generarJugadores()">🎲 Generar</button>
-      <button onclick="exportarDatos()">💾 Exportar JSON</button>
-      <button onclick="importarDatos()">📂 Importar JSON</button>
-      <input type="file" id="fileInput" accept=".json" style="display: none" onchange="cargarArchivo(event)">
-      
-      <div class="control-group">
-        <label for="filtroPos">Posición:</label>
-        <select id="filtroPos" onchange="filtrarJugadores()">
-          <option value="">Todas</option>
-          <option value="POR">Portero</option>
-          <option value="DEF">Defensa</option>
-          <option value="MED">Mediocentro</option>
-          <option value="DEL">Delantero</option>
-        </select>
-      </div>
-    </div>
+<h2>Generador de Jugadores</h2>
 
-    <div class="stats" id="stats">
-      No hay jugadores generados
-    </div>
+<div class="controls">
+  <label>Cantidad: <input id="cantidad" type="number" value="20" min="1" max="100"></label>
+  <button onclick="generar()">Generar</button>
+  <button onclick="guardar()">Guardar</button>
+  <button onclick="cargar()">Cargar</button>
+  <button onclick="limpiar()">Limpiar</button>
+</div>
 
-    <div class="view-selector">
-      <div class="view-tabs">
-        <div class="tab active" onclick="cambiarVista('cards')">📋 Vista Tarjetas</div>
-        <div class="tab" onclick="cambiarVista('table')">📊 Vista Tabla</div>
-      </div>
-    </div>
+<div id="contenedor"></div>
 
-    <div class="content" id="contenido">
-      <div class="no-players">
-        <i>⚽</i>
-        <h3>¡Genera algunos jugadores para comenzar!</h3>
-        <p>Haz clic en "Generar" para crear tu plantilla</p>
-      </div>
-    </div>
-  </div>
+<script>
+// Variable global para los jugadores
+let jugadores = [];
 
-  <script>
-    let jugadores = [];
-    let jugadoresFiltrados = [];
-    let vistaActual = 'cards';
+const nombres = ["Carlos", "Juan", "Pedro", "Luis", "Miguel", "Andrés", "Santiago", "Daniel", "Fernando", "Pablo", "Diego", "Javier"];
+const apellidos = ["García", "López", "Martínez", "González", "Pérez", "Rodríguez", "Sánchez", "Fernández", "Torres", "Ramírez"];
+const posiciones = ["POR", "DEF", "MED", "DEL"];
 
-    const nombres = [
-      "Alejandro", "Carlos", "Diego", "Fernando", "Gabriel", "Hugo", "Iván", "Javier", 
-      "Luis", "Manuel", "Nicolás", "Óscar", "Pablo", "Ricardo", "Santiago", "Tomás"
-    ];
+function rand(min, max) {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
 
-    const apellidos = [
-      "García", "Rodríguez", "González", "Fernández", "López", "Martínez", "Sánchez", 
-      "Pérez", "Gómez", "Martín", "Jiménez", "Ruiz", "Hernández", "Díaz", "Moreno", "Álvarez"
-    ];
-
-    const posiciones = ["POR", "DEF", "MED", "DEL"];
-    const personalidades = ["Líder", "Tranquilo", "Intenso", "Calculador", "Creativo"];
-
-    function rand(min, max) {
-      return Math.floor(Math.random() * (max - min + 1)) + min;
-    }
-
-    function generarNombre() {
-      const nombre = nombres[rand(0, nombres.length - 1)];
-      const apellido = apellidos[rand(0, apellidos.length - 1)];
-      return `${nombre} ${apellido}`;
-    }
-
-    function generarJugadores() {
-      const cantidad = parseInt(document.getElementById("numInput").value);
-      if (cantidad < 1 || cantidad > 500) {
-        alert("⚠️ Por favor, introduce un número entre 1 y 500");
-        return;
-      }
-
-      jugadores = [];
-      
-      for (let i = 0; i < cantidad; i++) {
-        const pos = posiciones[rand(0, posiciones.length - 1)];
-        const general = rand(60, 95);
-        
-        jugadores.push({
-          id: Date.now() + Math.random(),
-          nombre: generarNombre(),
-          edad: rand(18, 35),
-          posicion: pos,
-          general: general,
-          potencial: Math.max(general, rand(general, 99)),
-          sprint: ajustarPorPosicion(rand(50, 95), pos, 'sprint'),
-          regate: ajustarPorPosicion(rand(50, 95), pos, 'regate'),
-          pase: ajustarPorPosicion(rand(50, 95), pos, 'pase'),
-          tiro: ajustarPorPosicion(rand(50, 95), pos, 'tiro'),
-          defensa: ajustarPorPosicion(rand(50, 95), pos, 'defensa'),
-          arquero: pos === 'POR' ? rand(60, 95) : rand(20, 40),
-          liderazgo: rand(40, 95),
-          personalidad: personalidades[rand(0, personalidades.length - 1)],
-          motivacion: rand(60, 100),
-          energia: rand(70, 100),
-          felicidad: rand(60, 100),
-          valor: rand(100000, 5000000),
-          sueldo: rand(10000, 200000),
-          titular: i < 11
-        });
-      }
-
-      jugadoresFiltrados = [...jugadores];
-      actualizarEstadisticas();
-      mostrarJugadores();
-    }
-
-    function ajustarPorPosicion(valor, posicion, atributo) {
-      const ajustes = {
-        'POR': { defensa: 1.3, arquero: 1.5, tiro: 0.3, regate: 0.4 },
-        'DEF': { defensa: 1.4, pase: 1.1, tiro: 0.6, regate: 0.8 },
-        'MED': { pase: 1.3, regate: 1.2, defensa: 0.9, tiro: 0.9 },
-        'DEL': { tiro: 1.4, regate: 1.3, sprint: 1.2, defensa: 0.4 }
-      };
-
-      const multiplicador = ajustes[posicion]?.[atributo] || 1;
-      return Math.min(99, Math.max(30, Math.round(valor * multiplicador)));
-    }
-
-    function actualizarEstadisticas() {
-      const total = jugadores.length;
-      const titulares = jugadores.filter(j => j.titular).length;
-      const valorTotal = jugadores.reduce((sum, j) => sum + j.valor, 0);
-      const promedioGeneral = total > 0 ? Math.round(jugadores.reduce((sum, j) => sum + j.general, 0) / total) : 0;
-
-      document.getElementById('stats').innerHTML = 
-        `📊 ${total} jugadores | 👑 ${titulares} titulares | 💰 €${(valorTotal/1000000).toFixed(1)}M | ⭐ ${promedioGeneral} promedio`;
-    }
-
-    function cambiarVista(vista) {
-      vistaActual = vista;
-      
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      event.target.classList.add('active');
-      
-      mostrarJugadores();
-    }
-
-    function mostrarJugadores() {
-      const contenido = document.getElementById('contenido');
-      
-      if (jugadoresFiltrados.length === 0) {
-        contenido.innerHTML = `
-          <div class="no-players">
-            <i>😔</i>
-            <h3>No se encontraron jugadores</h3>
-            <p>Intenta cambiar los filtros o generar nuevos jugadores</p>
-          </div>
-        `;
-        return;
-      }
-
-      if (vistaActual === 'cards') {
-        mostrarTarjetas();
-      } else {
-        mostrarTabla();
-      }
-    }
-
-    function mostrarTarjetas() {
-      let html = '<div class="cards-grid">';
-      
-      jugadoresFiltrados.forEach(jugador => {
-        const iniciales = jugador.nombre.split(' ').map(n => n[0]).join('');
-        
-        html += `
-          <div class="player-card">
-            <div class="player-header">
-              <div class="player-photo">${iniciales}</div>
-              <div class="player-info">
-                <h3>${jugador.nombre}</h3>
-                <p>${jugador.edad} años • ${jugador.posicion} • ${jugador.titular ? '⭐ Titular' : 'Suplente'}</p>
-              </div>
-            </div>
-            <div class="attributes">
-              <div class="attribute">
-                <span class="attribute-name">General</span>
-                <span class="attribute-value ${getRatingClass(jugador.general)}">${jugador.general}</span>
-              </div>
-              <div class="attribute">
-                <span class="attribute-name">Potencial</span>
-                <span class="attribute-value ${getRatingClass(jugador.potencial)}">${jugador.potencial}</span>
-              </div>
-              <div class="attribute">
-                <span class="attribute-name">Sprint</span>
-                <span class="attribute-value ${getRatingClass(jugador.sprint)}">${jugador.sprint}</span>
-              </div>
-              <div class="attribute">
-                <span class="attribute-name">Regate</span>
-                <span class="attribute-value ${getRatingClass(jugador.regate)}">${jugador.regate}</span>
-              </div>
-              <div class="attribute">
-                <span class="attribute-name">Pase</span>
-                <span class="attribute-value ${getRatingClass(jugador.pase)}">${jugador.pase}</span>
-              </div>
-              <div class="attribute">
-                <span class="attribute-name">Tiro</span>
-                <span class="attribute-value ${getRatingClass(jugador.tiro)}">${jugador.tiro}</span>
-              </div>
-              <div class="attribute">
-                <span class="attribute-name">Defensa</span>
-                <span class="attribute-value ${getRatingClass(jugador.defensa)}">${jugador.defensa}</span>
-              </div>
-              ${jugador.posicion === 'POR' ? `
-              <div class="attribute">
-                <span class="attribute-name">Arquero</span>
-                <span class="attribute-value ${getRatingClass(jugador.arquero)}">${jugador.arquero}</span>
-              </div>
-              ` : ''}
-              <div class="attribute">
-                <span class="attribute-name">Valor</span>
-                <span class="attribute-value rating-good">€${(jugador.valor/1000).toFixed(0)}K</span>
-              </div>
-              <div class="attribute">
-                <span class="attribute-name">Personalidad</span>
-                <span class="attribute-value rating-average">${jugador.personalidad}</span>
-              </div>
-            </div>
-          </div>
-        `;
-      });
-      
-      html += '</div>';
-      document.getElementById('contenido').innerHTML = html;
-    }
-
-    function mostrarTabla() {
-      let html = `
-        <table class="compact-table">
-          <thead>
-            <tr>
-              <th>Nombre</th><th>Edad</th><th>Pos</th><th>GEN</th><th>POT</th>
-              <th>SPR</th><th>REG</th><th>PAS</th><th>TIR</th><th>DEF</th>
-              <th>LID</th><th>Valor</th><th>Titular</th>
-            </tr>
-          </thead>
-          <tbody>
-      `;
-
-      jugadoresFiltrados.forEach((j, i) => {
-        html += `
-          <tr>
-            <td><input value="${j.nombre}" onchange="editarJugador(${i}, 'nombre', this.value)"></td>
-            <td><input type="number" value="${j.edad}" min="16" max="45" onchange="editarJugador(${i}, 'edad', this.value)"></td>
-            <td>
-              <select onchange="editarJugador(${i}, 'posicion', this.value)">
-                <option value="POR" ${j.posicion === 'POR' ? 'selected' : ''}>POR</option>
-                <option value="DEF" ${j.posicion === 'DEF' ? 'selected' : ''}>DEF</option>
-                <option value="MED" ${j.posicion === 'MED' ? 'selected' : ''}>MED</option>
-                <option value="DEL" ${j.posicion === 'DEL' ? 'selected' : ''}>DEL</option>
-              </select>
-            </td>
-            <td><input type="number" value="${j.general}" min="30" max="99" onchange="editarJugador(${i}, 'general', this.value)"></td>
-            <td><input type="number" value="${j.potencial}" min="30" max="99" onchange="editarJugador(${i}, 'potencial', this.value)"></td>
-            <td><input type="number" value="${j.sprint}" min="30" max="99" onchange="editarJugador(${i}, 'sprint', this.value)"></td>
-            <td><input type="number" value="${j.regate}" min="30" max="99" onchange="editarJugador(${i}, 'regate', this.value)"></td>
-            <td><input type="number" value="${j.pase}" min="30" max="99" onchange="editarJugador(${i}, 'pase', this.value)"></td>
-            <td><input type="number" value="${j.tiro}" min="30" max="99" onchange="editarJugador(${i}, 'tiro', this.value)"></td>
-            <td><input type="number" value="${j.defensa}" min="30" max="99" onchange="editarJugador(${i}, 'defensa', this.value)"></td>
-            <td><input type="number" value="${j.liderazgo}" min="30" max="99" onchange="editarJugador(${i}, 'liderazgo', this.value)"></td>
-            <td>€${(j.valor/1000).toFixed(0)}K</td>
-            <td><input type="checkbox" ${j.titular ? 'checked' : ''} onchange="editarJugador(${i}, 'titular', this.checked)"></td>
-          </tr>
-        `;
-      });
-
-      html += '</tbody></table>';
-      document.getElementById('contenido').innerHTML = html;
-    }
-
-    function getRatingClass(valor) {
-      if (valor >= 85) return 'rating-excellent';
-      if (valor >= 75) return 'rating-good';
-      if (valor >= 65) return 'rating-average';
-      return 'rating-poor';
-    }
-
-    function editarJugador(indice, campo, valor) {
-      const jugadorIndex = jugadores.findIndex(j => j.id === jugadoresFiltrados[indice].id);
-      
-      if (campo === 'titular') {
-        jugadores[jugadorIndex][campo] = valor;
-      } else if (['edad', 'general', 'potencial', 'sprint', 'regate', 'pase', 'tiro', 'defensa', 'liderazgo'].includes(campo)) {
-        const numValor = parseInt(valor);
-        if (numValor >= 30 && numValor <= 99) {
-          jugadores[jugadorIndex][campo] = numValor;
-        }
-      } else {
-        jugadores[jugadorIndex][campo] = valor;
-      }
-      
-      jugadoresFiltrados[indice] = jugadores[jugadorIndex];
-      actualizarEstadisticas();
-    }
-
-    function filtrarJugadores() {
-      const filtroPos = document.getElementById('filtroPos').value;
-      
-      jugadoresFiltrados = jugadores.filter(jugador => {
-        return !filtroPos || jugador.posicion === filtroPos;
-      });
-      
-      mostrarJugadores();
-    }
-
-    function exportarDatos() {
-      if (jugadores.length === 0) {
-        alert('⚠️ No hay jugadores para exportar');
-        return;
-      }
-      
-      const data = JSON.stringify(jugadores, null, 2);
-      const blob = new Blob([data], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `jugadores_${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      
-      URL.revokeObjectURL(url);
-      alert('✅ Jugadores exportados correctamente');
-    }
-
-    function importarDatos() {
-      document.getElementById('fileInput').click();
-    }
-
-    function cargarArchivo(event) {
-      const file = event.target.files[0];
-      if (!file) return;
-      
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        try {
-          const data = JSON.parse(e.target.result);
-          if (Array.isArray(data) && data.length > 0 && data[0].nombre) {
-            jugadores = data;
-            jugadoresFiltrados = [...jugadores];
-            actualizarEstadisticas();
-            mostrarJugadores();
-            alert('✅ Jugadores cargados correctamente');
-          } else {
-            alert('⚠️ Formato de archivo inválido');
-          }
-        } catch (error) {
-          alert('❌ Error al cargar el archivo');
-        }
-      };
-      reader.readAsText(file);
-    }
-
-    // Generar algunos jugadores al cargar
-    document.addEventListener('DOMContentLoaded', function() {
-      generarJugadores();
+function generar() {
+  const cant = parseInt(document.getElementById("cantidad").value);
+  jugadores = [];
+  
+  for (let i = 0; i < cant; i++) {
+    const nombre = nombres[rand(0, nombres.length-1)];
+    const apellido = apellidos[rand(0, apellidos.length-1)];
+    
+    jugadores.push({
+      id: i,
+      nombre: `${nombre} ${apellido}`,
+      edad: rand(18, 35),
+      posicion: posiciones[rand(0, posiciones.length-1)],
+      general: rand(60, 90),
+      potencial: rand(70, 95),
+      sprint: rand(50, 95),
+      regate: rand(50, 95),
+      pase: rand(50, 95),
+      tiro: rand(50, 95),
+      defensa: rand(40, 90),
+      resistencia: rand(60, 95),
+      valor: rand(100000, 2000000),
+      sueldo: rand(10000, 80000)
     });
-  </script>
+  }
+  
+  mostrar();
+}
+
+function mostrar() {
+  let html = `<table>
+    <tr>
+      <th>ID</th><th>Nombre</th><th>Edad</th><th>Pos</th><th>GEN</th><th>POT</th>
+      <th>SPR</th><th>REG</th><th>PAS</th><th>TIR</th><th>DEF</th><th>RES</th>
+      <th>Valor</th><th>Sueldo</th>
+    </tr>`;
+  
+  jugadores.forEach((j, i) => {
+    html += `<tr>
+      <td>${j.id}</td>
+      <td><input value="${j.nombre}" onchange="editar(${i}, 'nombre', this.value)"></td>
+      <td><input type="number" value="${j.edad}" onchange="editar(${i}, 'edad', this.value)"></td>
+      <td>
+        <select onchange="editar(${i}, 'posicion', this.value)">
+          <option value="POR" ${j.posicion==='POR'?'selected':''}>POR</option>
+          <option value="DEF" ${j.posicion==='DEF'?'selected':''}>DEF</option>
+          <option value="MED" ${j.posicion==='MED'?'selected':''}>MED</option>
+          <option value="DEL" ${j.posicion==='DEL'?'selected':''}>DEL</option>
+        </select>
+      </td>
+      <td><input type="number" value="${j.general}" min="30" max="99" onchange="editar(${i}, 'general', this.value)"></td>
+      <td><input type="number" value="${j.potencial}" min="30" max="99" onchange="editar(${i}, 'potencial', this.value)"></td>
+      <td><input type="number" value="${j.sprint}" min="30" max="99" onchange="editar(${i}, 'sprint', this.value)"></td>
+      <td><input type="number" value="${j.regate}" min="30" max="99" onchange="editar(${i}, 'regate', this.value)"></td>
+      <td><input type="number" value="${j.pase}" min="30" max="99" onchange="editar(${i}, 'pase', this.value)"></td>
+      <td><input type="number" value="${j.tiro}" min="30" max="99" onchange="editar(${i}, 'tiro', this.value)"></td>
+      <td><input type="number" value="${j.defensa}" min="30" max="99" onchange="editar(${i}, 'defensa', this.value)"></td>
+      <td><input type="number" value="${j.resistencia}" min="30" max="99" onchange="editar(${i}, 'resistencia', this.value)"></td>
+      <td><input type="number" value="${j.valor}" onchange="editar(${i}, 'valor', this.value)"></td>
+      <td><input type="number" value="${j.sueldo}" onchange="editar(${i}, 'sueldo', this.value)"></td>
+    </tr>`;
+  });
+  
+  html += "</table>";
+  document.getElementById("contenedor").innerHTML = html;
+}
+
+function editar(indice, campo, valor) {
+  if (campo === 'edad' || campo === 'general' || campo === 'potencial' || 
+      campo === 'sprint' || campo === 'regate' || campo === 'pase' || 
+      campo === 'tiro' || campo === 'defensa' || campo === 'resistencia' || 
+      campo === 'valor' || campo === 'sueldo') {
+    jugadores[indice][campo] = parseInt(valor);
+  } else {
+    jugadores[indice][campo] = valor;
+  }
+}
+
+function guardar() {
+  localStorage.setItem("jugadores", JSON.stringify(jugadores));
+  alert("Jugadores guardados");
+}
+
+function cargar() {
+  const data = localStorage.getItem("jugadores");
+  if (data) {
+    jugadores = JSON.parse(data);
+    mostrar();
+    alert("Jugadores cargados");
+  } else {
+    alert("No hay jugadores guardados");
+  }
+}
+
+function limpiar() {
+  localStorage.removeItem("jugadores");
+  jugadores = [];
+  document.getElementById("contenedor").innerHTML = "";
+  alert("Datos eliminados");
+}
+
+// Función global para que otros HTML puedan acceder
+window.obtenerJugadores = function() {
+  const data = localStorage.getItem("jugadores");
+  return data ? JSON.parse(data) : [];
+}
+
+// Cargar automáticamente si hay datos
+window.onload = function() {
+  const data = localStorage.getItem("jugadores");
+  if (data) {
+    jugadores = JSON.parse(data);
+    mostrar();
+  }
+}
+</script>
+
 </body>
 </html>
