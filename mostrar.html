@@ -98,6 +98,7 @@
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
+            margin-bottom: 15px;
         }
         .info-section {
             background: white;
@@ -162,6 +163,48 @@
         }
         .filter-btn.active, .filter-btn:hover {
             background: #007bff;
+            color: white;
+        }
+        .jugador-actions {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #dee2e6;
+        }
+        .entrenamiento-btn {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .entrenamiento-btn:hover {
+            background: linear-gradient(135deg, #218838, #1abc9c);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+        .entrenamiento-status {
+            background: #ffc107;
+            color: #856404;
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .entrenamiento-status.completado {
+            background: #28a745;
             color: white;
         }
     </style>
@@ -307,6 +350,18 @@
             `;
         }
         
+        function obtenerEstadoEntrenamiento(jugadorId) {
+            const entrenamientosData = localStorage.getItem("entrenamientosActivos");
+            if (!entrenamientosData) return null;
+            
+            try {
+                const entrenamientos = JSON.parse(entrenamientosData);
+                return entrenamientos[jugadorId] || null;
+            } catch (error) {
+                return null;
+            }
+        }
+        
         function mostrarJugadores() {
             let jugadoresFiltrados = jugadoresDelClub;
             
@@ -319,12 +374,34 @@
             
             let html = '';
             jugadoresFiltrados.forEach((jugador, index) => {
+                const estadoEntrenamiento = obtenerEstadoEntrenamiento(jugador.id || index);
+                let estadoHtml = '';
+                let botonEntrenamiento = '';
+                
+                if (estadoEntrenamiento) {
+                    const ahora = new Date().getTime();
+                    const tiempoRestante = estadoEntrenamiento.finalizaEn - ahora;
+                    
+                    if (tiempoRestante > 0) {
+                        const horas = Math.floor(tiempoRestante / (1000 * 60 * 60));
+                        const minutos = Math.floor((tiempoRestante % (1000 * 60 * 60)) / (1000 * 60));
+                        estadoHtml = `<div class="entrenamiento-status">⏱️ Entrenando: ${horas}h ${minutos}m</div>`;
+                        botonEntrenamiento = `<button class="entrenamiento-btn" disabled style="opacity: 0.5;">🏃‍♂️ En Entrenamiento</button>`;
+                    } else {
+                        estadoHtml = `<div class="entrenamiento-status completado">✅ Listo para recoger</div>`;
+                        botonEntrenamiento = `<button class="entrenamiento-btn" onclick="recogerEntrenamiento(${jugador.id || index})">🎁 Recoger Entrenamiento</button>`;
+                    }
+                } else {
+                    botonEntrenamiento = `<button class="entrenamiento-btn" onclick="irAEntrenamiento(${jugador.id || index})">🏃‍♂️ Entrenar</button>`;
+                }
+                
                 html += `
                     <div class="jugador-card">
                         <div class="jugador-header">
                             <div class="jugador-nombre">${jugador.nombre || 'Sin nombre'}</div>
                             <div class="jugador-posicion">${jugador.posicion}</div>
                         </div>
+                        ${estadoHtml}
                         <div class="jugador-info">
                             <div class="info-section">
                                 <div class="info-item">
@@ -379,11 +456,95 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="jugador-actions">
+                            ${botonEntrenamiento}
+                        </div>
                     </div>
                 `;
             });
             
             document.getElementById("listaJugadores").innerHTML = html;
+        }
+        
+        function irAEntrenamiento(jugadorId) {
+            // Guardar el ID del jugador seleccionado
+            localStorage.setItem("jugadorParaEntrenar", jugadorId);
+            // Redirigir a la página de entrenamiento
+            window.location.href = "entrenamiento.html";
+        }
+        
+        function recogerEntrenamiento(jugadorId) {
+            const entrenamientosData = localStorage.getItem("entrenamientosActivos");
+            if (!entrenamientosData) return;
+            
+            try {
+                const entrenamientos = JSON.parse(entrenamientosData);
+                const entrenamiento = entrenamientos[jugadorId];
+                
+                if (!entrenamiento) return;
+                
+                // Aplicar mejoras al jugador
+                aplicarMejorasEntrenamiento(jugadorId, entrenamiento);
+                
+                // Eliminar el entrenamiento activo
+                delete entrenamientos[jugadorId];
+                localStorage.setItem("entrenamientosActivos", JSON.stringify(entrenamientos));
+                
+                // Recargar la vista
+                cargarJugadores();
+                
+                alert(`¡Entrenamiento completado! ${entrenamiento.tipo} ha mejorado las habilidades del jugador.`);
+                
+            } catch (error) {
+                console.error('Error al recoger entrenamiento:', error);
+            }
+        }
+        
+        function aplicarMejorasEntrenamiento(jugadorId, entrenamiento) {
+            const jugadoresPorClubData = localStorage.getItem("jugadoresPorClub");
+            if (!jugadoresPorClubData) return;
+            
+            try {
+                const jugadoresPorClub = JSON.parse(jugadoresPorClubData);
+                const clubSeleccionado = localStorage.getItem("selectedClub");
+                
+                if (!clubSeleccionado) return;
+                
+                let clubId = null;
+                if (typeof clubes !== 'undefined') {
+                    const club = clubes.find(c => c.nombre === clubSeleccionado);
+                    clubId = club ? club.id : null;
+                }
+                
+                if (!clubId || !jugadoresPorClub[clubId]) return;
+                
+                const jugador = jugadoresPorClub[clubId][jugadorId];
+                if (!jugador) return;
+                
+                // Aplicar mejoras según el tipo de entrenamiento
+                const mejoras = entrenamiento.mejoras;
+                Object.keys(mejoras).forEach(stat => {
+                    if (jugador[stat] !== undefined) {
+                        jugador[stat] = Math.min(99, jugador[stat] + mejoras[stat]);
+                    }
+                });
+                
+                // Si cambió de posición, aplicar el cambio
+                if (entrenamiento.nuevaPosicion && entrenamiento.nuevaPosicion !== jugador.posicion) {
+                    jugador.posicion = entrenamiento.nuevaPosicion;
+                }
+                
+                // Recalcular general y valor
+                jugador.general = Math.round((jugador.sprint + jugador.regate + jugador.pase + jugador.tiro + jugador.defensa + jugador.resistencia) / 6);
+                jugador.valor = Math.round(jugador.valor * (1 + (Math.random() * 0.1 + 0.05))); // Incremento del 5-15%
+                jugador.sueldo = Math.round(jugador.valor * 0.01); // 1% del valor como sueldo
+                
+                // Guardar cambios
+                localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+                
+            } catch (error) {
+                console.error('Error al aplicar mejoras:', error);
+            }
         }
         
         function filtrarPorPosicion(posicion) {
