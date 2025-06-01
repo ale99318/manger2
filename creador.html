@@ -57,6 +57,14 @@
     button.save:hover {
       background: #1e7e34;
     }
+    button.continue {
+      background: #17a2b8;
+      font-size: 16px;
+      padding: 12px 25px;
+    }
+    button.continue:hover {
+      background: #138496;
+    }
     table {
       border-collapse: collapse;
       width: 100%;
@@ -109,6 +117,7 @@
   <div class="controls">
     <button onclick="generarJugadores()">🎲 Generar Jugadores</button>
     <button onclick="guardar()" class="save">💾 Guardar</button>
+    <button id="btnContinuar" onclick="continuarAlMenu()" class="continue" style="display:none;">🚀 Continuar al Menú</button>
   </div>
 
   <div id="statsContainer"></div>
@@ -187,6 +196,12 @@ function generarJugadores() {
   
   // Guardar automáticamente
   localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+  
+  // Marcar que los jugadores ya fueron generados
+  localStorage.setItem("jugadoresGenerados", "true");
+  
+  // Mostrar botón continuar
+  document.getElementById("btnContinuar").style.display = "inline-block";
   
   // Mostrar jugadores del club seleccionado o todos si no hay selección
   const clubSeleccionado = localStorage.getItem("selectedClub");
@@ -293,6 +308,19 @@ function guardar() {
   alert("✅ Jugadores guardados correctamente");
 }
 
+function continuarAlMenu() {
+  // Verificar que los jugadores estén guardados
+  if (Object.keys(jugadoresPorClub).length > 0) {
+    localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+    localStorage.setItem("jugadoresGenerados", "true");
+    
+    // Redireccionar al menú
+    window.location.href = "menu.html";
+  } else {
+    alert("⚠️ Debes generar jugadores antes de continuar.");
+  }
+}
+
 // Funciones globales para otros archivos
 window.obtenerJugadores = function() {
   const data = localStorage.getItem("jugadoresPorClub");
@@ -316,6 +344,15 @@ window.obtenerJugadoresPorClub = function(clubId = null) {
 
 // Cargar datos al iniciar
 window.addEventListener("DOMContentLoaded", () => {
+  // Verificar si ya se generaron jugadores previamente
+  const yaGenerados = localStorage.getItem("jugadoresGenerados");
+  
+  if (yaGenerados === "true") {
+    // Si ya se generaron, redirigir directamente al menú
+    window.location.href = "menu.html";
+    return;
+  }
+  
   // Verificar si ya existen jugadores guardados
   const jugadoresExistentes = localStorage.getItem("jugadoresPorClub");
   
@@ -340,6 +377,8 @@ window.addEventListener("DOMContentLoaded", () => {
     if (jugadores.length > 0) {
       mostrarEstadisticas();
       mostrar();
+      // Mostrar botón continuar si ya hay jugadores
+      document.getElementById("btnContinuar").style.display = "inline-block";
     }
   }
 });
