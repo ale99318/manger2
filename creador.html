@@ -112,8 +112,9 @@ function generarTodosLosClubes() {
     }
   });
   
-  // Guardar en localStorage
+  // GUARDAR AUTOMÁTICAMENTE en localStorage
   localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+  console.log("Jugadores guardados automáticamente en localStorage");
   
   // Mostrar solo los jugadores del club seleccionado si existe
   const clubSeleccionado = localStorage.getItem("selectedClub");
@@ -125,7 +126,7 @@ function generarTodosLosClubes() {
     }
   }
   
-  alert(`Jugadores generados para todos los clubes (${clubes.length} clubes)`);
+  alert(`Jugadores generados y guardados automáticamente para todos los clubes (${clubes.length} clubes)`);
 }
 
 function generar() {
@@ -153,6 +154,10 @@ function generar() {
       sueldo: rand(10000, 80000)
     });
   }
+  
+  // GUARDAR AUTOMÁTICAMENTE también en generación manual
+  localStorage.setItem("jugadores", JSON.stringify(jugadores));
+  console.log("Jugadores manuales guardados automáticamente");
   
   mostrar();
 }
@@ -205,6 +210,9 @@ function editar(indice, campo, valor) {
     jugadores[indice][campo] = valor;
   }
   
+  // GUARDAR AUTOMÁTICAMENTE cada vez que se edita
+  localStorage.setItem("jugadores", JSON.stringify(jugadores));
+  
   // Actualizar también en jugadoresPorClub si existe
   if (jugadores[indice].clubId && jugadoresPorClub[jugadores[indice].clubId]) {
     const jugadorEnClub = jugadoresPorClub[jugadores[indice].clubId].find(j => j.id === jugadores[indice].id);
@@ -220,7 +228,7 @@ function guardar() {
   if (Object.keys(jugadoresPorClub).length > 0) {
     localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
   }
-  alert("Jugadores guardados");
+  alert("Jugadores guardados manualmente");
 }
 
 function cargar() {
@@ -270,10 +278,10 @@ window.addEventListener("DOMContentLoaded", () => {
     const jugadoresExistentes = localStorage.getItem("jugadoresPorClub");
     
     if (!jugadoresExistentes && typeof clubes !== 'undefined') {
-      // Generar automáticamente jugadores para todos los clubes
+      // Generar automáticamente jugadores para todos los clubes Y GUARDAR
       setTimeout(() => {
-        generarTodosLosClubes();
-        console.log("Jugadores generados automáticamente para todos los clubes");
+        generarTodosLosClubes(); // Esta función ya incluye el guardado automático
+        console.log("Jugadores generados y guardados automáticamente para todos los clubes");
       }, 1000);
     } else if (jugadoresExistentes) {
       // Cargar jugadores del club seleccionado
@@ -294,6 +302,16 @@ window.addEventListener("DOMContentLoaded", () => {
     mostrar();
   }
 });
+
+// Funcionalidad adicional: Auto-guardar periódico cada 30 segundos
+setInterval(() => {
+  if (jugadores.length > 0) {
+    localStorage.setItem("jugadores", JSON.stringify(jugadores));
+  }
+  if (Object.keys(jugadoresPorClub).length > 0) {
+    localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+  }
+}, 30000); // Cada 30 segundos
 </script>
 
 </body>
