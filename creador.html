@@ -2,43 +2,139 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Generador de Jugadores Simple</title>
+  <title>Generador de Jugadores</title>
   <style>
-    body { font-family: Arial; padding: 10px; }
-    table { border-collapse: collapse; width: 100%; font-size: 12px; margin-top: 10px; }
-    th, td { border: 1px solid #ccc; padding: 4px; text-align: center; }
-    input, select { width: 70px; font-size: 11px; padding: 2px; }
-    .controls { margin-bottom: 10px; }
-    button { padding: 5px 10px; margin-right: 5px; }
-    .club-info { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; }
-    .status { margin: 10px 0; padding: 10px; background: #e8f4fd; border-radius: 5px; }
+    body { 
+      font-family: Arial, sans-serif; 
+      padding: 20px; 
+      background: #f5f5f5;
+    }
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #333;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .copyright-notice {
+      background: #fff3cd;
+      border: 1px solid #ffeaa7;
+      color: #856404;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+    button {
+      padding: 10px 20px;
+      background: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    button.save {
+      background: #28a745;
+    }
+    button.save:hover {
+      background: #1e7e34;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+      margin-top: 20px;
+    }
+    th {
+      background: #007bff;
+      color: white;
+      padding: 8px 4px;
+      text-align: center;
+      font-weight: bold;
+    }
+    td {
+      border: 1px solid #ddd;
+      padding: 4px;
+      text-align: center;
+    }
+    tr:nth-child(even) {
+      background: #f8f9fa;
+    }
+    input, select {
+      width: 70px;
+      font-size: 11px;
+      padding: 2px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+    input[type="text"] {
+      width: 120px;
+    }
+    .stats-summary {
+      background: #e8f4fd;
+      padding: 15px;
+      border-radius: 5px;
+      margin-bottom: 20px;
+      text-align: center;
+    }
   </style>
 </head>
 <body>
 
-<h2>Generador de Jugadores</h2>
+<div class="container">
+  <h2>⚽ Generador de Jugadores</h2>
+  
+  <div class="copyright-notice">
+    <strong>📋 Aviso:</strong> Por derechos de autor, se utilizan nombres genéricos generados automáticamente.
+  </div>
 
-<div class="status" id="statusInfo"></div>
+  <div class="controls">
+    <button onclick="generarJugadores()">🎲 Generar Jugadores</button>
+    <button onclick="guardar()" class="save">💾 Guardar</button>
+  </div>
 
-<div class="controls">
-  <label>Cantidad: <input id="cantidad" type="number" value="20" min="1" max="100"></label>
-  <button onclick="generar()">Generar Manual</button>
-  <button onclick="generarTodosLosClubes()">Generar Todos los Clubes</button>
-  <button onclick="guardar()">Guardar</button>
-  <button onclick="cargar()">Cargar</button>
-  <button onclick="limpiar()">Limpiar</button>
+  <div id="statsContainer"></div>
+  <div id="contenedor"></div>
 </div>
-
-<div id="contenedor"></div>
 
 <script src="clubes.js"></script>
 <script>
-// Variable global para los jugadores
+// Variables globales
 let jugadores = [];
 let jugadoresPorClub = {};
 
-const nombres = ["Carlos", "Juan", "Pedro", "Luis", "Miguel", "Andrés", "Santiago", "Daniel", "Fernando", "Pablo", "Diego", "Javier", "Alejandro", "Roberto", "Mario", "Sergio", "Antonio", "Francisco", "José", "Manuel", "Ricardo", "Eduardo", "Raúl", "Guillermo", "Gonzalo"];
-const apellidos = ["García", "López", "Martínez", "González", "Pérez", "Rodríguez", "Sánchez", "Fernández", "Torres", "Ramírez", "Castro", "Vargas", "Herrera", "Mendoza", "Silva", "Jiménez", "Morales", "Ruiz", "Ortega", "Delgado"];
+const nombres = [
+  "Carlos", "Juan", "Pedro", "Luis", "Miguel", "Andrés", "Santiago", "Daniel", 
+  "Fernando", "Pablo", "Diego", "Javier", "Alejandro", "Roberto", "Mario", 
+  "Sergio", "Antonio", "Francisco", "José", "Manuel", "Ricardo", "Eduardo", 
+  "Raúl", "Guillermo", "Gonzalo", "Mateo", "Sebastián", "Nicolás", "Gabriel", "Emilio"
+];
+
+const apellidos = [
+  "García", "López", "Martínez", "González", "Pérez", "Rodríguez", "Sánchez", 
+  "Fernández", "Torres", "Ramírez", "Castro", "Vargas", "Herrera", "Mendoza", 
+  "Silva", "Jiménez", "Morales", "Ruiz", "Ortega", "Delgado", "Cruz", "Flores", 
+  "Ramos", "Aguilar", "Medina", "Romero", "Núñez", "Guerrero", "Peña", "Vega"
+];
+
 const posiciones = ["POR", "DEF", "MED", "DEL"];
 
 function rand(min, max) {
@@ -68,32 +164,9 @@ function generarJugador(clubId, jugadorId) {
   };
 }
 
-function verificarEstadoEquipo() {
-  const dtNombre = localStorage.getItem("coachName");
-  const clubNombre = localStorage.getItem("selectedClub");
-  
-  const statusDiv = document.getElementById("statusInfo");
-  
-  if (dtNombre && clubNombre) {
-    statusDiv.innerHTML = `
-      <strong>Equipo Detectado:</strong><br>
-      DT: ${dtNombre}<br>
-      Club: ${clubNombre}<br>
-      <span style="color: green;">✓ Sistema listo para generar jugadores automáticamente</span>
-    `;
-    return true;
-  } else {
-    statusDiv.innerHTML = `
-      <span style="color: orange;">⚠ No se detectó equipo configurado</span><br>
-      <small>Configure un DT y club para activar la generación automática</small>
-    `;
-    return false;
-  }
-}
-
-function generarTodosLosClubes() {
+function generarJugadores() {
   if (typeof clubes === 'undefined') {
-    alert("Error: No se pudo cargar el archivo clubes.js");
+    alert("❌ Error: No se pudo cargar el archivo clubes.js");
     return;
   }
   
@@ -103,8 +176,8 @@ function generarTodosLosClubes() {
   clubes.forEach(club => {
     jugadoresPorClub[club.id] = [];
     
-    // Generar entre 20-24 jugadores por club
-    const cantidadJugadores = rand(20, 24);
+    // Generar entre 20-25 jugadores por club
+    const cantidadJugadores = rand(20, 25);
     
     for (let i = 0; i < cantidadJugadores; i++) {
       const jugador = generarJugador(club.id, jugadorIdGlobal++);
@@ -112,69 +185,59 @@ function generarTodosLosClubes() {
     }
   });
   
-  // GUARDAR AUTOMÁTICAMENTE en localStorage
+  // Guardar automáticamente
   localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
-  console.log("Jugadores guardados automáticamente en localStorage");
   
-  // Mostrar solo los jugadores del club seleccionado si existe
+  // Mostrar jugadores del club seleccionado o todos si no hay selección
   const clubSeleccionado = localStorage.getItem("selectedClub");
   if (clubSeleccionado) {
     const clubId = clubes.find(c => c.nombre === clubSeleccionado)?.id;
     if (clubId && jugadoresPorClub[clubId]) {
       jugadores = jugadoresPorClub[clubId];
-      mostrar();
     }
-  }
-  
-  alert(`Jugadores generados y guardados automáticamente para todos los clubes (${clubes.length} clubes)`);
-}
-
-function generar() {
-  const cant = parseInt(document.getElementById("cantidad").value);
-  jugadores = [];
-  
-  for (let i = 0; i < cant; i++) {
-    const nombre = nombres[rand(0, nombres.length-1)];
-    const apellido = apellidos[rand(0, apellidos.length-1)];
-    
-    jugadores.push({
-      id: i,
-      nombre: `${nombre} ${apellido}`,
-      edad: rand(18, 35),
-      posicion: posiciones[rand(0, posiciones.length-1)],
-      general: rand(60, 90),
-      potencial: rand(70, 95),
-      sprint: rand(50, 95),
-      regate: rand(50, 95),
-      pase: rand(50, 95),
-      tiro: rand(50, 95),
-      defensa: rand(40, 90),
-      resistencia: rand(60, 95),
-      valor: rand(100000, 2000000),
-      sueldo: rand(10000, 80000)
+  } else {
+    // Si no hay club seleccionado, mostrar todos los jugadores
+    jugadores = [];
+    Object.values(jugadoresPorClub).forEach(clubJugadores => {
+      jugadores = jugadores.concat(clubJugadores);
     });
   }
   
-  // GUARDAR AUTOMÁTICAMENTE también en generación manual
-  localStorage.setItem("jugadores", JSON.stringify(jugadores));
-  console.log("Jugadores manuales guardados automáticamente");
-  
+  mostrarEstadisticas();
   mostrar();
 }
 
+function mostrarEstadisticas() {
+  const totalJugadores = Object.values(jugadoresPorClub).reduce((total, jugadores) => total + jugadores.length, 0);
+  const totalClubes = Object.keys(jugadoresPorClub).length;
+  
+  document.getElementById("statsContainer").innerHTML = `
+    <div class="stats-summary">
+      <strong>📊 Generación Completada:</strong> 
+      ${totalJugadores} jugadores creados para ${totalClubes} clubes
+      ${localStorage.getItem("selectedClub") ? ` | Mostrando: ${localStorage.getItem("selectedClub")}` : ' | Mostrando: Todos los jugadores'}
+    </div>
+  `;
+}
+
 function mostrar() {
+  if (jugadores.length === 0) {
+    document.getElementById("contenedor").innerHTML = "<p style='text-align:center; color:#666;'>No hay jugadores para mostrar. Haz clic en 'Generar Jugadores'.</p>";
+    return;
+  }
+
   let html = `<table>
     <tr>
       <th>ID</th><th>Nombre</th><th>Edad</th><th>Pos</th><th>GEN</th><th>POT</th>
       <th>SPR</th><th>REG</th><th>PAS</th><th>TIR</th><th>DEF</th><th>RES</th>
-      <th>Valor</th><th>Sueldo</th>
+      <th>Valor ($)</th><th>Sueldo ($)</th>
     </tr>`;
   
   jugadores.forEach((j, i) => {
     html += `<tr>
       <td>${j.id}</td>
-      <td><input value="${j.nombre}" onchange="editar(${i}, 'nombre', this.value)"></td>
-      <td><input type="number" value="${j.edad}" onchange="editar(${i}, 'edad', this.value)"></td>
+      <td><input type="text" value="${j.nombre}" onchange="editar(${i}, 'nombre', this.value)"></td>
+      <td><input type="number" value="${j.edad}" min="16" max="40" onchange="editar(${i}, 'edad', this.value)"></td>
       <td>
         <select onchange="editar(${i}, 'posicion', this.value)">
           <option value="POR" ${j.posicion==='POR'?'selected':''}>POR</option>
@@ -191,8 +254,8 @@ function mostrar() {
       <td><input type="number" value="${j.tiro}" min="30" max="99" onchange="editar(${i}, 'tiro', this.value)"></td>
       <td><input type="number" value="${j.defensa}" min="30" max="99" onchange="editar(${i}, 'defensa', this.value)"></td>
       <td><input type="number" value="${j.resistencia}" min="30" max="99" onchange="editar(${i}, 'resistencia', this.value)"></td>
-      <td><input type="number" value="${j.valor}" onchange="editar(${i}, 'valor', this.value)"></td>
-      <td><input type="number" value="${j.sueldo}" onchange="editar(${i}, 'sueldo', this.value)"></td>
+      <td><input type="number" value="${j.valor}" min="50000" onchange="editar(${i}, 'valor', this.value)"></td>
+      <td><input type="number" value="${j.sueldo}" min="5000" onchange="editar(${i}, 'sueldo', this.value)"></td>
     </tr>`;
   });
   
@@ -210,10 +273,7 @@ function editar(indice, campo, valor) {
     jugadores[indice][campo] = valor;
   }
   
-  // GUARDAR AUTOMÁTICAMENTE cada vez que se edita
-  localStorage.setItem("jugadores", JSON.stringify(jugadores));
-  
-  // Actualizar también en jugadoresPorClub si existe
+  // Actualizar también en jugadoresPorClub
   if (jugadores[indice].clubId && jugadoresPorClub[jugadores[indice].clubId]) {
     const jugadorEnClub = jugadoresPorClub[jugadores[indice].clubId].find(j => j.id === jugadores[indice].id);
     if (jugadorEnClub) {
@@ -224,40 +284,28 @@ function editar(indice, campo, valor) {
 }
 
 function guardar() {
-  localStorage.setItem("jugadores", JSON.stringify(jugadores));
-  if (Object.keys(jugadoresPorClub).length > 0) {
-    localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+  if (Object.keys(jugadoresPorClub).length === 0) {
+    alert("⚠️ No hay jugadores para guardar. Genera jugadores primero.");
+    return;
   }
-  alert("Jugadores guardados manualmente");
+  
+  localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+  alert("✅ Jugadores guardados correctamente");
 }
 
-function cargar() {
-  const data = localStorage.getItem("jugadores");
-  if (data) {
-    jugadores = JSON.parse(data);
-    mostrar();
-    alert("Jugadores cargados");
-  } else {
-    alert("No hay jugadores guardados");
-  }
-}
-
-function limpiar() {
-  localStorage.removeItem("jugadores");
-  localStorage.removeItem("jugadoresPorClub");
-  jugadores = [];
-  jugadoresPorClub = {};
-  document.getElementById("contenedor").innerHTML = "";
-  alert("Datos eliminados");
-}
-
-// Función global para que otros HTML puedan acceder
+// Funciones globales para otros archivos
 window.obtenerJugadores = function() {
-  const data = localStorage.getItem("jugadores");
-  return data ? JSON.parse(data) : [];
+  const data = localStorage.getItem("jugadoresPorClub");
+  if (!data) return [];
+  
+  const jugadoresPorClub = JSON.parse(data);
+  let todosLosJugadores = [];
+  Object.values(jugadoresPorClub).forEach(clubJugadores => {
+    todosLosJugadores = todosLosJugadores.concat(clubJugadores);
+  });
+  return todosLosJugadores;
 }
 
-// Función global para obtener jugadores por club
 window.obtenerJugadoresPorClub = function(clubId = null) {
   const data = localStorage.getItem("jugadoresPorClub");
   if (!data) return clubId ? [] : {};
@@ -266,52 +314,35 @@ window.obtenerJugadoresPorClub = function(clubId = null) {
   return clubId ? (jugadoresPorClub[clubId] || []) : jugadoresPorClub;
 }
 
-// Función para detectar automáticamente y generar
+// Cargar datos al iniciar
 window.addEventListener("DOMContentLoaded", () => {
-  verificarEstadoEquipo();
+  // Verificar si ya existen jugadores guardados
+  const jugadoresExistentes = localStorage.getItem("jugadoresPorClub");
   
-  const dtNombre = localStorage.getItem("coachName");
-  const clubNombre = localStorage.getItem("selectedClub");
-  
-  // Si hay equipo configurado, verificar si ya existen jugadores
-  if (dtNombre && clubNombre) {
-    const jugadoresExistentes = localStorage.getItem("jugadoresPorClub");
+  if (jugadoresExistentes) {
+    jugadoresPorClub = JSON.parse(jugadoresExistentes);
     
-    if (!jugadoresExistentes && typeof clubes !== 'undefined') {
-      // Generar automáticamente jugadores para todos los clubes Y GUARDAR
-      setTimeout(() => {
-        generarTodosLosClubes(); // Esta función ya incluye el guardado automático
-        console.log("Jugadores generados y guardados automáticamente para todos los clubes");
-      }, 1000);
-    } else if (jugadoresExistentes) {
-      // Cargar jugadores del club seleccionado
-      jugadoresPorClub = JSON.parse(jugadoresExistentes);
-      const clubId = clubes?.find(c => c.nombre === clubNombre)?.id;
-      
+    // Mostrar jugadores del club seleccionado o todos
+    const clubSeleccionado = localStorage.getItem("selectedClub");
+    if (clubSeleccionado && typeof clubes !== 'undefined') {
+      const clubId = clubes.find(c => c.nombre === clubSeleccionado)?.id;
       if (clubId && jugadoresPorClub[clubId]) {
         jugadores = jugadoresPorClub[clubId];
-        mostrar();
       }
+    } else {
+      // Mostrar todos los jugadores
+      jugadores = [];
+      Object.values(jugadoresPorClub).forEach(clubJugadores => {
+        jugadores = jugadores.concat(clubJugadores);
+      });
+    }
+    
+    if (jugadores.length > 0) {
+      mostrarEstadisticas();
+      mostrar();
     }
   }
-  
-  // Cargar jugadores normales si existen
-  const data = localStorage.getItem("jugadores");
-  if (data && jugadores.length === 0) {
-    jugadores = JSON.parse(data);
-    mostrar();
-  }
 });
-
-// Funcionalidad adicional: Auto-guardar periódico cada 30 segundos
-setInterval(() => {
-  if (jugadores.length > 0) {
-    localStorage.setItem("jugadores", JSON.stringify(jugadores));
-  }
-  if (Object.keys(jugadoresPorClub).length > 0) {
-    localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
-  }
-}, 30000); // Cada 30 segundos
 </script>
 
 </body>
