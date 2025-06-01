@@ -19,13 +19,117 @@ const apellidos = [
 
 const posiciones = ["POR", "DEF", "MED", "DEL"];
 
+// Configuración de precios por liga (valores en USD)
+const configPorLiga = {
+  // Brasil (Liga más fuerte económicamente)
+  "55": { 
+    valorMin: 25000, valorMax: 180000, 
+    sueldoMin: 1800, sueldoMax: 12000 
+  },
+  // Argentina (Segunda liga más fuerte)
+  "54": { 
+    valorMin: 18000, valorMax: 150000, 
+    sueldoMin: 1200, sueldoMax: 9000 
+  },
+  // Colombia (Liga competitiva)
+  "57": { 
+    valorMin: 12000, valorMax: 120000, 
+    sueldoMin: 900, sueldoMax: 7500 
+  },
+  // Chile (Liga estable)
+  "56": { 
+    valorMin: 10000, valorMax: 100000, 
+    sueldoMin: 800, sueldoMax: 6500 
+  },
+  // Uruguay (Liga tradicional pero pequeña)
+  "598": { 
+    valorMin: 8000, valorMax: 85000, 
+    sueldoMin: 700, sueldoMax: 5500 
+  },
+  // Ecuador (Liga en crecimiento)
+  "593": { 
+    valorMin: 7000, valorMax: 75000, 
+    sueldoMin: 600, sueldoMax: 4800 
+  },
+  // Perú (Liga competitiva pero con menos recursos)
+  "51": { 
+    valorMin: 6000, valorMax: 65000, 
+    sueldoMin: 500, sueldoMax: 4200 
+  },
+  // Paraguay (Liga pequeña)
+  "595": { 
+    valorMin: 5000, valorMax: 55000, 
+    sueldoMin: 450, sueldoMax: 3800 
+  },
+  // Venezuela (Crisis económica)
+  "58": { 
+    valorMin: 4000, valorMax: 45000, 
+    sueldoMin: 350, sueldoMax: 3000 
+  },
+  // Bolivia (Liga con menos recursos)
+  "591": { 
+    valorMin: 3500, valorMax: 40000, 
+    sueldoMin: 300, sueldoMax: 2500 
+  }
+};
+
 function rand(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function obtenerConfigLiga(clubId) {
+  const ligaId = clubId.split('-')[0];
+  return configPorLiga[ligaId] || configPorLiga["51"]; // Default a Perú si no se encuentra
+}
+
+function calcularValorPorHabilidad(general, potencial, config) {
+  // Factor base según el rating general
+  let factorBase = 1.0;
+  if (general >= 85) factorBase = 1.4;
+  else if (general >= 80) factorBase = 1.2;
+  else if (general >= 75) factorBase = 1.1;
+  else if (general >= 70) factorBase = 1.0;
+  else if (general >= 65) factorBase = 0.9;
+  else factorBase = 0.8;
+  
+  // Factor potencial
+  let factorPotencial = 1.0;
+  if (potencial >= 90) factorPotencial = 1.3;
+  else if (potencial >= 85) factorPotencial = 1.2;
+  else if (potencial >= 80) factorPotencial = 1.1;
+  
+  const rangoValor = config.valorMax - config.valorMin;
+  const valorBase = config.valorMin + (rangoValor * 0.5);
+  
+  return Math.round(valorBase * factorBase * factorPotencial);
+}
+
+function calcularSueldoPorValor(valor, config) {
+  // El sueldo está relacionado con el valor pero con cierta variación
+  const porcentajeValor = (valor - config.valorMin) / (config.valorMax - config.valorMin);
+  const rangoSueldo = config.sueldoMax - config.sueldoMin;
+  const sueldoBase = config.sueldoMin + (rangoSueldo * porcentajeValor);
+  
+  // Añadir variación random del ±20%
+  const variacion = sueldoBase * 0.2;
+  const sueldoFinal = sueldoBase + rand(-variacion, variacion);
+  
+  return Math.max(config.sueldoMin, Math.round(sueldoFinal));
 }
 
 function generarJugador(clubId, jugadorId) {
   const nombre = nombres[rand(0, nombres.length-1)];
   const apellido = apellidos[rand(0, apellidos.length-1)];
+  const config = obtenerConfigLiga(clubId);
+  
+  const general = rand(60, 90);
+  const potencial = rand(Math.max(general, 70), 95);
+  
+  // Calcular valor basado en habilidades y liga
+  const valor = calcularValorPorHabilidad(general, potencial, config);
+  
+  // Calcular sueldo basado en valor
+  const sueldo = calcularSueldoPorValor(valor, config);
   
   return {
     id: jugadorId,
@@ -33,16 +137,16 @@ function generarJugador(clubId, jugadorId) {
     nombre: `${nombre} ${apellido}`,
     edad: rand(18, 35),
     posicion: posiciones[rand(0, posiciones.length-1)],
-    general: rand(60, 90),
-    potencial: rand(70, 95),
+    general: general,
+    potencial: potencial,
     sprint: rand(50, 95),
     regate: rand(50, 95),
     pase: rand(50, 95),
     tiro: rand(50, 95),
     defensa: rand(40, 90),
     resistencia: rand(60, 95),
-    valor: rand(5000, 150000), // Valores más realistas para Sudamérica
-    sueldo: rand(800, 8000)   // Sueldos más realistas para Sudamérica
+    valor: valor,
+    sueldo: sueldo
   };
 }
 
@@ -173,8 +277,8 @@ function mostrar() {
       <td><input type="number" value="${j.tiro}" min="30" max="99" onchange="editar(${i}, 'tiro', this.value)"></td>
       <td><input type="number" value="${j.defensa}" min="30" max="99" onchange="editar(${i}, 'defensa', this.value)"></td>
       <td><input type="number" value="${j.resistencia}" min="30" max="99" onchange="editar(${i}, 'resistencia', this.value)"></td>
-      <td><input type="number" value="${j.valor}" min="30000" onchange="editar(${i}, 'valor', this.value)"></td>
-      <td><input type="number" value="${j.sueldo}" min="2000" onchange="editar(${i}, 'sueldo', this.value)"></td>
+      <td><input type="number" value="${j.valor}" min="3000" onchange="editar(${i}, 'valor', this.value)"></td>
+      <td><input type="number" value="${j.sueldo}" min="250" onchange="editar(${i}, 'sueldo', this.value)"></td>
     </tr>`;
   });
   
