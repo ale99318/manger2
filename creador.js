@@ -41,8 +41,8 @@ function generarJugador(clubId, jugadorId) {
     tiro: rand(50, 95),
     defensa: rand(40, 90),
     resistencia: rand(60, 95),
-    valor: rand(50000, 800000), // Valores más realistas para Sudamérica
-    sueldo: rand(3000, 25000)   // Sueldos más realistas para Sudamérica
+    valor: rand(5000, 150000), // Valores más realistas para Sudamérica
+    sueldo: rand(800, 8000)   // Sueldos más realistas para Sudamérica
   };
 }
 
