@@ -7,7 +7,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: 0 auto;
             padding: 20px;
             background-color: #f5f5f5;
@@ -21,7 +21,45 @@
         h1 {
             color: #333;
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
+        }
+        .club-info {
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .club-info h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .stats-bar {
+            background: #e8f4fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            text-align: center;
+        }
+        .stat-item {
+            background: white;
+            padding: 10px;
+            border-radius: 5px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+            text-transform: uppercase;
         }
         .jugador-card {
             background: #f8f9fa;
@@ -35,22 +73,42 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
+        .jugador-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #007bff;
+        }
         .jugador-nombre {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: bold;
             color: #007bff;
-            margin-bottom: 10px;
+        }
+        .jugador-posicion {
+            background: #007bff;
+            color: white;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
         }
         .jugador-info {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 10px;
+            gap: 15px;
+        }
+        .info-section {
+            background: white;
+            padding: 12px;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
         }
         .info-item {
             display: flex;
             justify-content: space-between;
-            padding: 5px 0;
-            border-bottom: 1px solid #eee;
+            padding: 3px 0;
         }
         .info-label {
             font-weight: bold;
@@ -58,91 +116,293 @@
         }
         .info-value {
             color: #333;
+            font-weight: 500;
+        }
+        .valor-money {
+            color: #28a745;
+            font-weight: bold;
         }
         .no-jugadores {
             text-align: center;
             color: #666;
             font-style: italic;
             padding: 40px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin: 20px 0;
         }
         .refresh-btn {
             background: #007bff;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 5px;
             cursor: pointer;
             margin-bottom: 20px;
+            font-size: 14px;
+            transition: background 0.3s;
         }
         .refresh-btn:hover {
             background: #0056b3;
+        }
+        .posiciones-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            padding: 8px 15px;
+            border: 2px solid #007bff;
+            background: white;
+            color: #007bff;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .filter-btn.active, .filter-btn:hover {
+            background: #007bff;
+            color: white;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Lista de Jugadores</h1>
+        <h1>🏆 Plantel del Club</h1>
+        
+        <div id="clubInfo" class="club-info"></div>
+        
+        <div id="statsBar" class="stats-bar"></div>
+        
         <button class="refresh-btn" onclick="cargarJugadores()">🔄 Actualizar Lista</button>
+        
+        <div class="posiciones-filter">
+            <button class="filter-btn active" onclick="filtrarPorPosicion('TODOS')">TODOS</button>
+            <button class="filter-btn" onclick="filtrarPorPosicion('POR')">PORTEROS</button>
+            <button class="filter-btn" onclick="filtrarPorPosicion('DEF')">DEFENSAS</button>
+            <button class="filter-btn" onclick="filtrarPorPosicion('MED')">MEDIOCAMPISTAS</button>
+            <button class="filter-btn" onclick="filtrarPorPosicion('DEL')">DELANTEROS</button>
+        </div>
+        
         <div id="listaJugadores"></div>
     </div>
 
+    <script src="clubes.js"></script>
     <script>
+        let jugadoresDelClub = [];
+        let filtroActual = 'TODOS';
+        
+        function formatearDinero(valor) {
+            return new Intl.NumberFormat('es-ES', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0
+            }).format(valor);
+        }
+        
         function cargarJugadores() {
-            const jugadoresData = localStorage.getItem("jugadores");
-            const listaContainer = document.getElementById("listaJugadores");
+            // Obtener el club seleccionado
+            const clubSeleccionado = localStorage.getItem("selectedClub");
+            const dtNombre = localStorage.getItem("coachName");
             
-            if (!jugadoresData) {
-                listaContainer.innerHTML = '<div class="no-jugadores">No hay jugadores guardados en localStorage</div>';
+            if (!clubSeleccionado) {
+                document.getElementById("listaJugadores").innerHTML = 
+                    '<div class="no-jugadores">❌ No hay club seleccionado.<br><small>Configura tu equipo primero.</small></div>';
+                document.getElementById("clubInfo").innerHTML = 
+                    '<h2>❌ Club no configurado</h2>';
+                return;
+            }
+            
+            // Mostrar información del club
+            document.getElementById("clubInfo").innerHTML = `
+                <h2>⚽ ${clubSeleccionado}</h2>
+                <p>🎯 Director Técnico: ${dtNombre || 'No asignado'}</p>
+            `;
+            
+            // Obtener jugadores del localStorage
+            const jugadoresPorClubData = localStorage.getItem("jugadoresPorClub");
+            
+            if (!jugadoresPorClubData) {
+                document.getElementById("listaJugadores").innerHTML = 
+                    '<div class="no-jugadores">⚠️ No hay jugadores generados.<br><small>Ve al generador de jugadores primero.</small></div>';
                 return;
             }
             
             try {
-                const jugadores = JSON.parse(jugadoresData);
+                const jugadoresPorClub = JSON.parse(jugadoresPorClubData);
                 
-                if (!Array.isArray(jugadores) || jugadores.length === 0) {
-                    listaContainer.innerHTML = '<div class="no-jugadores">No hay jugadores en la lista</div>';
+                // Encontrar el ID del club
+                let clubId = null;
+                if (typeof clubes !== 'undefined') {
+                    const club = clubes.find(c => c.nombre === clubSeleccionado);
+                    clubId = club ? club.id : null;
+                }
+                
+                if (!clubId || !jugadoresPorClub[clubId]) {
+                    document.getElementById("listaJugadores").innerHTML = 
+                        '<div class="no-jugadores">❌ No se encontraron jugadores para este club.<br><small>Regenera los jugadores si es necesario.</small></div>';
                     return;
                 }
                 
-                let html = '';
-                jugadores.forEach((jugador, index) => {
-                    html += `
-                        <div class="jugador-card">
-                            <div class="jugador-nombre">${jugador.nombre || 'Sin nombre'}</div>
-                            <div class="jugador-info">
-                    `;
-                    
-                    // Mostrar todas las propiedades del jugador
-                    Object.keys(jugador).forEach(key => {
-                        if (key !== 'nombre') {
-                            html += `
-                                <div class="info-item">
-                                    <span class="info-label">${key}:</span>
-                                    <span class="info-value">${jugador[key]}</span>
-                                </div>
-                            `;
-                        }
-                    });
-                    
-                    html += `
-                            </div>
-                        </div>
-                    `;
-                });
+                jugadoresDelClub = jugadoresPorClub[clubId];
                 
-                listaContainer.innerHTML = html;
+                if (!Array.isArray(jugadoresDelClub) || jugadoresDelClub.length === 0) {
+                    document.getElementById("listaJugadores").innerHTML = 
+                        '<div class="no-jugadores">📭 No hay jugadores en este club</div>';
+                    return;
+                }
+                
+                mostrarEstadisticas();
+                mostrarJugadores();
                 
             } catch (error) {
-                listaContainer.innerHTML = '<div class="no-jugadores">Error al leer los datos de jugadores</div>';
+                document.getElementById("listaJugadores").innerHTML = 
+                    '<div class="no-jugadores">❌ Error al cargar los datos de jugadores</div>';
                 console.error('Error parsing jugadores:', error);
             }
+        }
+        
+        function mostrarEstadisticas() {
+            if (jugadoresDelClub.length === 0) return;
+            
+            const stats = {
+                total: jugadoresDelClub.length,
+                porteros: jugadoresDelClub.filter(j => j.posicion === 'POR').length,
+                defensas: jugadoresDelClub.filter(j => j.posicion === 'DEF').length,
+                mediocampistas: jugadoresDelClub.filter(j => j.posicion === 'MED').length,
+                delanteros: jugadoresDelClub.filter(j => j.posicion === 'DEL').length,
+                promedioGeneral: Math.round(jugadoresDelClub.reduce((sum, j) => sum + j.general, 0) / jugadoresDelClub.length),
+                valorTotal: jugadoresDelClub.reduce((sum, j) => sum + j.valor, 0)
+            };
+            
+            document.getElementById("statsBar").innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-number">${stats.total}</div>
+                    <div class="stat-label">Total Jugadores</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.porteros}</div>
+                    <div class="stat-label">Porteros</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.defensas}</div>
+                    <div class="stat-label">Defensas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.mediocampistas}</div>
+                    <div class="stat-label">Mediocampistas</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.delanteros}</div>
+                    <div class="stat-label">Delanteros</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.promedioGeneral}</div>
+                    <div class="stat-label">Promedio General</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${formatearDinero(stats.valorTotal)}</div>
+                    <div class="stat-label">Valor Total</div>
+                </div>
+            `;
+        }
+        
+        function mostrarJugadores() {
+            let jugadoresFiltrados = jugadoresDelClub;
+            
+            if (filtroActual !== 'TODOS') {
+                jugadoresFiltrados = jugadoresDelClub.filter(j => j.posicion === filtroActual);
+            }
+            
+            // Ordenar por general (mayor a menor)
+            jugadoresFiltrados.sort((a, b) => b.general - a.general);
+            
+            let html = '';
+            jugadoresFiltrados.forEach((jugador, index) => {
+                html += `
+                    <div class="jugador-card">
+                        <div class="jugador-header">
+                            <div class="jugador-nombre">${jugador.nombre || 'Sin nombre'}</div>
+                            <div class="jugador-posicion">${jugador.posicion}</div>
+                        </div>
+                        <div class="jugador-info">
+                            <div class="info-section">
+                                <div class="info-item">
+                                    <span class="info-label">Edad:</span>
+                                    <span class="info-value">${jugador.edad} años</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">General:</span>
+                                    <span class="info-value">${jugador.general}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Potencial:</span>
+                                    <span class="info-value">${jugador.potencial}</span>
+                                </div>
+                            </div>
+                            <div class="info-section">
+                                <div class="info-item">
+                                    <span class="info-label">Sprint:</span>
+                                    <span class="info-value">${jugador.sprint}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Regate:</span>
+                                    <span class="info-value">${jugador.regate}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Pase:</span>
+                                    <span class="info-value">${jugador.pase}</span>
+                                </div>
+                            </div>
+                            <div class="info-section">
+                                <div class="info-item">
+                                    <span class="info-label">Tiro:</span>
+                                    <span class="info-value">${jugador.tiro}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Defensa:</span>
+                                    <span class="info-value">${jugador.defensa}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Resistencia:</span>
+                                    <span class="info-value">${jugador.resistencia}</span>
+                                </div>
+                            </div>
+                            <div class="info-section">
+                                <div class="info-item">
+                                    <span class="info-label">Valor:</span>
+                                    <span class="info-value valor-money">${formatearDinero(jugador.valor)}</span>
+                                </div>
+                                <div class="info-item">
+                                    <span class="info-label">Sueldo:</span>
+                                    <span class="info-value valor-money">${formatearDinero(jugador.sueldo)}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            document.getElementById("listaJugadores").innerHTML = html;
+        }
+        
+        function filtrarPorPosicion(posicion) {
+            filtroActual = posicion;
+            
+            // Actualizar botones activos
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            mostrarJugadores();
         }
         
         // Cargar jugadores al iniciar la página
         window.addEventListener('load', cargarJugadores);
         
-        // Actualizar automáticamente cada 5 segundos por si hay cambios
-        setInterval(cargarJugadores, 5000);
+        // Actualizar cada 30 segundos por si hay cambios
+        setInterval(cargarJugadores, 30000);
     </script>
 </body>
 </html>
