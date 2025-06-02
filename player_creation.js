@@ -340,7 +340,7 @@ function mostrarJugadores(jugadores) {
 
 // Función para volver al calendario
 function goToCalendar() {
-    window.location.href = "calendar.html";
+    window.location.href = "calendar/calendar.html";
 }
 
 // ==================== FUNCIONES PARA INTEGRAR CON EL CALENDARIO ====================
