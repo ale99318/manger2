@@ -104,14 +104,31 @@ function asignarLesion(estadoFisico, cansancio, propensionLesiones) {
     return null; // Sin lesión
 }
 
-// Función para asignar un evento de cansancio inicial
-function asignarEventoCansancio() {
+// Función para asignar un evento de cansancio inicial (solo actividades fuera del campo)
+function asignarEventoCansancioFueraCampo() {
     // Verificar si eventosCansancio está definida (de cansancio.js)
     if (typeof eventosCansancio !== 'undefined' && eventosCansancio.length > 0) {
-        const index = rand(0, eventosCansancio.length - 1);
-        return eventosCansancio[index];
+        // Filtrar solo eventos relacionados con indisciplina o actividades personales
+        const eventosFueraCampo = eventosCansancio.filter(evento => 
+            evento.tipo.includes("Fiesta") || 
+            evento.tipo.includes("Desvelada") || 
+            evento.tipo.includes("Ampay") || 
+            evento.tipo.includes("Salida") || 
+            evento.tipo.includes("Dormir") || 
+            evento.tipo.includes("Comer") || 
+            evento.tipo.includes("Bebidas") || 
+            evento.tipo.includes("Videojuegos") || 
+            evento.tipo.includes("Discoteca") || 
+            evento.tipo.includes("Viajes personales") || 
+            evento.tipo.includes("Entrevistas")
+        );
+        
+        if (eventosFueraCampo.length > 0 && Math.random() < 0.15) { // Solo 15% de probabilidad de un evento fuera del campo
+            const index = rand(0, eventosFueraCampo.length - 1);
+            return eventosFueraCampo[index];
+        }
     }
-    return null; // Sin evento si no está definido
+    return null; // Sin evento en la mayoría de los casos
 }
 
 // Función para asignar una actitud al jugador
@@ -140,23 +157,23 @@ function generarJugador(clubId, jugadorId) {
     const edad = rand(18, 35);
     const birthdayMonth = rand(1, 12);
     const birthdayDay = rand(1, new Date(2025, birthdayMonth, 0).getDate());
-    const estadoFisicoBase = rand(60, 100); // Estado físico base
+    const estadoFisicoBase = rand(80, 100); // Estado físico base alto, ya que no hay partidos ni entrenamientos
     const propensionLesiones = rand(10, 50); // Probabilidad base de lesión
     const actitud = asignarActitud(); // Asignar actitud aleatoria
     
-    // Asignar un evento de cansancio inicial para simular actividad reciente
-    const eventoCansancio = asignarEventoCansancio();
-    let cansancio = 0;
+    // Asignar un evento de cansancio inicial solo para actividades fuera del campo con baja probabilidad
+    const eventoCansancio = asignarEventoCansancioFueraCampo();
+    let cansancio = rand(0, 10); // Cansancio inicial bajo, ya que no hay partidos ni entrenamientos
     let estadoFisico = estadoFisicoBase;
     let resistencia = rand(60, 95);
     
     if (eventoCansancio) {
-        cansancio = Math.min(100, Math.max(0, rand(0, 20) - eventoCansancio.impactoEnergia)); // Ajustar cansancio inicial
+        cansancio = Math.min(100, Math.max(10, cansancio - eventoCansancio.impactoEnergia)); // Ajustar cansancio inicial si hay evento
         resistencia = Math.min(100, Math.max(0, resistencia + eventoCansancio.impactoResistencia)); // Ajustar resistencia
-        estadoFisico = Math.min(100, Math.max(0, estadoFisicoBase + eventoCansancio.impactoEnergia / 2)); // Impacto parcial en estado físico
+        estadoFisico = Math.min(100, Math.max(50, estadoFisicoBase + eventoCansancio.impactoEnergia / 2)); // Impacto parcial en estado físico
     }
     
-    // Generar lesión solo si el estado físico es bajo o cansancio alto
+    // Generar lesión solo si el estado físico es bajo o cansancio alto (poco probable sin partidos/entrenamientos)
     const lesion = asignarLesion(estadoFisico, cansancio, propensionLesiones);
     
     return {
@@ -228,7 +245,7 @@ window.addEventListener("DOMContentLoaded", () => {
         generateBtn.disabled = false;
     }
     
-    // Generar jugadores para todos los clubes al hacer clic
+       // Generar jugadores para todos los clubes al hacer clic
     generateBtn.addEventListener("click", () => {
         if (!clubIdSeleccionado) return;
         
@@ -325,3 +342,137 @@ function mostrarJugadores(jugadores) {
 function goToCalendar() {
     window.location.href = "calendar.html";
 }
+
+// ==================== FUNCIONES PARA INTEGRAR CON EL CALENDARIO ====================
+
+// Función para aplicar degradación diaria por inactividad (debe ser llamada desde calendar.js)
+function aplicarDegradacionPorInactividad() {
+    const jugadoresData = localStorage.getItem("jugadoresPorClub");
+    if (!jugadoresData) return;
+    
+    const jugadoresPorClub = JSON.parse(jugadoresData);
+    let cambiosRealizados = false;
+    
+    Object.keys(jugadoresPorClub).forEach(clubId => {
+        const jugadoresClub = jugadoresPorClub[clubId];
+        
+        jugadoresClub.forEach(jugador => {
+            // Solo aplicar degradación si no hay sistema de entrenamiento activo
+            // Degradación muy pequeña: 0.05% del general por día (aproximadamente 1 punto cada 20 días)
+            const degradacionDiaria = jugador.general * 0.0005; // 0.05%
+            const nuevoGeneral = Math.max(jugador.general - degradacionDiaria, jugador.general * 0.8); // No bajar más del 80% del valor original
+            
+            if (nuevoGeneral !== jugador.general) {
+                jugador.general = Math.round(nuevoGeneral * 100) / 100; // Redondear a 2 decimales
+                cambiosRealizados = true;
+            }
+            
+            // También aplicar una pequeña degradación al estado físico si no hay actividad
+            if (jugador.estadoFisico > 70) { // Solo si está en buen estado
+                const degradacionFisica = 0.1; // 0.1 puntos por día
+                jugador.estadoFisico = Math.max(jugador.estadoFisico - degradacionFisica, 70);
+                cambiosRealizados = true;
+            }
+            
+            // Reducir cansancio gradualmente si no hay actividad (recuperación natural)
+            if (jugador.cansancio > 0) {
+                const recuperacionNatural = 2; // 2 puntos de recuperación por día
+                jugador.cansancio = Math.max(jugador.cansancio - recuperacionNatural, 0);
+                cambiosRealizados = true;
+            }
+        });
+    });
+    
+    // Guardar cambios si hubo modificaciones
+    if (cambiosRealizados) {
+        localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+        console.log("Degradación diaria aplicada a los jugadores por inactividad");
+    }
+}
+
+// Función para aplicar eventos aleatorios de cansancio (debe ser llamada desde calendar.js)
+function aplicarEventosAleatoriosCansancio() {
+    const jugadoresData = localStorage.getItem("jugadoresPorClub");
+    if (!jugadoresData) return;
+    
+    const jugadoresPorClub = JSON.parse(jugadoresData);
+    let eventosAplicados = [];
+    
+    Object.keys(jugadoresPorClub).forEach(clubId => {
+        const jugadoresClub = jugadoresPorClub[clubId];
+        
+        jugadoresClub.forEach(jugador => {
+            // Probabilidad muy baja de evento aleatorio por día (1% por jugador)
+            if (Math.random() < 0.01) {
+                const evento = asignarEventoCansancioFueraCampo();
+                if (evento) {
+                    // Aplicar efectos del evento
+                    jugador.cansancio = Math.min(100, Math.max(0, jugador.cansancio - evento.impactoEnergia));
+                    jugador.resistencia = Math.min(100, Math.max(0, jugador.resistencia + evento.impactoResistencia));
+                    jugador.estadoFisico = Math.min(100, Math.max(50, jugador.estadoFisico + evento.impactoEnergia / 2));
+                    
+                    eventosAplicados.push({
+                        jugador: jugador.nombre,
+                        evento: evento.tipo,
+                        descripcion: evento.descripcion
+                    });
+                }
+            }
+        });
+    });
+    
+    // Guardar cambios si hubo eventos
+    if (eventosAplicados.length > 0) {
+        localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+        console.log("Eventos aleatorios aplicados:", eventosAplicados);
+        return eventosAplicados; // Retornar para mostrar en el calendario
+    }
+    
+    return [];
+}
+
+// Función para procesar recuperación de lesiones (debe ser llamada desde calendar.js)
+function procesarRecuperacionLesiones() {
+    const jugadoresData = localStorage.getItem("jugadoresPorClub");
+    if (!jugadoresData) return;
+    
+    const jugadoresPorClub = JSON.parse(jugadoresData);
+    let jugadoresRecuperados = [];
+    
+    Object.keys(jugadoresPorClub).forEach(clubId => {
+        const jugadoresClub = jugadoresPorClub[clubId];
+        
+        jugadoresClub.forEach(jugador => {
+            if (jugador.lesion && jugador.lesion.diasRestantes > 0) {
+                jugador.lesion.diasRestantes--;
+                
+                // Si se recuperó completamente
+                if (jugador.lesion.diasRestantes <= 0) {
+                    jugadoresRecuperados.push({
+                        nombre: jugador.nombre,
+                        lesion: jugador.lesion.nombre
+                    });
+                    jugador.lesion = null; // Quitar la lesión
+                }
+            }
+        });
+    });
+    
+    // Guardar cambios si hubo recuperaciones
+    if (jugadoresRecuperados.length > 0) {
+        localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+        console.log("Jugadores recuperados de lesiones:", jugadoresRecuperados);
+        return jugadoresRecuperados; // Retornar para mostrar en el calendario
+    }
+    
+    return [];
+}
+
+// Exportar funciones para uso en calendar.js (si es necesario)
+if (typeof window !== 'undefined') {
+    window.aplicarDegradacionPorInactividad = aplicarDegradacionPorInactividad;
+    window.aplicarEventosAleatoriosCansancio = aplicarEventosAleatoriosCansancio;
+    window.procesarRecuperacionLesiones = procesarRecuperacionLesiones;
+}
+
+    
