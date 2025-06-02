@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calendario Automático 2025-2040</title>
+    <link rel="stylesheet" href="calendar.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Calendario Automático</h1>
+            <div class="date-info">
+                <span id="current-date"></span>
+                <span id="year-month"></span>
+            </div>
+        </header>
+        
+        <div class="calendar">
+            <div class="weekdays">
+                <div class="weekday">Lunes</div>
+                <div class="weekday">Martes</div>
+                <div class="weekday">Miércoles</div>
+                <div class="weekday">Jueves</div>
+                <div class="weekday">Viernes</div>
+                <div class="weekday">Sábado</div>
+                <div class="weekday">Domingo</div>
+            </div>
+            
+            <div class="days-grid" id="days-grid">
+                <!-- Los días se generarán dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="controls">
+            <button id="pause-btn">Pausar</button>
+            <button id="reset-btn">Reiniciar</button>
+            <button id="notifications-btn" onclick="goToNotifications()">Ver Notificaciones</button>
+            <div class="progress-info">
+                <span id="progress-text"></span>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="players-info" class="players-info">
+            <h3>📊 Estado de Jugadores</h3>
+            <div id="players-stats"></div>
+            <div id="event-log"></div>
+        </div>
+    </div>
+    
+    <script src="calendar.js"></script>
+</body>
+</html>
+
+
