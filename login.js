@@ -17,7 +17,7 @@ window.addEventListener("DOMContentLoaded", () => {
     // Si ya existen todos los datos necesarios, redirigir directamente
     if (nombreDT && clubFavorito && imagenSeleccionada) {
         console.log("Sesión encontrada, redirigiendo automáticamente...");
-        window.location.href = "calendar.html";
+        window.location.href = "player_creation.html";
         return;
     }
     
@@ -77,7 +77,7 @@ document.getElementById("empezarBtn").addEventListener("click", () => {
     localStorage.setItem("coachImage", imagenSeleccionada);
     
     // Redirigir a la página principal del simulador
-    window.location.href = "calendar.html";
+    window.location.href = "player_creation.html";
 });
 
 // Función para cerrar sesión (puedes agregarla a un botón de logout en tu juego)
