@@ -19,57 +19,67 @@ const apellidos = [
 
 const posiciones = ["POR", "DEF", "MED", "DEL"];
 
-// Configuración de precios por liga (valores en USD)
+// Configuración de precios y habilidades por liga (valores en USD)
 const configPorLiga = {
   // Brasil (Liga más fuerte económicamente)
   "55": { 
     valorMin: 25000, valorMax: 180000, 
-    sueldoMin: 1800, sueldoMax: 12000 
+    sueldoMin: 1800, sueldoMax: 12000,
+    generalMin: 75, generalMax: 82
   },
   // Argentina (Segunda liga más fuerte)
   "54": { 
     valorMin: 18000, valorMax: 150000, 
-    sueldoMin: 1200, sueldoMax: 9000 
+    sueldoMin: 1200, sueldoMax: 9000,
+    generalMin: 74, generalMax: 80
   },
   // Colombia (Liga competitiva)
   "57": { 
     valorMin: 12000, valorMax: 120000, 
-    sueldoMin: 900, sueldoMax: 7500 
+    sueldoMin: 900, sueldoMax: 7500,
+    generalMin: 70, generalMax: 77
   },
   // Chile (Liga estable)
   "56": { 
     valorMin: 10000, valorMax: 100000, 
-    sueldoMin: 800, sueldoMax: 6500 
+    sueldoMin: 800, sueldoMax: 6500,
+    generalMin: 68, generalMax: 75
   },
   // Uruguay (Liga tradicional pero pequeña)
   "598": { 
     valorMin: 8000, valorMax: 85000, 
-    sueldoMin: 700, sueldoMax: 5500 
+    sueldoMin: 700, sueldoMax: 5500,
+    generalMin: 69, generalMax: 76
   },
   // Ecuador (Liga en crecimiento)
   "593": { 
     valorMin: 7000, valorMax: 75000, 
-    sueldoMin: 600, sueldoMax: 4800 
+    sueldoMin: 600, sueldoMax: 4800,
+    generalMin: 68, generalMax: 74
   },
   // Perú (Liga competitiva pero con menos recursos)
   "51": { 
     valorMin: 6000, valorMax: 65000, 
-    sueldoMin: 500, sueldoMax: 4200 
+    sueldoMin: 500, sueldoMax: 4200,
+    generalMin: 65, generalMax: 72
   },
   // Paraguay (Liga pequeña)
   "595": { 
     valorMin: 5000, valorMax: 55000, 
-    sueldoMin: 450, sueldoMax: 3800 
+    sueldoMin: 450, sueldoMax: 3800,
+    generalMin: 65, generalMax: 72
   },
   // Venezuela (Crisis económica)
   "58": { 
     valorMin: 4000, valorMax: 45000, 
-    sueldoMin: 350, sueldoMax: 3000 
+    sueldoMin: 350, sueldoMax: 3000,
+    generalMin: 60, generalMax: 67
   },
   // Bolivia (Liga con menos recursos)
   "591": { 
     valorMin: 3500, valorMax: 40000, 
-    sueldoMin: 300, sueldoMax: 2500 
+    sueldoMin: 300, sueldoMax: 2500,
+    generalMin: 60, generalMax: 68
   }
 };
 
@@ -83,23 +93,26 @@ function obtenerConfigLiga(clubId) {
 }
 
 function calcularValorPorHabilidad(general, potencial, config) {
-  // Factor base según el rating general
+  // Factor base según el rating general (ajustado a los nuevos rangos)
   let factorBase = 1.0;
-  if (general >= 85) factorBase = 1.4;
-  else if (general >= 80) factorBase = 1.2;
-  else if (general >= 75) factorBase = 1.1;
-  else if (general >= 70) factorBase = 1.0;
-  else if (general >= 65) factorBase = 0.9;
-  else factorBase = 0.8;
+  const rangoGeneral = config.generalMax - config.generalMin;
+  const posicionEnRango = (general - config.generalMin) / rangoGeneral;
   
-  // Factor potencial
+  if (posicionEnRango >= 0.9) factorBase = 1.4;      // Top 10%
+  else if (posicionEnRango >= 0.75) factorBase = 1.2; // Top 25%
+  else if (posicionEnRango >= 0.6) factorBase = 1.1;  // Arriba del 60%
+  else if (posicionEnRango >= 0.4) factorBase = 1.0;  // Promedio
+  else if (posicionEnRango >= 0.2) factorBase = 0.9;  // Bajo promedio
+  else factorBase = 0.8;                              // Bottom 20%
+  
+  // Factor potencial (ajustado)
   let factorPotencial = 1.0;
   if (potencial >= 90) factorPotencial = 1.3;
   else if (potencial >= 85) factorPotencial = 1.2;
   else if (potencial >= 80) factorPotencial = 1.1;
   
   const rangoValor = config.valorMax - config.valorMin;
-  const valorBase = config.valorMin + (rangoValor * 0.5);
+  const valorBase = config.valorMin + (rangoValor * posicionEnRango);
   
   return Math.round(valorBase * factorBase * factorPotencial);
 }
@@ -122,8 +135,13 @@ function generarJugador(clubId, jugadorId) {
   const apellido = apellidos[rand(0, apellidos.length-1)];
   const config = obtenerConfigLiga(clubId);
   
-  const general = rand(60, 90);
-  const potencial = rand(Math.max(general, 70), 95);
+  // Generar habilidad general según la liga
+  const general = rand(config.generalMin, config.generalMax);
+  
+  // El potencial debe ser igual o mayor al general, con límite superior basado en la liga
+  const potencialMin = Math.max(general, config.generalMin + 5);
+  const potencialMax = Math.min(95, config.generalMax + 10);
+  const potencial = rand(potencialMin, potencialMax);
   
   // Calcular valor basado en habilidades y liga
   const valor = calcularValorPorHabilidad(general, potencial, config);
