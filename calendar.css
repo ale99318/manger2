@@ -154,6 +154,14 @@ button {
     transform: translateY(-2px);
 }
 
+#pause-btn.paused {
+    background: #ffc107;
+}
+
+#pause-btn.paused:hover {
+    background: #e0a800;
+}
+
 #reset-btn {
     background: #dc3545;
     color: white;
@@ -218,6 +226,34 @@ button {
     padding-left: 10px;
 }
 
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stat-item {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    text-align: center;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 0.9em;
+    display: block;
+    margin-bottom: 5px;
+}
+
+.stat-value {
+    color: #1e293b;
+    font-weight: bold;
+    font-size: 1.1em;
+}
+
 #event-log {
     max-height: 200px;
     overflow-y: auto;
@@ -232,6 +268,17 @@ button {
     margin-bottom: 10px;
 }
 
+#event-log ul {
+    list-style: none;
+    margin-bottom: 10px;
+}
+
+#event-log li {
+    padding: 5px 0;
+    border-bottom: 1px dashed #e2e8f0;
+    color: #334155;
+}
+
 @media (max-width: 768px) {
     .container {
         padding: 20px;
@@ -240,6 +287,11 @@ button {
     
     header h1 {
         font-size: 2em;
+    }
+    
+    .date-info {
+        flex-direction: column;
+        gap: 10px;
     }
     
     .weekday {
@@ -251,12 +303,17 @@ button {
         font-size: 0.9em;
     }
     
-    .controls > div:first-child {
+    .controls {
         flex-direction: column;
         width: 100%;
     }
     
     button {
         width: 100%;
+        margin-bottom: 10px;
+    }
+    
+    .stats-grid {
+        grid-template-columns: 1fr;
     }
 }
