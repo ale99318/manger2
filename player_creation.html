@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creación de Plantilla Aleatoria</title>
+    <link rel="stylesheet" href="player_creation.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Creación de Plantilla Aleatoria</h1>
+            <div class="warning">
+                <p>⚠️ Advertencia: No se pueden usar jugadores reales en este simulador. Se generarán plantillas aleatorias para todos los clubes.</p>
+            </div>
+            <div class="info">
+                <span id="status-text">Club seleccionado: Cargando...</span>
+            </div>
+        </header>
+        
+        <div class="action-panel">
+            <button id="generate-btn">Crear Plantilla Aleatoria</button>
+        </div>
+        
+        <div class="players-table" id="players-table">
+            <p id="no-players-msg">Aún no se han generado jugadores. Haz clic en "Crear Plantilla Aleatoria" para continuar.</p>
+            <!-- La tabla de jugadores se generará dinámicamente -->
+        </div>
+        
+        <div class="controls">
+            <button id="save-btn" disabled>Guardar Plantilla</button>
+            <button id="calendar-btn" onclick="goToCalendar()">Ir al Calendario</button>
+        </div>
+    </div>
+    
+    <script src="clubes.js"></script>
+    <script src="lesiones.js"></script>
+    <script src="cansancio.js"></script>
+    <script src="actitudes.js"></script>
+    <script src="player_creation.js"></script>
+</body>
+</html>
+
+
