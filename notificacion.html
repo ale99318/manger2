@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Buzón de Notificaciones</title>
+    <link rel="stylesheet" href="notificacion.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📬 Buzón de Notificaciones</h1>
+            <div class="date-info">
+                <span id="current-date">Fecha actual</span>
+            </div>
+        </header>
+        
+        <div class="mailbox-toolbar">
+            <button class="toolbar-btn active" onclick="switchFolder('inbox')">Bandeja de Entrada</button>
+            <button class="toolbar-btn" onclick="switchFolder('birthdays')">Cumpleaños</button>
+            <button class="toolbar-btn" onclick="switchFolder('retirements')">Retiros</button>
+            <button class="toolbar-btn" onclick="clearMailbox()">Limpiar Buzón</button>
+            <button class="toolbar-btn" onclick="backToCalendar()">Volver al Calendario</button>
+        </div>
+        
+        <div class="mailbox">
+            <div id="inbox" class="folder-content active">
+                <h2>📥 Bandeja de Entrada</h2>
+                <div id="inbox-list" class="mail-list">
+                    <p class="no-mails">No hay mensajes en la bandeja de entrada.</p>
+                </div>
+            </div>
+            
+            <div id="birthdays" class="folder-content">
+                <h2>🎂 Correos de Cumpleaños</h2>
+                <div id="birthday-list" class="mail-list">
+                    <p class="no-mails">No hay correos de cumpleaños registrados.</p>
+                </div>
+            </div>
+            
+            <div id="retirements" class="folder-content">
+                <h2>👴 Correos de Retiros</h2>
+                <div id="retirement-list" class="mail-list">
+                    <p class="no-mails">No hay correos de retiros registrados.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div id="mail-viewer" class="mail-viewer">
+        <div class="mail-viewer-content">
+            <button class="close-btn" onclick="closeMailViewer()">✖ Cerrar</button>
+            <h2 id="mail-subject">Asunto del Correo</h2>
+            <div class="mail-meta">
+                <span id="mail-from">De: Sistema de Notificaciones</span>
+                <span id="mail-date">Fecha: --</span>
+            </div>
+            <div id="mail-body" class="mail-body">
+                <p>Contenido del correo aparecerá aquí.</p>
+            </div>
+        </div>
+    </div>
+    
+    <script src="notificacion.js"></script>
+</body>
+</html>
