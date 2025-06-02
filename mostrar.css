@@ -101,6 +101,18 @@ h1 {
     font-weight: bold;
 }
 
+.jugador-media {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: white;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
 .jugador-info {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
