@@ -94,7 +94,9 @@ class AutoCalendar {
         
         // 1. Verificar cumpleaños de jugadores
         const eventosCumpleanos = this.checkBirthdays();
-        if (eventosCumpleanos.birthdayPlayers.length > 0 || eventosCumpleanos.retiredPlayers.length > 0) {
+        if (eventosCumpleanos.birthdayPlayers.length > 0 || 
+            eventosCumpleanos.retiredPlayers.length > 0 || 
+            (eventosCumpleanos.lastYearPlayers && eventosCumpleanos.lastYearPlayers.length > 0)) {
             eventosDelDia.push({
                 tipo: 'cumpleanos',
                 data: eventosCumpleanos
@@ -255,49 +257,69 @@ class AutoCalendar {
     // ==================== FUNCIONES DE JUGADORES CON CALENDARIO ====================
     
     checkBirthdays() {
-        const currentMonth = this.currentDate.getMonth() + 1; // getMonth() devuelve 0-11, sumamos 1 para 1-12
+        const currentMonth = this.currentDate.getMonth() + 1;
         const currentDay = this.currentDate.getDate();
         let birthdayPlayers = [];
+        let lastYearPlayers = []; // Jugadores que anuncian su último año
         let totalRetirements = 0;
         const retiredPlayers = [];
+        
+        // Obtener el club seleccionado del usuario
+        const clubSeleccionado = localStorage.getItem("selectedClub");
+        let clubIdSeleccionado = null;
+        
+        if (clubSeleccionado && typeof clubes !== 'undefined') {
+            const club = clubes.find(c => c.nombre === clubSeleccionado);
+            if (club) {
+                clubIdSeleccionado = club.id;
+            }
+        }
         
         // Procesar cada club
         Object.keys(this.jugadoresPorClub).forEach(clubId => {
             const jugadoresClub = this.jugadoresPorClub[clubId];
             
-            // Verificar cumpleaños y procesar retiros
+            // Verificar cumpleaños
             for (let i = jugadoresClub.length - 1; i >= 0; i--) {
                 const jugador = jugadoresClub[i];
                 
                 // Verificar si es el cumpleaños del jugador
                 if (jugador.birthdayMonth === currentMonth && jugador.birthdayDay === currentDay) {
                     jugador.edad += 1;
-                    birthdayPlayers.push({
-                        nombre: jugador.nombre,
-                        edad: jugador.edad,
-                        club: this.getClubName(clubId)
-                    });
                     
-                    // Verificar retiro en el cumpleaños
-                    if (this.shouldPlayerRetire(jugador)) {
-                        retiredPlayers.push({
+                    // Solo mostrar cumpleaños del club seleccionado
+                    if (clubId === clubIdSeleccionado) {
+                        birthdayPlayers.push({
+                            nombre: jugador.nombre,
+                            edad: jugador.edad,
+                            club: this.getClubName(clubId)
+                        });
+                    }
+                    
+                    // Verificar si debe anunciar su último año (36+ años)
+                    if (jugador.edad >= 36 && !jugador.ultimoAnio) {
+                        jugador.ultimoAnio = true; // Marcar que ya anunció su último año
+                        lastYearPlayers.push({
                             nombre: jugador.nombre,
                             edad: jugador.edad,
                             club: this.getClubName(clubId),
                             posicion: jugador.posicion,
                             general: jugador.general
                         });
-                        
-                        // Remover jugador del array
-                        jugadoresClub.splice(i, 1);
-                        totalRetirements++;
                     }
                 }
             }
         });
         
+        // Procesar retiros solo en diciembre (final de temporada)
+        if (currentMonth === 12) {
+            const retirosDelMes = this.processMonthlyRetirements();
+            retiredPlayers.push(...retirosDelMes.retiredPlayers);
+            totalRetirements = retirosDelMes.totalRetirements;
+        }
+        
         // Guardar cambios en localStorage si hubo cambios
-        if (birthdayPlayers.length > 0) {
+        if (birthdayPlayers.length > 0 || lastYearPlayers.length > 0) {
             this.savePlayersData();
         }
         
@@ -308,23 +330,84 @@ class AutoCalendar {
         
         return {
             birthdayPlayers: birthdayPlayers,
+            lastYearPlayers: lastYearPlayers,
             retiredPlayers: retiredPlayers
         };
     }
     
-    shouldPlayerRetire(jugador) {
-        if (jugador.edad < 36) return false;
+    // Nueva función para procesar retiros mensuales con límites
+    processMonthlyRetirements() {
+        const maxRetirementsPerMonth = 3; // Máximo 3 retiros por mes
+        let retiredPlayers = [];
+        let totalRetirements = 0;
+        let candidatesForRetirement = [];
         
-        // Probabilidad de retiro basada en edad
+        // Recopilar candidatos para retiro
+        Object.keys(this.jugadoresPorClub).forEach(clubId => {
+            const jugadoresClub = this.jugadoresPorClub[clubId];
+            
+            jugadoresClub.forEach((jugador, index) => {
+                if (jugador.ultimoAnio && this.shouldPlayerRetireThisMonth(jugador)) {
+                    candidatesForRetirement.push({
+                        jugador: jugador,
+                        clubId: clubId,
+                        index: index
+                    });
+                }
+            });
+        });
+        
+        // Seleccionar aleatoriamente hasta el máximo permitido
+        if (candidatesForRetirement.length > 0) {
+            // Mezclar array aleatoriamente
+            candidatesForRetirement.sort(() => Math.random() - 0.5);
+            
+            // Tomar solo los primeros hasta el máximo
+            const retirementsToProcess = candidatesForRetirement.slice(0, maxRetirementsPerMonth);
+            
+            // Procesar retiros seleccionados
+            retirementsToProcess.forEach(candidate => {
+                const { jugador, clubId, index } = candidate;
+                
+                retiredPlayers.push({
+                    nombre: jugador.nombre,
+                    edad: jugador.edad,
+                    club: this.getClubName(clubId),
+                    posicion: jugador.posicion,
+                    general: jugador.general
+                });
+                
+                // Remover jugador del array (buscar índice actualizado)
+                const jugadoresClub = this.jugadoresPorClub[clubId];
+                const actualIndex = jugadoresClub.findIndex(j => j.id === jugador.id);
+                if (actualIndex !== -1) {
+                    jugadoresClub.splice(actualIndex, 1);
+                    totalRetirements++;
+                }
+            });
+        }
+        
+               return {
+            retiredPlayers: retiredPlayers,
+            totalRetirements: totalRetirements
+        };
+    }
+    
+    // Nueva función para determinar si un jugador se retira este mes
+    shouldPlayerRetireThisMonth(jugador) {
+        if (!jugador.ultimoAnio) return false;
+        
+        // Probabilidad basada en edad (solo para jugadores que ya anunciaron su último año)
         let retirementChance = 0;
         
-        if (jugador.edad >= 36) retirementChance = 0.95; // 95%
-        if (jugador.edad >= 38) retirementChance = 0.98; // 98%
-        if (jugador.edad >= 40) retirementChance = 1.0;  // 100%
+        if (jugador.edad >= 36) retirementChance = 0.3; // 30%
+        if (jugador.edad >= 38) retirementChance = 0.5; // 50%
+        if (jugador.edad >= 40) retirementChance = 0.8; // 80%
+        if (jugador.edad >= 42) retirementChance = 1.0; // 100%
         
         // Jugadores con mayor habilidad tienden a retirarse más tarde
         if (jugador.general >= 80) {
-            retirementChance *= 0.8; // Reducir probabilidad para jugadores elite
+            retirementChance *= 0.7; // Reducir probabilidad para jugadores elite
         }
         
         return Math.random() < retirementChance;
@@ -534,7 +617,7 @@ class AutoCalendar {
         
         if (data.birthdayPlayers.length > 0) {
             html += `<div class="event-section birthday-section">
-                <h5>🎂 Cumpleaños (${data.birthdayPlayers.length})</h5>
+                <h5>🎂 Cumpleaños en tu Club (${data.birthdayPlayers.length})</h5>
                 <ul>`;
             
             data.birthdayPlayers.forEach(player => {
@@ -553,13 +636,25 @@ class AutoCalendar {
             html += `</ul></div>`;
         }
         
+        if (data.lastYearPlayers && data.lastYearPlayers.length > 0) {
+            html += `<div class="event-section last-year-section">
+                <h5>📢 Anuncios de Último Año (${data.lastYearPlayers.length})</h5>
+                <ul>`;
+            
+            data.lastYearPlayers.forEach(player => {
+                html += `<li>📰 ${player.nombre} (${player.edad} años, ${player.posicion}) anuncia que esta será su última temporada - ${player.club}</li>`;
+            });
+            
+            html += `</ul></div>`;
+        }
+        
         if (data.retiredPlayers.length > 0) {
             html += `<div class="event-section retirement-section">
-                <h5>👴 Retiros (${data.retiredPlayers.length})</h5>
+                <h5>👴 Retiros Oficiales (${data.retiredPlayers.length})</h5>
                 <ul>`;
             
             data.retiredPlayers.forEach(player => {
-                html += `<li>👋 ${player.nombre} (${player.edad} años, ${player.posicion}, GEN: ${player.general}) se retira - ${player.club}</li>`;
+                html += `<li>👋 ${player.nombre} (${player.edad} años, ${player.posicion}, GEN: ${player.general}) se retira oficialmente del fútbol - ${player.club}</li>`;
                 
                 // Enviar al sistema de notificaciones si la función existe
                 if (typeof addRetirementEvent === 'function') {
@@ -625,7 +720,7 @@ class AutoCalendar {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
     
-    calcularValorPorHabilidad(general, potencial, config) {
+        calcularValorPorHabilidad(general, potencial, config) {
         let factorBase = 1.0;
         const rangoGeneral = config.generalMax - config.generalMin;
         const posicionEnRango = (general - config.generalMin) / rangoGeneral;
