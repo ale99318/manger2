@@ -23,12 +23,18 @@ window.addEventListener("DOMContentLoaded", () => {
     
     // Si no hay datos guardados, continuar con el formulario de registro
     const selectClub = document.getElementById("clubFavorito");
-    clubes.forEach(club => {
-        const option = document.createElement("option");
-        option.value = club.nombre;
-        option.textContent = club.nombre;
-        selectClub.appendChild(option);
-    });
+    // Asegurarse de que clubes está definido (cargado desde clubes.js)
+    if (typeof clubes !== 'undefined') {
+        clubes.forEach(club => {
+            const option = document.createElement("option");
+            option.value = club.nombre;
+            option.textContent = club.nombre;
+            selectClub.appendChild(option);
+        });
+    } else {
+        console.error("Error: la variable 'clubes' no está definida. Asegúrate de que clubes.js se haya cargado correctamente.");
+        alert("Error al cargar los clubes. Por favor, recarga la página.");
+    }
     
     // Llenar el selector de imágenes
     const faceSelector = document.getElementById("faceSelector");
