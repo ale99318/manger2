@@ -1,31 +1,121 @@
-<!DOCTYPE html>   
+<!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Inicio de Sesión</title>
-  <link rel="stylesheet" href="login.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Simulador de Entrenador</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 500px;
+            text-align: center;
+        }
+        h1 {
+            color: #1e3a8a;
+            margin-bottom: 20px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+        label {
+            display: block;
+            color: #1e3a8a;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        .face-selector {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+        .face-option {
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 3px solid transparent;
+        }
+        .face-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .face-option input {
+            display: none;
+        }
+        .face-option.selected {
+            border: 3px solid #3b82f6;
+            transform: scale(1.1);
+        }
+        button {
+            background: #3b82f6;
+            color: #fff;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        button:hover {
+            background: #1e3a8a;
+            transform: translateY(-2px);
+        }
+    </style>
 </head>
 <body>
-  <div class="login-container">
-    <h1>¡Empieza tu sueño como DT!</h1>
-    <p>Elige tu rostro, nombre y club favorito del fútbol peruano</p> 
-
-    <div class="faces">
-      <label><input type="radio" name="face" value="img/entrenador1.png" checked><img src="img/entrenador1.png" alt="DT 1"></label>
-      <label><input type="radio" name="face" value="img/entrenador2.png"><img src="img/entrenador2.png" alt="DT 2"></label>
-      <label><input type="radio" name="face" value="img/entrenador3.png"><img src="img/entrenador3.png" alt="DT 3"></label>
+    <div class="container">
+        <h1>Registro de Entrenador</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="nombreDT">Nombre del Entrenador:</label>
+                <input type="text" id="nombreDT" placeholder="Ingresa tu nombre" required>
+            </div>
+            <div class="form-group">
+                <label for="clubFavorito">Club Favorito:</label>
+                <select id="clubFavorito" required>
+                    <option value="">Selecciona un club</option>
+                    <!-- Opciones de clubes se llenan dinámicamente -->
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Selecciona tu Imagen:</label>
+                <div class="face-selector" id="faceSelector">
+                    <!-- Las imágenes se llenan dinámicamente con JS -->
+                </div>
+            </div>
+            <button type="button" id="empezarBtn">Empezar Simulación</button>
+        </form>
     </div>
-
-    <input type="text" id="nombreDT" placeholder="Tu nombre de entrenador" />
-    <select id="clubFavorito">
-  <option value="">Selecciona tu club favorito</option>
-</select>
-
-    <button id="empezarBtn">Empezar el sueño</button>
-  </div>
-
-  <script src="login.js"></script>
-  <script src="clubes.js"></script>
+    
+    <script src="login.js"></script>
 </body>
 </html>
