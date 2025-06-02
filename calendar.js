@@ -765,19 +765,4 @@ function goToNotifications() {
     window.location.href = "notifications.html";
 }
 
-// Datos globales temporales (pueden estar en otro archivo)
-const nombres = [
-    "Carlos", "Juan", "Pedro", "Luis", "Miguel", "Andrés", "Santiago", "Daniel", 
-    "Fernando", "Pablo", "Diego", "Javier", "Alejandro", "Roberto", "Mario", 
-    "Sergio", "Antonio", "Francisco", "José", "Manuel", "Ricardo", "Eduardo", 
-    "Raúl", "Guillermo", "Gonzalo", "Mateo", "Sebastián", "Nicolás", "Gabriel", "Emilio"
-];
 
-const apellidos = [
-    "García", "López", "Martínez", "González", "Pérez", "Rodríguez", "Sánchez", 
-    "Fernández", "Torres", "Ramírez", "Castro", "Vargas", "Herrera", "Mendoza", 
-    "Silva", "Jiménez", "Morales", "Ruiz", "Ortega", "Delgado", "Cruz", "Flores", 
-    "Ramos", "Aguilar", "Medina", "Romero", "Núñez", "Guerrero", "Peña", "Vega"
-];
-
-const posiciones = ["POR", "DEF", "MED", "DEL"];
