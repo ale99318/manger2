@@ -89,8 +89,60 @@ class AutoCalendar {
     nextDay() {
         this.currentDate.setDate(this.currentDate.getDate() + 1);
         
-        // Verificar cumpleaños de jugadores
-        this.checkBirthdays();
+        // Array para almacenar todos los eventos del día
+        let eventosDelDia = [];
+        
+        // 1. Verificar cumpleaños de jugadores
+        const eventosCumpleanos = this.checkBirthdays();
+        if (eventosCumpleanos.birthdayPlayers.length > 0 || eventosCumpleanos.retiredPlayers.length > 0) {
+            eventosDelDia.push({
+                tipo: 'cumpleanos',
+                data: eventosCumpleanos
+            });
+        }
+        
+        // 2. Aplicar degradación por inactividad
+        if (typeof aplicarDegradacionPorInactividad === 'function') {
+            const degradacionAplicada = aplicarDegradacionPorInactividad();
+            if (degradacionAplicada) {
+                eventosDelDia.push({
+                    tipo: 'degradacion',
+                    data: degradacionAplicada
+                });
+            }
+        }
+        
+        // 3. Aplicar eventos aleatorios de cansancio
+        if (typeof aplicarEventosAleatoriosCansancio === 'function') {
+            const eventosAleatorios = aplicarEventosAleatoriosCansancio();
+            if (eventosAleatorios.length > 0) {
+                eventosDelDia.push({
+                    tipo: 'eventos_cansancio',
+                    data: eventosAleatorios
+                });
+            }
+        }
+        
+        // 4. Procesar recuperación de lesiones
+        if (typeof procesarRecuperacionLesiones === 'function') {
+            const recuperaciones = procesarRecuperacionLesiones();
+            if (recuperaciones.length > 0) {
+                eventosDelDia.push({
+                    tipo: 'recuperaciones',
+                    data: recuperaciones
+                });
+            }
+        }
+        
+        // 5. Mostrar todos los eventos del día
+        if (eventosDelDia.length > 0) {
+            this.mostrarEventosDelDia(eventosDelDia);
+        } else {
+            this.mostrarDiaSinEventos();
+        }
+        
+        // Actualizar estadísticas de jugadores
+        this.updatePlayersStats();
         
         if (this.currentDate > this.endDate) {
             this.currentDate = new Date(this.startDate);
@@ -247,14 +299,17 @@ class AutoCalendar {
         // Guardar cambios en localStorage si hubo cambios
         if (birthdayPlayers.length > 0) {
             this.savePlayersData();
-            this.updatePlayersStats();
-            this.logBirthdaysAndRetirements(birthdayPlayers, retiredPlayers, this.currentDate);
         }
         
         // Generar nuevos jugadores para reemplazar retirados
         if (totalRetirements > 0) {
             this.generateReplacementPlayers(totalRetirements);
         }
+        
+        return {
+            birthdayPlayers: birthdayPlayers,
+            retiredPlayers: retiredPlayers
+        };
     }
     
     shouldPlayerRetire(jugador) {
@@ -322,14 +377,20 @@ class AutoCalendar {
             posicion: posiciones[Math.floor(Math.random() * posiciones.length)],
             general: general,
             potencial: potencial,
+            actitud: "Joven promesa",
+            estadoFisico: this.rand(80, 95),
+            cansancio: this.rand(0, 10),
+            valorMercado: valor,
+            sueldo: sueldo,
+            contratoAnios: this.rand(2, 5),
+            lesion: null,
+            propensionLesiones: this.rand(10, 30), // Jóvenes menos propensos a lesiones
             sprint: this.rand(50, 95),
             regate: this.rand(50, 95),
             pase: this.rand(50, 95),
             tiro: this.rand(50, 95),
             defensa: this.rand(40, 90),
-            resistencia: this.rand(60, 95),
-            valor: valor,
-            sueldo: sueldo
+            resistencia: this.rand(60, 95)
         };
     }
     
@@ -413,27 +474,72 @@ class AutoCalendar {
         `;
     }
     
-    logBirthdaysAndRetirements(birthdayPlayers, retiredPlayers, date) {
+    // ==================== FUNCIONES PARA MOSTRAR EVENTOS DEL DÍA ====================
+    
+    mostrarEventosDelDia(eventosDelDia) {
         const logElement = document.getElementById('event-log');
         if (!logElement) return;
         
-        const currentDateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
-        let logHTML = `<p class="retirement-summary">📅 ${currentDateStr}: `;
+        const currentDateStr = this.currentDate.toLocaleDateString('es-ES', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+        });
         
-        if (birthdayPlayers.length > 0) {
-            logHTML += `${birthdayPlayers.length} jugador(es) cumplen años`;
-        }
+        let logHTML = `<div class="day-events">
+            <h4>📅 ${currentDateStr}</h4>`;
         
-        if (retiredPlayers.length > 0) {
-            logHTML += `, ${retiredPlayers.length} se retiraron`;
-        }
+        eventosDelDia.forEach(evento => {
+            switch (evento.tipo) {
+                case 'cumpleanos':
+                    logHTML += this.formatearEventosCumpleanos(evento.data);
+                    break;
+                case 'degradacion':
+                    logHTML += this.formatearEventosDegradacion();
+                    break;
+                case 'eventos_cansancio':
+                    logHTML += this.formatearEventosCansancio(evento.data);
+                    break;
+                case 'recuperaciones':
+                    logHTML += this.formatearEventosRecuperacion(evento.data);
+                    break;
+            }
+        });
         
-        logHTML += `</p>`;
+        logHTML += `</div>`;
+        logElement.innerHTML = logHTML;
+    }
+    
+    mostrarDiaSinEventos() {
+        const logElement = document.getElementById('event-log');
+        if (!logElement) return;
         
-        if (birthdayPlayers.length > 0) {
-            logHTML += '<ul class="birthday-list">';
-            birthdayPlayers.forEach(player => {
-                logHTML += `<li>🎂 ${player.nombre} ahora tiene ${player.edad} años - ${player.club}</li>`;
+        const currentDateStr = this.currentDate.toLocaleDateString('es-ES', { 
+            day: 'numeric', 
+            month: 'long', 
+            year: 'numeric' 
+        });
+        
+        logElement.innerHTML = `
+            <div class="day-events">
+                <h4>📅 ${currentDateStr}</h4>
+                <p class="no-events">😴 Día tranquilo. Los jugadores descansan y se mantienen en forma.</p>
+                <p class="degradation-info">📉 Degradación natural aplicada por inactividad (-0.05% nivel general)</p>
+            </div>
+        `;
+    }
+    
+    formatearEventosCumpleanos(data) {
+        let html = '';
+        
+        if (data.birthdayPlayers.length > 0) {
+            html += `<div class="event-section birthday-section">
+                <h5>🎂 Cumpleaños (${data.birthdayPlayers.length})</h5>
+                <ul>`;
+            
+            data.birthdayPlayers.forEach(player => {
+                html += `<li>🎉 ${player.nombre} cumple ${player.edad} años - ${player.club}</li>`;
+                
                 // Enviar al sistema de notificaciones si la función existe
                 if (typeof addBirthdayEvent === 'function') {
                     addBirthdayEvent({
@@ -443,13 +549,18 @@ class AutoCalendar {
                     });
                 }
             });
-            logHTML += '</ul>';
+            
+            html += `</ul></div>`;
         }
         
-        if (retiredPlayers.length > 0) {
-            logHTML += '<ul class="retirement-list">';
-            retiredPlayers.forEach(player => {
-                logHTML += `<li>👴 ${player.nombre} (${player.edad} años, ${player.posicion}, GEN: ${player.general}) - ${player.club}</li>`;
+        if (data.retiredPlayers.length > 0) {
+            html += `<div class="event-section retirement-section">
+                <h5>👴 Retiros (${data.retiredPlayers.length})</h5>
+                <ul>`;
+            
+            data.retiredPlayers.forEach(player => {
+                html += `<li>👋 ${player.nombre} (${player.edad} años, ${player.posicion}, GEN: ${player.general}) se retira - ${player.club}</li>`;
+                
                 // Enviar al sistema de notificaciones si la función existe
                 if (typeof addRetirementEvent === 'function') {
                     addRetirementEvent({
@@ -461,16 +572,51 @@ class AutoCalendar {
                     });
                 }
             });
-            logHTML += '</ul>';
+            
+            html += `</ul></div>`;
         }
         
-        logElement.innerHTML = logHTML;
+        return html;
+    }
+    
+    formatearEventosDegradacion() {
+        return `<div class="event-section degradation-section">
+            <h5>📉 Degradación por Inactividad</h5>
+            <p>Los jugadores pierden forma física gradualmente (-0.05% nivel general, -0.1 estado físico)</p>
+            <p>Recuperación natural del cansancio (+2 puntos)</p>
+        </div>`;
+    }
+    
+    formatearEventosCansancio(eventos) {
+        let html = `<div class="event-section fatigue-section">
+            <h5>🍺 Eventos de Indisciplina (${eventos.length})</h5>
+            <ul>`;
+        
+        eventos.forEach(evento => {
+            html += `<li>😅 ${evento.jugador}: ${evento.evento} - ${evento.descripcion}</li>`;
+        });
+        
+        html += `</ul></div>`;
+        return html;
+    }
+    
+    formatearEventosRecuperacion(recuperaciones) {
+        let html = `<div class="event-section recovery-section">
+            <h5>🏥 Recuperaciones de Lesiones (${recuperaciones.length})</h5>
+            <ul>`;
+        
+        recuperaciones.forEach(recuperacion => {
+            html += `<li>✅ ${recuperacion.nombre} se recupera de: ${recuperacion.lesion}</li>`;
+        });
+        
+        html += `</ul></div>`;
+        return html;
     }
     
     clearEventLog() {
         const logElement = document.getElementById('event-log');
         if (logElement) {
-            logElement.innerHTML = '';
+            logElement.innerHTML = '<p class="no-events">Reiniciando calendario...</p>';
         }
     }
     
