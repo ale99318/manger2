@@ -151,11 +151,17 @@ function generarJugador(clubId, jugadorId) {
   // Calcular sueldo basado en valor
   const sueldo = calcularSueldoPorValor(valor, config);
   
+  // Generar fecha de nacimiento aleatoria (solo mes y día, el año no importa porque usamos edad directamente)
+  const birthdayMonth = rand(1, 12); // Mes de 1 a 12
+  const birthdayDay = rand(1, new Date(2025, birthdayMonth, 0).getDate()); // Día válido para el mes
+  
   return {
     id: jugadorId,
     clubId: clubId,
     nombre: `${nombre} ${apellido}`,
     edad: rand(18, 35),
+    birthdayMonth: birthdayMonth,
+    birthdayDay: birthdayDay,
     posicion: posiciones[rand(0, posiciones.length-1)],
     general: general,
     potencial: potencial,
@@ -391,7 +397,6 @@ class AutoCalendar {
         this.interval = null;
         this.isPaused = false;
         this.intervalTime = 5000; // 5 segundos
-        this.lastYear = this.currentDate.getFullYear(); // Para detectar cambio de año
         
         this.initializeElements();
         this.setupEventListeners();
@@ -471,7 +476,6 @@ class AutoCalendar {
     reset() {
         this.stop();
         this.currentDate = new Date(this.startDate);
-        this.lastYear = this.currentDate.getFullYear();
         this.isPaused = false;
         this.pauseBtn.textContent = 'Pausar';
         this.pauseBtn.classList.remove('paused');
@@ -485,16 +489,11 @@ class AutoCalendar {
     nextDay() {
         this.currentDate.setDate(this.currentDate.getDate() + 1);
         
-        // Verificar si cambió el año
-        const currentYear = this.currentDate.getFullYear();
-        if (currentYear !== this.lastYear) {
-            this.processYearChange(currentYear);
-            this.lastYear = currentYear;
-        }
+        // Verificar cumpleaños de jugadores
+        this.checkBirthdays();
         
         if (this.currentDate > this.endDate) {
             this.currentDate = new Date(this.startDate);
-            this.lastYear = this.currentDate.getFullYear();
         }
         
         this.updateDisplay();
@@ -588,10 +587,10 @@ class AutoCalendar {
     
     // ==================== FUNCIONES DE JUGADORES CON CALENDARIO ====================
     
-    processYearChange(newYear) {
-        console.log(`🎂 Nuevo año: ${newYear} - Procesando envejecimiento de jugadores`);
-        
-        let totalPlayersAged = 0;
+    checkBirthdays() {
+        const currentMonth = this.currentDate.getMonth() + 1; // getMonth() devuelve 0-11, sumamos 1 para 1-12
+        const currentDay = this.currentDate.getDate();
+        let birthdayPlayers = [];
         let totalRetirements = 0;
         const retiredPlayers = [];
         
@@ -599,40 +598,48 @@ class AutoCalendar {
         Object.keys(jugadoresPorClub).forEach(clubId => {
             const jugadoresClub = jugadoresPorClub[clubId];
             
-            // Envejecer jugadores y procesar retiros
+            // Verificar cumpleaños y procesar retiros
             for (let i = jugadoresClub.length - 1; i >= 0; i--) {
                 const jugador = jugadoresClub[i];
-                jugador.edad += 1;
-                totalPlayersAged++;
                 
-                // Verificar retiro
-                if (this.shouldPlayerRetire(jugador)) {
-                    retiredPlayers.push({
+                // Verificar si es el cumpleaños del jugador
+                if (jugador.birthdayMonth === currentMonth && jugador.birthdayDay === currentDay) {
+                    jugador.edad += 1;
+                    birthdayPlayers.push({
                         nombre: jugador.nombre,
                         edad: jugador.edad,
-                        club: this.getClubName(clubId),
-                        posicion: jugador.posicion,
-                        general: jugador.general
+                        club: this.getClubName(clubId)
                     });
                     
-                    // Remover jugador del array
-                    jugadoresClub.splice(i, 1);
-                    totalRetirements++;
+                    // Verificar retiro en el cumpleaños
+                    if (this.shouldPlayerRetire(jugador)) {
+                        retiredPlayers.push({
+                            nombre: jugador.nombre,
+                            edad: jugador.edad,
+                            club: this.getClubName(clubId),
+                            posicion: jugador.posicion,
+                            general: jugador.general
+                        });
+                        
+                        // Remover jugador del array
+                        jugadoresClub.splice(i, 1);
+                        totalRetirements++;
+                    }
                 }
             }
         });
         
-        // Guardar cambios en localStorage
-        this.savePlayersData();
-        
-        // Actualizar estadísticas
-        this.updatePlayersStats();
-        
-        // Mostrar log de retiros
-        this.logRetirements(newYear, retiredPlayers, totalPlayersAged, totalRetirements);
+        // Guardar cambios en localStorage si hubo cambios
+        if (birthdayPlayers.length > 0) {
+            this.savePlayersData();
+            this.updatePlayersStats();
+            this.logBirthdaysAndRetirements(birthdayPlayers, retiredPlayers, this.currentDate);
+        }
         
         // Generar nuevos jugadores para reemplazar retirados
-        this.generateReplacementPlayers(totalRetirements);
+        if (totalRetirements > 0) {
+            this.generateReplacementPlayers(totalRetirements);
+        }
     }
     
     shouldPlayerRetire(jugador) {
@@ -689,11 +696,17 @@ class AutoCalendar {
         const valor = calcularValorPorHabilidad(general, potencial, config);
         const sueldo = calcularSueldoPorValor(valor, config);
         
+        // Generar fecha de nacimiento aleatoria
+        const birthdayMonth = rand(1, 12); // Mes de 1 a 12
+        const birthdayDay = rand(1, new Date(2025, birthdayMonth, 0).getDate()); // Día válido para el mes
+        
         return {
             id: maxId,
             clubId: clubId,
             nombre: `${nombre} ${apellido}`,
             edad: edad,
+            birthdayMonth: birthdayMonth,
+            birthdayDay: birthdayDay,
             posicion: posiciones[Math.floor(Math.random() * posiciones.length)],
             general: general,
             potencial: potencial,
@@ -770,23 +783,39 @@ class AutoCalendar {
         `;
     }
     
-    logRetirements(year, retiredPlayers, totalAged, totalRetired) {
+    logBirthdaysAndRetirements(birthdayPlayers, retiredPlayers, date) {
         const logElement = document.getElementById('retirement-log');
         if (!logElement) return;
         
-        if (retiredPlayers.length === 0) {
-            logElement.innerHTML = `<p class="retirement-summary">📅 ${year}: ${totalAged} jugadores envejecieron, no hubo retiros.</p>`;
-            return;
+        const currentDateStr = date.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+        let logHTML = `<p class="retirement-summary">📅 ${currentDateStr}: `;
+        
+        if (birthdayPlayers.length > 0) {
+            logHTML += `${birthdayPlayers.length} jugador(es) cumplen años`;
         }
         
-        let logHTML = `<p class="retirement-summary">📅 ${year}: ${totalAged} jugadores envejecieron, ${totalRetired} se retiraron:</p>`;
-        logHTML += '<ul class="retirement-list">';
+        if (retiredPlayers.length > 0) {
+            logHTML += `, ${retiredPlayers.length} se retiraron`;
+        }
         
-        retiredPlayers.forEach(player => {
-            logHTML += `<li>👴 ${player.nombre} (${player.edad} años, ${player.posicion}, GEN: ${player.general}) - ${player.club}</li>`;
-        });
+        logHTML += `</p>`;
         
-        logHTML += '</ul>';
+        if (birthdayPlayers.length > 0) {
+            logHTML += '<ul class="birthday-list">';
+            birthdayPlayers.forEach(player => {
+                logHTML += `<li>🎂 ${player.nombre} ahora tiene ${player.edad} años - ${player.club}</li>`;
+            });
+            logHTML += '</ul>';
+        }
+        
+        if (retiredPlayers.length > 0) {
+            logHTML += '<ul class="retirement-list">';
+            retiredPlayers.forEach(player => {
+                logHTML += `<li>👴 ${player.nombre} (${player.edad} años, ${player.posicion}, GEN: ${player.general}) - ${player.club}</li>`;
+            });
+            logHTML += '</ul>';
+        }
+        
         logElement.innerHTML = logHTML;
     }
     
