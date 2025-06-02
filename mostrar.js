@@ -128,6 +128,32 @@ function obtenerEstadoEntrenamiento(jugadorId) {
     }
 }
 
+function calcularMedia(jugador) {
+    // Calcula la media basada en todas las habilidades del jugador
+    const habilidades = [
+        jugador.sprint || 0,
+        jugador.regate || 0,
+        jugador.pase || 0,
+        jugador.tiro || 0,
+        jugador.defensa || 0,
+        jugador.resistencia || 0
+    ];
+    
+    const suma = habilidades.reduce((total, habilidad) => total + habilidad, 0);
+    return Math.round(suma / habilidades.length);
+}
+
+function obtenerCategoriaMedia(media) {
+    // Devuelve la categoría del jugador basada en su media
+    if (media >= 85) return { categoria: 'ÉLITE', color: '#FFD700', emoji: '⭐' };
+    if (media >= 80) return { categoria: 'EXCELENTE', color: '#32CD32', emoji: '🔥' };
+    if (media >= 75) return { categoria: 'MUY BUENO', color: '#00BFFF', emoji: '💎' };
+    if (media >= 70) return { categoria: 'BUENO', color: '#FF8C00', emoji: '👍' };
+    if (media >= 65) return { categoria: 'PROMEDIO', color: '#FFD700', emoji: '⚡' };
+    if (media >= 60) return { categoria: 'REGULAR', color: '#FFA500', emoji: '🔸' };
+    return { categoria: 'BÁSICO', color: '#DC143C', emoji: '🔹' };
+}
+
 function mostrarJugadores() {
     let jugadoresFiltrados = jugadoresDelClub;
     
@@ -143,6 +169,10 @@ function mostrarJugadores() {
         const estadoEntrenamiento = obtenerEstadoEntrenamiento(jugador.id || index);
         let estadoHtml = '';
         let botonEntrenamiento = '';
+        
+        // Calcular media y categoría del jugador
+        const mediaJugador = calcularMedia(jugador);
+        const categoriaInfo = obtenerCategoriaMedia(mediaJugador);
         
         if (estadoEntrenamiento) {
             const ahora = new Date().getTime();
@@ -165,7 +195,12 @@ function mostrarJugadores() {
             <div class="jugador-card">
                 <div class="jugador-header">
                     <div class="jugador-nombre">${jugador.nombre || 'Sin nombre'}</div>
-                    <div class="jugador-posicion">${jugador.posicion}</div>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <div class="jugador-media" style="background: ${categoriaInfo.color}; color: white; padding: 5px 12px; border-radius: 20px; font-size: 14px; font-weight: bold; display: flex; align-items: center; gap: 5px;">
+                            ${categoriaInfo.emoji} ${mediaJugador} - ${categoriaInfo.categoria}
+                        </div>
+                        <div class="jugador-posicion">${jugador.posicion}</div>
+                    </div>
                 </div>
                 ${estadoHtml}
                 <div class="jugador-info">
@@ -173,6 +208,10 @@ function mostrarJugadores() {
                         <div class="info-item">
                             <span class="info-label">Edad:</span>
                             <span class="info-value">${jugador.edad} años</span>
+                        </div>
+                        <div class="info-item">
+                            <span class="info-label">Media:</span>
+                            <span class="info-value" style="color: ${categoriaInfo.color}; font-weight: bold;">${mediaJugador}</span>
                         </div>
                         <div class="info-item">
                             <span class="info-label">General:</span>
