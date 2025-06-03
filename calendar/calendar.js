@@ -89,10 +89,8 @@ class AutoCalendar {
         // 1. Procesar cumpleaños automáticamente
         this.processBirthdays(currentMonth, currentDay);
         
-        // 2. Procesar retiros (solo en diciembre)
-        if (currentMonth === 12) {
-            this.processRetirements();
-        }
+        // 2. Procesar retiros usando el módulo especializado
+        this.processRetirements();
         
         // 3. Aplicar degradación por inactividad
         this.applyDegradation();
@@ -146,35 +144,19 @@ class AutoCalendar {
         if (!jugadoresData) return;
         
         const jugadoresPorClub = JSON.parse(jugadoresData);
-        let retirementsCount = 0;
-        const maxRetirements = 2; // Máximo 2 retiros por mes
         
-        Object.keys(jugadoresPorClub).forEach(clubId => {
-            const jugadoresClub = jugadoresPorClub[clubId];
-            
-            for (let i = jugadoresClub.length - 1; i >= 0 && retirementsCount < maxRetirements; i--) {
-                const jugador = jugadoresClub[i];
-                
-                if (jugador.ultimoAnio && this.shouldRetire(jugador)) {
-                    console.log(`👋 ${jugador.nombre} (${jugador.edad} años) se retira del fútbol - ${this.getClubName(clubId)}`);
-                    jugadoresClub.splice(i, 1);
-                    retirementsCount++;
-                }
-            }
+        // Usar el módulo de retiros
+        const retiredPlayers = retiroManager.checkRetirements(this.currentDate, jugadoresPorClub);
+        
+        // Mostrar retiros en consola
+        retiredPlayers.forEach(retiro => {
+            console.log(`👋 ${retiro.nombre} (${retiro.edad} años, ${retiro.posicion}) se retira: ${retiro.razon} - ${retiro.club}`);
         });
         
-        if (retirementsCount > 0) {
+        // Guardar cambios si hubo retiros
+        if (retiredPlayers.length > 0) {
             localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
         }
-    }
-    
-    shouldRetire(jugador) {
-        let chance = 0;
-        if (jugador.edad >= 36) chance = 0.2;
-        if (jugador.edad >= 38) chance = 0.4;
-        if (jugador.edad >= 40) chance = 0.7;
-        
-        return Math.random() < chance;
     }
     
     applyDegradation() {
