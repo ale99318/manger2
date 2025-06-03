@@ -28,6 +28,13 @@ class AutoCalendar {
     }
     
     start() {
+        // SIEMPRE limpiar cualquier intervalo existente antes de crear uno nuevo
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = null;
+        }
+        
+        // Solo crear nuevo intervalo si no está pausado
         if (!this.isPaused) {
             this.interval = setInterval(() => {
                 this.nextDay();
@@ -44,23 +51,25 @@ class AutoCalendar {
     
     togglePause() {
         if (this.isPaused) {
-            this.start();
-            this.pauseBtn.textContent = 'Pausar';
+            // Reanudar
             this.isPaused = false;
+            this.pauseBtn.textContent = 'Pausar';
+            this.start(); // Esto ya limpia intervalos anteriores
         } else {
-            this.stop();
-            this.pauseBtn.textContent = 'Continuar';
+            // Pausar
             this.isPaused = true;
+            this.pauseBtn.textContent = 'Continuar';
+            this.stop(); // Limpiar intervalo actual
         }
     }
     
     reset() {
-        this.stop();
+        this.stop(); // Limpiar intervalo
         this.currentDate = new Date(this.startDate);
         this.isPaused = false;
         this.pauseBtn.textContent = 'Pausar';
         this.updateDisplay();
-        this.start();
+        this.start(); // Iniciar limpiamente
     }
     
     nextDay() {
@@ -348,7 +357,7 @@ class AutoCalendar {
         // Limpiar el grid
         this.daysGridElement.innerHTML = '';
         
-        // Días del mes anterior
+                // Días del mes anterior
         const prevMonth = new Date(year, month, 0);
         for (let i = startDay - 1; i >= 0; i--) {
             const dayElement = this.createDayElement(
@@ -358,7 +367,7 @@ class AutoCalendar {
             this.daysGridElement.appendChild(dayElement);
         }
         
-                // Días del mes actual
+        // Días del mes actual
         for (let day = 1; day <= lastDay.getDate(); day++) {
             const isToday = day === today;
             const dayElement = this.createDayElement(
@@ -390,3 +399,5 @@ class AutoCalendar {
 document.addEventListener('DOMContentLoaded', () => {
     new AutoCalendar();
 });
+
+            
