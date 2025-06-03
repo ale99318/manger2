@@ -76,34 +76,6 @@ function calcularSueldoPorValor(valor, config) {
     return Math.max(config.sueldoMin, Math.round(sueldoFinal));
 }
 
-// Función para asignar lesión basada en probabilidad, estado físico y cansancio
-function asignarLesion(estadoFisico, cansancio, propensionLesiones) {
-    // La probabilidad de lesión aumenta si el estado físico es bajo o el cansancio es alto
-    const factorEstadoFisico = (100 - estadoFisico) / 100; // Cuanto más bajo el estado físico, mayor probabilidad
-    const factorCansancio = cansancio / 100; // Cuanto más cansado, mayor probabilidad
-    const probabilidadBase = (propensionLesiones / 100) * (1 + factorEstadoFisico + factorCansancio);
-    const random = Math.random();
-    let probabilidadAcumulada = 0;
-    
-    // Verificar si lesiones está definida (de lesiones.js)
-    if (typeof lesiones !== 'undefined') {
-        for (const lesion of lesiones) {
-            probabilidadAcumulada += lesion.probabilidad * probabilidadBase;
-            if (random < probabilidadAcumulada) {
-                return {
-                    nombre: lesion.nombre,
-                    gravedad: lesion.gravedad,
-                    diasRecuperacion: lesion.diasRecuperacion,
-                    descripcion: lesion.descripcion,
-                    diasRestantes: lesion.diasRecuperacion
-                };
-            }
-        }
-    }
-    
-    return null; // Sin lesión
-}
-
 // Función para asignar un evento de cansancio inicial (solo actividades fuera del campo)
 function asignarEventoCansancioFueraCampo() {
     // Verificar si eventosCansancio está definida (de cansancio.js)
@@ -157,24 +129,29 @@ function generarJugador(clubId, jugadorId) {
     const edad = rand(18, 35);
     const birthdayMonth = rand(1, 12);
     const birthdayDay = rand(1, new Date(2025, birthdayMonth, 0).getDate());
-    const estadoFisicoBase = rand(80, 100); // Estado físico base alto, ya que no hay partidos ni entrenamientos
+    const estadoFisicoBase = rand(80, 100); // Estado físico base alto
     const propensionLesiones = rand(10, 50); // Probabilidad base de lesión
     const actitud = asignarActitud(); // Asignar actitud aleatoria
     
     // Asignar un evento de cansancio inicial solo para actividades fuera del campo con baja probabilidad
     const eventoCansancio = asignarEventoCansancioFueraCampo();
-    let cansancio = rand(0, 10); // Cansancio inicial bajo, ya que no hay partidos ni entrenamientos
+    let cansancio = rand(0, 10); // Cansancio inicial bajo
     let estadoFisico = estadoFisicoBase;
     let resistencia = rand(60, 95);
     
     if (eventoCansancio) {
-        cansancio = Math.min(100, Math.max(10, cansancio - eventoCansancio.impactoEnergia)); // Ajustar cansancio inicial si hay evento
-        resistencia = Math.min(100, Math.max(0, resistencia + eventoCansancio.impactoResistencia)); // Ajustar resistencia
-        estadoFisico = Math.min(100, Math.max(50, estadoFisicoBase + eventoCansancio.impactoEnergia / 2)); // Impacto parcial en estado físico
+        cansancio = Math.min(100, Math.max(10, cansancio - eventoCansancio.impactoEnergia));
+        resistencia = Math.min(100, Math.max(0, resistencia + eventoCansancio.impactoResistencia));
+        estadoFisico = Math.min(100, Math.max(50, estadoFisicoBase + eventoCansancio.impactoEnergia / 2));
     }
     
-    // Generar lesión solo si el estado físico es bajo o cansancio alto (poco probable sin partidos/entrenamientos)
-    const lesion = asignarLesion(estadoFisico, cansancio, propensionLesiones);
+    // ==================== CAMBIO PRINCIPAL ====================
+    // USAR EL MÓDULO DE LESIONES en lugar de la función local
+    let lesion = null;
+    if (typeof lesionesManager !== 'undefined') {
+        lesion = lesionesManager.asignarLesionInicial(edad, propensionLesiones);
+    }
+    // ==================== FIN DEL CAMBIO ====================
     
     return {
         id: jugadorId,
@@ -186,14 +163,14 @@ function generarJugador(clubId, jugadorId) {
         posicion: posiciones[rand(0, posiciones.length - 1)],
         general: general,
         potencial: potencial,
-        actitud: actitud, // Actitud o personalidad del jugador
+        actitud: actitud,
         estadoFisico: estadoFisico,
         cansancio: cansancio,
         valorMercado: valor,
         sueldo: sueldo,
-        contratoAnios: rand(1, 5), // Duración del contrato en años
-        lesion: lesion, // Puede ser null si no está lesionado
-        propensionLesiones: propensionLesiones, // Probabilidad base de lesionarse
+        contratoAnios: rand(1, 5),
+        lesion: lesion, // Ahora manejado por lesiones-manager
+        propensionLesiones: propensionLesiones,
         sprint: rand(50, 95),
         regate: rand(50, 95),
         pase: rand(50, 95),
@@ -245,7 +222,7 @@ window.addEventListener("DOMContentLoaded", () => {
         generateBtn.disabled = false;
     }
     
-       // Generar jugadores para todos los clubes al hacer clic
+    // Generar jugadores para todos los clubes al hacer clic
     generateBtn.addEventListener("click", () => {
         if (!clubIdSeleccionado) return;
         
@@ -276,7 +253,7 @@ window.addEventListener("DOMContentLoaded", () => {
             if (!jugadoresPorClub[clubId] || jugadoresPorClub[clubId].length === 0) {
                 jugadoresPorClub[clubId] = [];
                 for (let i = 0; i < cantidadJugadores; i++) {
-                    const jugador = generarJugador(clubId, jugadorIdGlobal++);
+                                        const jugador = generarJugador(clubId, jugadorIdGlobal++);
                     jugadoresPorClub[clubId].push(jugador);
                 }
             }
@@ -344,6 +321,7 @@ function goToCalendar() {
 }
 
 // ==================== FUNCIONES PARA INTEGRAR CON EL CALENDARIO ====================
+// NOTA: Las funciones de lesiones ahora son manejadas por lesiones-manager.js
 
 // Función para aplicar degradación diaria por inactividad (debe ser llamada desde calendar.js)
 function aplicarDegradacionPorInactividad() {
@@ -474,5 +452,3 @@ if (typeof window !== 'undefined') {
     window.aplicarEventosAleatoriosCansancio = aplicarEventosAleatoriosCansancio;
     window.procesarRecuperacionLesiones = procesarRecuperacionLesiones;
 }
-
-    
