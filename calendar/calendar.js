@@ -124,10 +124,10 @@ class AutoCalendar {
                         console.log(`🎂 ${jugador.nombre} cumple ${jugador.edad} años - ${clubSeleccionado}`);
                     }
                     
-                    // Marcar para posible retiro si tiene 36+ años
-                    if (jugador.edad >= 36 && !jugador.ultimoAnio) {
+                    // Marcar para posible retiro si tiene 36+ años y es de nivel 80+
+                    if (jugador.edad >= 36 && !jugador.ultimoAnio && jugador.general >= 80) {
                         jugador.ultimoAnio = true;
-                        console.log(`📢 ${jugador.nombre} anuncia que será su última temporada`);
+                        console.log(`📢 ${jugador.nombre} (${jugador.general} GEN) anuncia que será su última temporada - ${clubSeleccionado}`);
                     }
                 }
             });
