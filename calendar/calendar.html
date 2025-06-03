@@ -3,12 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calendario de Eventos</title>
+    <title>Calendario Automático</title>
     <link rel="stylesheet" href="calendar.css">
 </head>
 <body>
-    <h1>Calendario de Eventos</h1>
-    <div id="eventos"></div>
+    <div class="calendar-container">
+        <div class="calendar-header">
+            <h1 id="current-date">Cargando...</h1>
+            <h2 id="year-month">Cargando...</h2>
+        </div>
+        
+        <div class="controls">
+            <button id="pause-btn">Pausar</button>
+            <button id="reset-btn">Reiniciar</button>
+        </div>
+        
+        <div class="calendar-grid">
+            <div class="weekdays">
+                <div class="weekday">Lun</div>
+                <div class="weekday">Mar</div>
+                <div class="weekday">Mié</div>
+                <div class="weekday">Jue</div>
+                <div class="weekday">Vie</div>
+                <div class="weekday">Sáb</div>
+                <div class="weekday">Dom</div>
+            </div>
+            <div id="days-grid">
+                <!-- Los días se generan dinámicamente -->
+            </div>
+        </div>
+        
+        <div class="status">
+            <p>Los eventos se muestran en la consola (F12). El calendario avanza automáticamente cada 3 segundos.</p>
+            <p>Club seleccionado: <span id="selected-club">Cargando...</span></p>
+        </div>
+    </div>
 
     <!-- Scripts de datos estáticos -->
     <script src="../data/nombres.js"></script>
@@ -17,13 +46,20 @@
     <script src="../data/cansancio.js"></script>
     <script src="../data/actitudes.js"></script>
 
-    <!-- Scripts de módulos del calendario -->
-    <script src="modules/calendar-utils.js"></script>
-    <script src="modules/players-manager.js"></script>
-    <script src="modules/events-manager.js"></script>
-    <script src="modules/calendar-display.js"></script>
-
     <!-- Script principal del calendario -->
     <script src="calendar.js"></script>
+    
+    <script>
+        // Mostrar club seleccionado
+        document.addEventListener('DOMContentLoaded', () => {
+            const clubSeleccionado = localStorage.getItem("selectedClub");
+            const clubElement = document.getElementById('selected-club');
+            if (clubSeleccionado && clubElement) {
+                clubElement.textContent = clubSeleccionado;
+            } else if (clubElement) {
+                clubElement.textContent = 'No seleccionado';
+            }
+        });
+    </script>
 </body>
 </html>
