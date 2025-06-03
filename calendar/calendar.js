@@ -15,9 +15,9 @@ class AutoCalendar {
     }
     
     initializeElements() {
-        this.currentDateElement = document.getElementById('current-date');
+        this.currentDateFullElement = document.getElementById('current-date-full');
         this.yearMonthElement = document.getElementById('year-month');
-        this.daysGridElement = document.getElementById('days-grid');
+        this.weekDaysElement = document.getElementById('week-days');
         this.pauseBtn = document.getElementById('pause-btn');
         this.resetBtn = document.getElementById('reset-btn');
     }
@@ -79,7 +79,7 @@ class AutoCalendar {
         // Procesar eventos del día automáticamente
         this.processDay();
         
-        // Actualizar la visualización
+        // Actualizar la visualización con transición suave
         this.updateDisplay();
         
         // Reiniciar si llegamos al final
@@ -318,9 +318,10 @@ class AutoCalendar {
         return `Club ${clubId}`;
     }
     
+    // ==================== NUEVO: SISTEMA DE VISUALIZACIÓN HORIZONTAL ====================
     updateDisplay() {
         this.updateDateInfo();
-        this.updateCalendar();
+        this.updateWeekCalendar();
     }
     
     updateDateInfo() {
@@ -331,8 +332,12 @@ class AutoCalendar {
             day: 'numeric' 
         };
         
-        this.currentDateElement.textContent = this.currentDate.toLocaleDateString('es-ES', options);
+        // Actualizar fecha completa
+        if (this.currentDateFullElement) {
+            this.currentDateFullElement.textContent = this.currentDate.toLocaleDateString('es-ES', options);
+        }
         
+        // Actualizar mes y año
         const monthYear = this.currentDate.toLocaleDateString('es-ES', { 
             year: 'numeric', 
             month: 'long' 
@@ -340,54 +345,118 @@ class AutoCalendar {
         this.yearMonthElement.textContent = monthYear;
     }
     
+    // ==================== NUEVO: CALENDARIO HORIZONTAL DE UNA SEMANA ====================
+    updateWeekCalendar() {
+        if (!this.weekDaysElement) return;
+        
+        // Obtener el lunes de la semana actual
+        const currentDate = new Date(this.currentDate);
+        const dayOfWeek = currentDate.getDay();
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Si es domingo, retroceder 6 días
+        
+        const monday = new Date(currentDate);
+        monday.setDate(currentDate.getDate() + mondayOffset);
+        
+                // Nombres de los días de la semana
+        const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+        
+        // Limpiar contenedor
+        this.weekDaysElement.innerHTML = '';
+        
+        // Generar los 7 días de la semana
+        for (let i = 0; i < 7; i++) {
+            const dayDate = new Date(monday);
+            dayDate.setDate(monday.getDate() + i);
+            
+            const dayElement = this.createWeekDayElement(dayDate, dayNames[i]);
+            this.weekDaysElement.appendChild(dayElement);
+        }
+        
+        // Aplicar transición suave después de un pequeño delay
+        setTimeout(() => {
+            this.applyWeekTransitions();
+        }, 50);
+    }
+    
+    // ==================== CREAR ELEMENTO DE DÍA DE LA SEMANA ====================
+    createWeekDayElement(date, dayName) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'week-day';
+        
+        // Determinar el estado del día (pasado, actual, futuro)
+        const today = new Date(this.currentDate);
+        const isToday = this.isSameDay(date, today);
+        const isPast = date < today;
+        const isFuture = date > today;
+        
+        // Aplicar clases según el estado
+        if (isToday) {
+            dayElement.classList.add('current');
+        } else if (isPast) {
+            dayElement.classList.add('past');
+        } else if (isFuture) {
+            dayElement.classList.add('future');
+        }
+        
+        // Crear estructura interna
+        const dayNameElement = document.createElement('div');
+        dayNameElement.className = 'week-day-name';
+        dayNameElement.textContent = dayName;
+        
+        const dayNumberElement = document.createElement('div');
+        dayNumberElement.className = 'week-day-number';
+        dayNumberElement.textContent = date.getDate();
+        
+        dayElement.appendChild(dayNameElement);
+        dayElement.appendChild(dayNumberElement);
+        
+        // Agregar data attributes para animaciones
+        dayElement.setAttribute('data-date', date.toISOString().split('T')[0]);
+        dayElement.setAttribute('data-day-name', dayName);
+        
+        return dayElement;
+    }
+    
+    // ==================== APLICAR TRANSICIONES SUAVES ====================
+    applyWeekTransitions() {
+        const weekDays = this.weekDaysElement.querySelectorAll('.week-day');
+        
+        weekDays.forEach((dayElement, index) => {
+            // Aplicar delay escalonado para efecto de onda
+            dayElement.style.transitionDelay = `${index * 0.1}s`;
+            
+            // Forzar repaint para activar transiciones
+            dayElement.offsetHeight;
+            
+            // Agregar clase para activar animación
+            dayElement.classList.add('animated');
+        });
+        
+        // Limpiar delays después de la animación
+        setTimeout(() => {
+            weekDays.forEach(dayElement => {
+                dayElement.style.transitionDelay = '';
+            });
+        }, 1000);
+    }
+    
+    // ==================== FUNCIÓN AUXILIAR PARA COMPARAR FECHAS ====================
+    isSameDay(date1, date2) {
+        return date1.getFullYear() === date2.getFullYear() &&
+               date1.getMonth() === date2.getMonth() &&
+               date1.getDate() === date2.getDate();
+    }
+    
+    // ==================== FUNCIONES OBSOLETAS (MANTENIDAS POR COMPATIBILIDAD) ====================
     updateCalendar() {
-        const year = this.currentDate.getFullYear();
-        const month = this.currentDate.getMonth();
-        const today = this.currentDate.getDate();
-        
-        // Primer día del mes
-        const firstDay = new Date(year, month, 1);
-        // Último día del mes
-        const lastDay = new Date(year, month + 1, 0);
-        
-        // Ajustar el primer día para que lunes sea 0
-        let startDay = firstDay.getDay();
-        startDay = startDay === 0 ? 6 : startDay - 1;
-        
-        // Limpiar el grid
-        this.daysGridElement.innerHTML = '';
-        
-                // Días del mes anterior
-        const prevMonth = new Date(year, month, 0);
-        for (let i = startDay - 1; i >= 0; i--) {
-            const dayElement = this.createDayElement(
-                prevMonth.getDate() - i, 
-                'other-month'
-            );
-            this.daysGridElement.appendChild(dayElement);
-        }
-        
-        // Días del mes actual
-        for (let day = 1; day <= lastDay.getDate(); day++) {
-            const isToday = day === today;
-            const dayElement = this.createDayElement(
-                day, 
-                isToday ? 'current' : ''
-            );
-            this.daysGridElement.appendChild(dayElement);
-        }
-        
-        // Días del mes siguiente para completar la grilla
-        const totalCells = this.daysGridElement.children.length;
-        const remainingCells = 42 - totalCells; // 6 semanas × 7 días
-        
-        for (let day = 1; day <= remainingCells; day++) {
-            const dayElement = this.createDayElement(day, 'other-month');
-            this.daysGridElement.appendChild(dayElement);
-        }
+        // Esta función ya no se usa, pero se mantiene por compatibilidad
+        // El nuevo sistema usa updateWeekCalendar()
+        return;
     }
     
     createDayElement(day, className = '') {
+        // Esta función ya no se usa, pero se mantiene por compatibilidad
+        // El nuevo sistema usa createWeekDayElement()
         const dayElement = document.createElement('div');
         dayElement.className = `day ${className}`;
         dayElement.textContent = day;
@@ -399,5 +468,3 @@ class AutoCalendar {
 document.addEventListener('DOMContentLoaded', () => {
     new AutoCalendar();
 });
-
-            
