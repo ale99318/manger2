@@ -92,13 +92,16 @@ class AutoCalendar {
         // 2. Procesar retiros usando el módulo especializado
         this.processRetirements();
         
-        // 3. Aplicar degradación por inactividad
-        this.applyDegradation();
+        // 3. Procesar lesiones aleatorias del día
+        this.processRandomInjuries();
         
         // 4. Procesar recuperación de lesiones
         this.processInjuryRecovery();
         
-        // 5. Eventos aleatorios de indisciplina
+        // 5. Aplicar degradación por inactividad
+        this.applyDegradation();
+        
+        // 6. Eventos aleatorios de indisciplina
         this.processRandomEvents();
     }
     
@@ -159,6 +162,112 @@ class AutoCalendar {
         }
     }
     
+    // ==================== NUEVO: PROCESAR LESIONES ALEATORIAS ====================
+    processRandomInjuries() {
+        const jugadoresData = localStorage.getItem("jugadoresPorClub");
+        if (!jugadoresData) return;
+        
+        const jugadoresPorClub = JSON.parse(jugadoresData);
+        const clubSeleccionado = localStorage.getItem("selectedClub");
+        
+        // Usar el módulo de lesiones para procesar lesiones del día
+        if (typeof lesionesManager !== 'undefined') {
+            const lesionesDelDia = lesionesManager.procesarLesionesDelDia(jugadoresPorClub);
+            
+            // Mostrar lesiones con filtros realistas
+            lesionesDelDia.forEach(lesionData => {
+                let mostrarLesion = false;
+                
+                // 1. Siempre mostrar lesiones de tu club
+                if (lesionData.club === clubSeleccionado) {
+                    mostrarLesion = true;
+                }
+                // 2. Mostrar lesiones de jugadores estrella (80+ general)
+                else if (lesionData.general >= 80) {
+                    mostrarLesion = true;
+                }
+                // 3. Mostrar lesiones graves/críticas (son noticia)
+                else if (lesionData.gravedad === 'grave' || lesionData.gravedad === 'crítica') {
+                    mostrarLesion = true;
+                }
+                
+                if (mostrarLesion) {
+                    if (lesionData.club === clubSeleccionado) {
+                        // Tu club: mensaje simple
+                        console.log(`🚑 ${lesionData.jugador} se lesiona: ${lesionData.lesion} (${lesionData.dias} días)`);
+                    } else {
+                        // Otros clubes: incluir club y detalles
+                        const detalles = lesionData.general >= 80 ? ` (${lesionData.general} GEN)` : '';
+                        console.log(`🚑 ${lesionData.jugador}${detalles} se lesiona: ${lesionData.lesion} (${lesionData.dias} días) - ${lesionData.club}`);
+                    }
+                }
+            });
+            
+            // Guardar cambios si hubo lesiones
+            if (lesionesDelDia.length > 0) {
+                localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+            }
+        }
+    }
+    
+    // ==================== MEJORADO: RECUPERACIONES CON FILTROS ====================
+    processInjuryRecovery() {
+        const jugadoresData = localStorage.getItem("jugadoresPorClub");
+        if (!jugadoresData) return;
+        
+        const jugadoresPorClub = JSON.parse(jugadoresData);
+        const clubSeleccionado = localStorage.getItem("selectedClub");
+        let recoveries = 0;
+        
+        Object.keys(jugadoresPorClub).forEach(clubId => {
+            const jugadoresClub = jugadoresPorClub[clubId];
+            const clubName = this.getClubName(clubId);
+            
+            jugadoresClub.forEach(jugador => {
+                if (jugador.lesion && jugador.lesion.diasRestantes > 0) {
+                    jugador.lesion.diasRestantes--;
+                    
+                    if (jugador.lesion.diasRestantes <= 0) {
+                        // FILTROS PARA MOSTRAR RECUPERACIONES
+                        let mostrarRecuperacion = false;
+                        
+                        // 1. Siempre mostrar jugadores de tu club
+                        if (clubName === clubSeleccionado) {
+                            mostrarRecuperacion = true;
+                        }
+                        // 2. Mostrar jugadores estrella (80+ general) de otros clubes
+                        else if (jugador.general >= 80) {
+                            mostrarRecuperacion = true;
+                        }
+                        // 3. Mostrar lesiones graves/críticas (son noticia)
+                        else if (jugador.lesion.gravedad === 'grave' || jugador.lesion.gravedad === 'crítica') {
+                            mostrarRecuperacion = true;
+                        }
+                        
+                        // Solo mostrar si cumple los criterios
+                        if (mostrarRecuperacion) {
+                            if (clubName === clubSeleccionado) {
+                                // Tu club: mensaje simple
+                                console.log(`🏥 ${jugador.nombre} se recupera de: ${jugador.lesion.nombre}`);
+                            } else {
+                                // Otros clubes: incluir club y nivel si es estrella
+                                const detalles = jugador.general >= 80 ? ` (${jugador.general} GEN)` : '';
+                                console.log(`🏥 ${jugador.nombre}${detalles} se recupera de: ${jugador.lesion.nombre} - ${clubName}`);
+                            }
+                        }
+                        
+                        jugador.lesion = null;
+                        recoveries++;
+                    }
+                }
+            });
+        });
+        
+        if (recoveries > 0) {
+            localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+        }
+    }
+    
     applyDegradation() {
         const jugadoresData = localStorage.getItem("jugadoresPorClub");
         if (!jugadoresData) return;
@@ -181,34 +290,6 @@ class AutoCalendar {
         });
         
         localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
-    }
-    
-    processInjuryRecovery() {
-        const jugadoresData = localStorage.getItem("jugadoresPorClub");
-        if (!jugadoresData) return;
-        
-        const jugadoresPorClub = JSON.parse(jugadoresData);
-        let recoveries = 0;
-        
-        Object.keys(jugadoresPorClub).forEach(clubId => {
-            const jugadoresClub = jugadoresPorClub[clubId];
-            
-            jugadoresClub.forEach(jugador => {
-                if (jugador.lesion && jugador.lesion.diasRestantes > 0) {
-                    jugador.lesion.diasRestantes--;
-                    
-                    if (jugador.lesion.diasRestantes <= 0) {
-                        console.log(`🏥 ${jugador.nombre} se recupera de: ${jugador.lesion.nombre}`);
-                        jugador.lesion = null;
-                        recoveries++;
-                    }
-                }
-            });
-        });
-        
-        if (recoveries > 0) {
-            localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
-        }
     }
     
     processRandomEvents() {
@@ -277,7 +358,7 @@ class AutoCalendar {
             this.daysGridElement.appendChild(dayElement);
         }
         
-        // Días del mes actual
+                // Días del mes actual
         for (let day = 1; day <= lastDay.getDate(); day++) {
             const isToday = day === today;
             const dayElement = this.createDayElement(
