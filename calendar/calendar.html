@@ -8,36 +8,37 @@
 </head>
 <body>
     <div class="calendar-container">
+        <!-- Header compacto -->
         <div class="calendar-header">
-            <h1 id="current-date">Cargando...</h1>
             <h2 id="year-month">Cargando...</h2>
-        </div>
-        
-        <div class="controls">
-            <button id="pause-btn">Pausar</button>
-            <button id="reset-btn">Reiniciar</button>
-        </div>
-        
-        <div class="calendar-grid">
-            <div class="weekdays">
-                <div class="weekday">Lun</div>
-                <div class="weekday">Mar</div>
-                <div class="weekday">Mié</div>
-                <div class="weekday">Jue</div>
-                <div class="weekday">Vie</div>
-                <div class="weekday">Sáb</div>
-                <div class="weekday">Dom</div>
-            </div>
-            <div id="days-grid">
-                <!-- Los días se generan dinámicamente -->
+            <div class="controls">
+                <button id="pause-btn">Pausar</button>
+                <button id="reset-btn">Reiniciar</button>
             </div>
         </div>
         
+        <!-- Calendario horizontal de una semana -->
+        <div class="week-calendar">
+            <div class="week-container">
+                <div id="week-days">
+                    <!-- Los 7 días de la semana se generan dinámicamente -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- Información del estado -->
         <div class="status">
-            <p>Los eventos se muestran en la consola (F12). El calendario avanza automáticamente cada 3 segundos.</p>
-            <p>Club seleccionado: <span id="selected-club">Cargando...</span></p>
+            <div class="status-info">
+                <p>📅 <span id="current-date-full">Cargando fecha completa...</span></p>
+                <p>⚽ Club seleccionado: <span id="selected-club">Cargando...</span></p>
+                <p>🎮 Los eventos se muestran en la consola (F12)</p>
+            </div>
         </div>
     </div>
+
+    <!-- Audio elements (hidden) -->
+    <audio id="bg-audio" loop autoplay></audio>
+    <audio id="button-audio"></audio>
 
     <!-- Scripts de datos estáticos -->
     <script src="../data/nombres.js"></script>
@@ -48,12 +49,19 @@
 
     <!-- Scripts de módulos -->
     <script src="modules/retiro.js"></script>
+    <script src="modules/lesiones-manager.js"></script>
 
     <!-- Script principal del calendario -->
     <script src="calendar.js"></script>
     
     <script>
-        // Mostrar club seleccionado
+        // URLs de audio hardcodeadas
+        const AUDIO_CONFIG = {
+            backgroundMusic: "URL_MUSICA_FONDO_AQUI",
+            buttonSound: "URL_SONIDO_BOTON_AQUI"
+        };
+        
+        // Mostrar club seleccionado y configurar audio
         document.addEventListener('DOMContentLoaded', () => {
             const clubSeleccionado = localStorage.getItem("selectedClub");
             const clubElement = document.getElementById('selected-club');
@@ -62,7 +70,43 @@
             } else if (clubElement) {
                 clubElement.textContent = 'No seleccionado';
             }
+            
+            // Inicializar audio automáticamente
+            initializeAudio();
         });
+        
+        function initializeAudio() {
+            const bgAudio = document.getElementById('bg-audio');
+            const buttonAudio = document.getElementById('button-audio');
+            
+            // Configurar música de fondo
+            bgAudio.src = AUDIO_CONFIG.backgroundMusic;
+            bgAudio.volume = 0.3;
+            
+            // Configurar sonido de botones
+            buttonAudio.src = AUDIO_CONFIG.buttonSound;
+            buttonAudio.volume = 0.5;
+            
+            // Intentar reproducir música de fondo automáticamente
+            bgAudio.play().catch(e => {
+                console.log('Autoplay bloqueado. Haz clic en cualquier lugar para activar audio.');
+                // Activar audio en el primer clic del usuario
+                document.addEventListener('click', () => {
+                    bgAudio.play().catch(e => console.log('Error reproduciendo música:', e));
+                }, { once: true });
+            });
+            
+            // Agregar sonido a todos los botones
+            document.querySelectorAll('button').forEach(button => {
+                button.addEventListener('click', playButtonSound);
+            });
+        }
+        
+        function playButtonSound() {
+            const buttonAudio = document.getElementById('button-audio');
+            buttonAudio.currentTime = 0; // Reiniciar desde el inicio
+            buttonAudio.play().catch(e => console.log('Error reproduciendo sonido:', e));
+        }
     </script>
 </body>
 </html>
