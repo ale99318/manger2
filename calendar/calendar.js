@@ -20,7 +20,7 @@ class AutoCalendar {
         this.weekDaysElement = document.getElementById('week-days');
         this.pauseBtn = document.getElementById('pause-btn');
         this.resetBtn = document.getElementById('reset-btn');
-        this.newsContentElement = document.getElementById('news-content'); // Elemento de noticias
+        // Eliminar referencia a newsContentElement
     }
     
     setupEventListeners() {
@@ -114,18 +114,11 @@ class AutoCalendar {
         // 6. Eventos aleatorios de indisciplina
         this.processRandomEvents();
         
-        // 7. Mostrar noticias en la ventana de noticias
+        // 7. Mostrar noticias en la consola
         this.showNews(currentMonth, currentDay);
     }
     
     showNews(month, day) {
-        // Aquí puedes definir los eventos y videos
-        const eventVideos = {
-            "Golpe leve": "url_del_video_golpe_leve.mp4",
-            "Calambre": "url_del_video_calambre.mp4",
-            // Agrega más eventos y sus videos aquí
-        };
-
         // Ejemplo de eventos que podrían ocurrir
         const events = [
             { name: "Golpe leve", date: `${day}/${month}` },
@@ -133,21 +126,9 @@ class AutoCalendar {
             // Agrega más eventos aquí
         ];
 
-        // Limpiar contenido anterior
-        this.newsContentElement.innerHTML = '';
-
-        // Mostrar eventos en la ventana de noticias
+        // Mostrar eventos en la consola
         events.forEach(event => {
-            const videoUrl = eventVideos[event.name];
-            const newsItem = document.createElement('div');
-            newsItem.innerHTML = `
-                <p>${event.date}: ${event.name} ocurrió.</p>
-                ${videoUrl ? `<video width="320" height="240" controls>
-                    <source src="${videoUrl}" type="video/mp4">
-                    Tu navegador no soporta el video.
-                </video>` : ''}
-            `;
-            this.newsContentElement.appendChild(newsItem);
+            console.log(`${event.date}: ${event.name} ocurrió.`);
         });
     }
 
@@ -477,7 +458,7 @@ class AutoCalendar {
         }, 1000);
     }
     
-        // ==================== FUNCIÓN AUXILIAR PARA COMPARAR FECHAS ====================
+    // ==================== FUNCIÓN AUXILIAR PARA COMPARAR FECHAS ====================
     isSameDay(date1, date2) {
         return date1.getFullYear() === date2.getFullYear() &&
                date1.getMonth() === date2.getMonth() &&
