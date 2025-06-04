@@ -7,8 +7,7 @@ class AutoCalendar {
         this.interval = null;
         this.isPaused = false;
         this.intervalTime = 3000; // 3 segundos por día
-        this.eventHistory = {}; // Para rastrear eventos ocurridos
-
+        
         this.initializeElements();
         this.setupEventListeners();
         this.updateDisplay();
@@ -88,23 +87,10 @@ class AutoCalendar {
         
         this.processBirthdays(currentMonth, currentDay);
         this.processRetirements();
-        this.processRandomInjuries(); // Aquí se procesan las lesiones
+        this.processRandomInjuries(); // Aquí se procesan las lesiones usando lesionesManager
         this.processInjuryRecovery();
         this.applyDegradation();
-        this.processRandomEvents();
-        this.showNews(currentMonth, currentDay);
-    }
-    
-    showNews(month, day) {
-        const events = [
-            { name: "Golpe leve", date: `${day}/${month}` },
-            { name: "Calambre", date: `${day}/${month}` },
-        ];
-
-        // Mostrar eventos en la consola
-        events.forEach(event => {
-            console.log(`${event.date}: ${event.name} ocurrió.`);
-        });
+        this.processRandomEvents(); // Solo eventos de indisciplina
     }
 
     processBirthdays(month, day) {
@@ -120,7 +106,7 @@ class AutoCalendar {
             
             jugadoresClub.forEach(jugador => {
                 if (jugador.birthdayMonth === month && jugador.birthdayDay === day) {
-                    jugador.edad += 1; // Aumentar edad automáticamente
+                    jugador.edad += 1;
                     birthdayCount++;
                     
                     if (this.getClubName(clubId) === clubSeleccionado) {
@@ -251,7 +237,7 @@ class AutoCalendar {
             const jugadoresClub = jugadoresPorClub[clubId];
             
             jugadoresClub.forEach(jugador => {
-                const degradacion = jugador.general * 0.0005; // 0.05% por día
+                const degradacion = jugador.general * 0.0005;
                 jugador.general = Math.max(jugador.general - degradacion, jugador.general * 0.8);
                 
                 if (jugador.cansancio > 0) {
@@ -264,11 +250,11 @@ class AutoCalendar {
     }
     
     processRandomEvents() {
-        // 10% de probabilidad de evento aleatorio por día
-        if (Math.random() < 0.1) { // Cambia 0.01 a 0.1 para aumentar la probabilidad
-            const eventos = ['Golpe leve', 'Calambre'];
+        // 1% de probabilidad de evento aleatorio por día
+        if (Math.random() < 0.01) {
+            const eventos = ['Fiesta nocturna', 'Desvelada', 'Ampay en discoteca'];
             const evento = eventos[Math.floor(Math.random() * eventos.length)];
-            console.log(`${evento} ocurrió.`);
+            console.log(`🍺 Evento de indisciplina: ${evento}`);
         }
     }
     
@@ -309,7 +295,7 @@ class AutoCalendar {
         
         const currentDate = new Date(this.currentDate);
         const dayOfWeek = currentDate.getDay();
-        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Si es domingo, retroceder 6 días
+        const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
         
         const monday = new Date(currentDate);
         monday.setDate(currentDate.getDate() + mondayOffset);
@@ -342,7 +328,7 @@ class AutoCalendar {
         
         if (isToday) {
             dayElement.classList.add('current');
-        } else if (isPast) {
+               } else if (isPast) {
             dayElement.classList.add('past');
         } else if (isFuture) {
             dayElement.classList.add('future');
