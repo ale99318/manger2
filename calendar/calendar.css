@@ -121,6 +121,27 @@ button {
     color: #ffffff; /* Texto blanco */
 }
 
+/* Estilos para la Ventana de Noticias */
+.news-container {
+    background: rgba(255, 255, 255, 0.9); /* Fondo blanco con opacidad */
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.2);
+    margin-top: 25px; /* Espacio entre el calendario y la ventana de noticias */
+}
+
+.news-container h2 {
+    font-size: 24px;
+    color: #333; /* Texto oscuro */
+    margin-bottom: 15px;
+}
+
+#news-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px; /* Espacio entre los elementos de noticias */
+}
+
 /* Responsive design */
 @media (max-width: 768px) {
     body {
@@ -147,5 +168,9 @@ button {
     .week-day {
         padding: 12px 6px;
         min-height: 70px;
+    }
+    
+    .news-container {
+        padding: 15px; /* Ajustar el padding en pantallas pequeñas */
     }
 }
