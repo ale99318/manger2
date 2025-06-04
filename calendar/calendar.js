@@ -7,7 +7,8 @@ class AutoCalendar {
         this.interval = null;
         this.isPaused = false;
         this.intervalTime = 3000; // 3 segundos por día
-        
+        this.eventHistory = {}; // Para rastrear eventos ocurridos
+
         this.initializeElements();
         this.setupEventListeners();
         this.updateDisplay();
@@ -20,6 +21,7 @@ class AutoCalendar {
         this.weekDaysElement = document.getElementById('week-days');
         this.pauseBtn = document.getElementById('pause-btn');
         this.resetBtn = document.getElementById('reset-btn');
+        this.newsContainer = document.getElementById('news-container'); // Contenedor para mostrar eventos
     }
     
     setupEventListeners() {
@@ -95,16 +97,24 @@ class AutoCalendar {
     }
     
     showNews(month, day) {
-        // Ejemplo de eventos que podrían ocurrir
         const events = [
             { name: "Golpe leve", date: `${day}/${month}` },
             { name: "Calambre", date: `${day}/${month}` },
-            // Agrega más eventos aquí
         ];
 
-        // Mostrar eventos en la consola
+        // Limpiar el contenedor antes de agregar nuevos eventos
+        this.newsContainer.innerHTML = ''; 
+
         events.forEach(event => {
-            console.log(`${event.date}: ${event.name} ocurrió.`);
+            // Verificar si el evento ya ocurrió en el día actual
+            const eventKey = `${event.name}-${day}-${month}`;
+            if (!this.eventHistory[eventKey]) {
+                this.eventHistory[eventKey] = true; // Marcar el evento como ocurrido
+                const eventElement = document.createElement('div');
+                eventElement.textContent = `${event.date}: ${event.name} ocurrió.`;
+                this.newsContainer.appendChild(eventElement);
+                console.log(`${event.date}: ${event.name} ocurrió.`); // También mostrar en consola
+            }
         });
     }
 
@@ -265,6 +275,7 @@ class AutoCalendar {
     }
     
     processRandomEvents() {
+        // 1% de probabilidad de evento aleatorio por día
         if (Math.random() < 0.01) {
             const eventos = ['Fiesta nocturna', 'Desvelada', 'Ampay en discoteca'];
             const evento = eventos[Math.floor(Math.random() * eventos.length)];
