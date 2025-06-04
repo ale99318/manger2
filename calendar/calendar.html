@@ -37,7 +37,7 @@
     </div>
 
     <!-- Audio elements (hidden) -->
-    <audio id="bg-audio" loop autoplay></audio>
+    <audio id="bg-audio" loop></audio>
     <audio id="button-audio"></audio>
 
     <!-- Scripts de datos estáticos -->
@@ -55,10 +55,10 @@
     <script src="calendar.js"></script>
     
     <script>
-        // URLs de audio hardcodeadas
+        // URLs de audio desde GitHub
         const AUDIO_CONFIG = {
-            backgroundMusic: "https://drive.google.com/uc?export=download&id=1XZ4HgV-OV4GvnLqocoKYm1_YhwJmgoyw",
-            buttonSound: "URL_SONIDO_BOTON_AQUI"
+            backgroundMusic: "../audio/background-music.mp3",
+            buttonSound: "../audio/button-sound.mp3"
         };
         
         // Mostrar club seleccionado y configurar audio
@@ -81,18 +81,20 @@
             
             // Configurar música de fondo
             bgAudio.src = AUDIO_CONFIG.backgroundMusic;
-            bgAudio.volume = 0.3;
+            bgAudio.volume = 0.2; // Volumen más bajo para música de fondo
             
             // Configurar sonido de botones
             buttonAudio.src = AUDIO_CONFIG.buttonSound;
-            buttonAudio.volume = 0.5;
+            buttonAudio.volume = 0.4; // Volumen moderado para botones
             
             // Intentar reproducir música de fondo automáticamente
             bgAudio.play().catch(e => {
-                console.log('Autoplay bloqueado. Haz clic en cualquier lugar para activar audio.');
+                console.log('🎵 Autoplay bloqueado. Haz clic en cualquier lugar para activar audio.');
                 // Activar audio en el primer clic del usuario
                 document.addEventListener('click', () => {
-                    bgAudio.play().catch(e => console.log('Error reproduciendo música:', e));
+                    bgAudio.play().then(() => {
+                        console.log('🎵 Música de fondo activada');
+                    }).catch(e => console.log('❌ Error reproduciendo música:', e));
                 }, { once: true });
             });
             
@@ -100,12 +102,21 @@
             document.querySelectorAll('button').forEach(button => {
                 button.addEventListener('click', playButtonSound);
             });
+            
+            // Verificar que los archivos se carguen correctamente
+            bgAudio.addEventListener('loadstart', () => console.log('🎵 Cargando música de fondo...'));
+            bgAudio.addEventListener('canplay', () => console.log('✅ Música de fondo lista'));
+            bgAudio.addEventListener('error', (e) => console.log('❌ Error cargando música:', e));
+            
+            buttonAudio.addEventListener('loadstart', () => console.log('🔊 Cargando sonido de botón...'));
+            buttonAudio.addEventListener('canplay', () => console.log('✅ Sonido de botón listo'));
+            buttonAudio.addEventListener('error', (e) => console.log('❌ Error cargando sonido:', e));
         }
         
         function playButtonSound() {
             const buttonAudio = document.getElementById('button-audio');
             buttonAudio.currentTime = 0; // Reiniciar desde el inicio
-            buttonAudio.play().catch(e => console.log('Error reproduciendo sonido:', e));
+            buttonAudio.play().catch(e => console.log('❌ Error reproduciendo sonido de botón:', e));
         }
     </script>
 </body>
