@@ -264,11 +264,11 @@ class AutoCalendar {
     }
     
     processRandomEvents() {
-        // 1% de probabilidad de evento aleatorio por día
-        if (Math.random() < 0.01) {
-            const eventos = ['Fiesta nocturna', 'Desvelada', 'Ampay en discoteca'];
+        // 10% de probabilidad de evento aleatorio por día
+        if (Math.random() < 0.1) { // Cambia 0.01 a 0.1 para aumentar la probabilidad
+            const eventos = ['Golpe leve', 'Calambre'];
             const evento = eventos[Math.floor(Math.random() * eventos.length)];
-            console.log(`🍺 Evento de indisciplina: ${evento}`);
+            console.log(`${evento} ocurrió.`);
         }
     }
     
