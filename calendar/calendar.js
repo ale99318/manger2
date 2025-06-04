@@ -21,7 +21,6 @@ class AutoCalendar {
         this.weekDaysElement = document.getElementById('week-days');
         this.pauseBtn = document.getElementById('pause-btn');
         this.resetBtn = document.getElementById('reset-btn');
-        this.newsContainer = document.getElementById('news-container'); // Contenedor para mostrar eventos
     }
     
     setupEventListeners() {
@@ -102,19 +101,9 @@ class AutoCalendar {
             { name: "Calambre", date: `${day}/${month}` },
         ];
 
-        // Limpiar el contenedor antes de agregar nuevos eventos
-        this.newsContainer.innerHTML = ''; 
-
+        // Mostrar eventos en la consola
         events.forEach(event => {
-            // Verificar si el evento ya ocurrió en el día actual
-            const eventKey = `${event.name}-${day}-${month}`;
-            if (!this.eventHistory[eventKey]) {
-                this.eventHistory[eventKey] = true; // Marcar el evento como ocurrido
-                const eventElement = document.createElement('div');
-                eventElement.textContent = `${event.date}: ${event.name} ocurrió.`;
-                this.newsContainer.appendChild(eventElement);
-                console.log(`${event.date}: ${event.name} ocurrió.`); // También mostrar en consola
-            }
+            console.log(`${event.date}: ${event.name} ocurrió.`);
         });
     }
 
