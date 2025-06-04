@@ -87,10 +87,10 @@ class AutoCalendar {
         
         this.processBirthdays(currentMonth, currentDay);
         this.processRetirements();
-        this.processRandomInjuries(); // Aquí se procesan las lesiones usando lesionesManager
+        this.processRandomInjuries(); // Usa lesiones-manager.js
         this.processInjuryRecovery();
         this.applyDegradation();
-        this.processRandomEvents(); // Solo eventos de indisciplina
+        this.processRandomEvents(); // Usa events-manager.js
     }
 
     processBirthdays(month, day) {
@@ -250,11 +250,13 @@ class AutoCalendar {
     }
     
     processRandomEvents() {
-        // 1% de probabilidad de evento aleatorio por día
-        if (Math.random() < 0.01) {
-            const eventos = ['Fiesta nocturna', 'Desvelada', 'Ampay en discoteca'];
-            const evento = eventos[Math.floor(Math.random() * eventos.length)];
-            console.log(`🍺 Evento de indisciplina: ${evento}`);
+        // Usar el módulo de eventos para procesar eventos del día
+        if (typeof eventsManager !== 'undefined') {
+            const eventosDelDia = eventsManager.procesarEventosDelDia();
+            
+            eventosDelDia.forEach(evento => {
+                console.log(`🍺 Evento de indisciplina: ${evento.nombre}`);
+            });
         }
     }
     
@@ -328,7 +330,7 @@ class AutoCalendar {
         
         if (isToday) {
             dayElement.classList.add('current');
-               } else if (isPast) {
+        } else if (isPast) {
             dayElement.classList.add('past');
         } else if (isFuture) {
             dayElement.classList.add('future');
@@ -356,8 +358,8 @@ class AutoCalendar {
         
         weekDays.forEach((dayElement, index) => {
             dayElement.style.transitionDelay = `${index * 0.1}s`;
-            dayElement.offsetHeight; // Forzar repaint
-            dayElement.classList.add('animated');
+            dayElement.offsetHeight;
+                        dayElement.classList.add('animated');
         });
         
         setTimeout(() => {
