@@ -120,9 +120,7 @@ class AutoCalendar {
     
     showNews(month, day) {
         // Ejemplo de eventos que podrían ocurrir
-        const events = [
-            { name: "Golpe leve", date: `${day}/${month}` },
-            { name: "Calambre", date: `${day}/${month}` },
+      
             // Agrega más eventos aquí
         ];
 
