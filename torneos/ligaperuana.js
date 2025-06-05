@@ -69,46 +69,384 @@ const ligaPeruana = {
 
   // Fixture Apertura: fechas 1 a 17, partidos con IDs clubes (local, visitante)
   fixtureApertura: [
-    { fecha: 1, partidos: [
-      { local: "51-52", visitante: "51-6" },
-      { local: "51-10", visitante: "51-3" },
-      { local: "51-17", visitante: "51-9" },
-      { local: "51-14", visitante: "51-1" },
-      { local: "51-7", visitante: "51-8" },
-      { local: "51-16", visitante: "51-11" },
-      { local: "51-2", visitante: "51-12" },
-      { local: "51-18", visitante: "51-13" },
-      { local: "51-15", visitante: "51-5" }
-    ]},
-    { fecha: 2, partidos: [
-      { local: "51-1", visitante: "51-10" },
-      { local: "51-12", visitante: "51-16" },
-      { local: "51-11", visitante: "51-52" },
-      { local: "51-6", visitante: "51-15" },
-      { local: "51-13", visitante: "51-18" },
-      { local: "51-8", visitante: "51-7" },
-      { local: "51-9", visitante: "51-14" },
-      { local: "51-3", visitante: "51-2" },
-      { local: "51-5", visitante: "51-17" }
-    ]},
-    { fecha: 3, partidos: [
-      { local: "51-7", visitante: "51-3" },
-      { local: "51-18", visitante: "51-1" },
-      { local: "51-15", visitante: "51-13" },
-      { local: "51-11", visitante: "51-9" },
-      { local: "51-6", visitante: "51-2" },
-      { local: "51-14", visitante: "51-5" },
-      { local: "51-10", visitante: "51-17" },
-      { local: "51-12", visitante: "51-8" },
-      { local: "51-52", visitante: "51-16" }
-    ]},
-    // Agrega las fechas 4 a 17 siguiendo tu listado original...
-  ],
+       { fecha: 1, partidos: [
+    { local: "51-1", visitante: "51-2" },
+    { local: "51-3", visitante: "51-4" },
+    { local: "51-5", visitante: "51-6" },
+    { local: "51-7", visitante: "51-8" },
+    { local: "51-9", visitante: "51-10" },
+    { local: "51-11", visitante: "51-12" },
+    { local: "51-13", visitante: "51-14" },
+    { local: "51-15", visitante: "51-16" },
+    { local: "51-17", visitante: "51-18" }
+  ]},
+  { fecha: 2, partidos: [
+    { local: "51-2", visitante: "51-3" },
+    { local: "51-4", visitante: "51-5" },
+    { local: "51-6", visitante: "51-7" },
+    { local: "51-8", visitante: "51-9" },
+    { local: "51-10", visitante: "51-11" },
+    { local: "51-12", visitante: "51-13" },
+    { local: "51-14", visitante: "51-15" },
+    { local: "51-16", visitante: "51-17" },
+    { local: "51-18", visitante: "51-1" }
+  ]},
+  { fecha: 3, partidos: [
+    { local: "51-3", visitante: "51-1" },
+    { local: "51-5", visitante: "51-2" },
+    { local: "51-7", visitante: "51-4" },
+    { local: "51-9", visitante: "51-6" },
+    { local: "51-11", visitante: "51-8" },
+    { local: "51-13", visitante: "51-10" },
+    { local: "51-15", visitante: "51-12" },
+    { local: "51-17", visitante: "51-14" },
+    { local: "51-1", visitante: "51-16" }
+  ]},
+  { fecha: 4, partidos: [
+    { local: "51-4", visitante: "51-3" },
+    { local: "51-6", visitante: "51-5" },
+    { local: "51-8", visitante: "51-7" },
+    { local: "51-10", visitante: "51-9" },
+    { local: "51-12", visitante: "51-11" },
+    { local: "51-14", visitante: "51-13" },
+    { local: "51-16", visitante: "51-15" },
+    { local: "51-18", visitante: "51-17" },
+    { local: "51-2", visitante: "51-1" }
+  ]},
+  { fecha: 5, partidos: [
+    { local: "51-5", visitante: "51-1" },
+    { local: "51-7", visitante: "51-3" },
+    { local: "51-9", visitante: "51-4" },
+    { local: "51-11", visitante: "51-6" },
+    { local: "51-13", visitante: "51-8" },
+    { local: "51-15", visitante: "51-10" },
+    { local: "51-17", visitante: "51-12" },
+    { local: "51-1", visitante: "51-14" },
+    { local: "51-3", visitante: "51-16" }
+  ]},
+  { fecha: 6, partidos: [
+    { local: "51-6", visitante: "51-7" },
+    { local: "51-8", visitante: "51-9" },
+    { local: "51-10", visitante: "51-11" },
+    { local: "51-12", visitante: "51-13" },
+    { local: "51-14", visitante: "51-15" },
+    { local: "51-16", visitante: "51-17" },
+    { local: "51-18", visitante: "51-1" },
+    { local: "51-2", visitante: "51-5" },
+    { local: "51-4", visitante: "51-3" }
+  ]},
+  { fecha: 7, partidos: [
+    { local: "51-7", visitante: "51-1" },
+    { local: "51-9", visitante: "51-2" },
+    { local: "51-11", visitante: "51-3" },
+    { local: "51-13", visitante: "51-4" },
+    { local: "51-15", visitante: "51-5" },
+    { local: "51-17", visitante: "51-6" },
+    { local: "51-1", visitante: "51-8" },
+    { local: "51-3", visitante: "51-10" },
+    { local: "51-5", visitante: "51-12" }
+  ]},
+  { fecha: 8, partidos: [
+    { local: "51-8", visitante: "51-13" },
+    { local: "51-10", visitante: "51-15" },
+    { local: "51-12", visitante: "51-17" },
+    { local: "51-14", visitante: "51-1" },
+    { local: "51-16", visitante: "51-3" },
+    { local: "51-18", visitante: "51-5" },
+    { local: "51-2", visitante: "51-7" },
+    { local: "51-4", visitante: "51-9" },
+    { local: "51-6", visitante: "51-11" }
+  ]},
+  { fecha: 9, partidos: [
+    { local: "51-9", visitante: "51-14" },
+    { local: "51-11", visitante: "51-16" },
+    { local: "51-13", visitante: "51-18" },
+    { local: "51-15", visitante: "51-2" },
+    { local: "51-17", visitante: "51-4" },
+    { local: "51-1", visitante: "51-6" },
+    { local: "51-3", visitante: "51-8" },
+    { local: "51-5", visitante: "51-10" },
+    { local: "51-7", visitante: "51-12" }
+  ]},
+  { fecha: 10, partidos: [
+    { local: "51-10", visitante: "51-17" },
+    { local: "51-12", visitante: "51-1" },
+    { local: "51-14", visitante: "51-3" },
+    { local: "51-16", visitante: "51-5" },
+    { local: "51-18", visitante: "51-7" },
+    { local: "51-2", visitante: "51-9" },
+    { local: "51-4", visitante: "51-11" },
+    { local: "51-6", visitante: "51-13" },
+    { local: "51-8", visitante: "51-15" }
+  ]},
+  { fecha: 11, partidos: [
+    { local: "51-11", visitante: "51-18" },
+    { local: "51-13", visitante: "51-2" },
+    { local: "51-15", visitante: "51-4" },
+    { local: "51-17", visitante: "51-6" },
+    { local: "51-1", visitante: "51-8" },
+    { local: "51-3", visitante: "51-10" },
+    { local: "51-5", visitante: "51-12" },
+    { local: "51-7", visitante: "51-14" },
+    { local: "51-9", visitante: "51-16" }
+  ]},
+  { fecha: 12, partidos: [
+    { local: "51-12", visitante: "51-15" },
+    { local: "51-14", visitante: "51-17" },
+    { local: "51-16", visitante: "51-1" },
+    { local: "51-18", visitante: "51-3" },
+    { local: "51-2", visitante: "51-5" },
+    { local: "51-4", visitante: "51-7" },
+    { local: "51-6", visitante: "51-9" },
+    { local: "51-8", visitante: "51-11" },
+    { local: "51-10", visitante: "51-13" }
+  ]},
+  { fecha: 13, partidos: [
+    { local: "51-13", visitante: "51-16" },
+    { local: "51-15", visitante: "51-18" },
+    { local: "51-17", visitante: "51-2" },
+    { local: "51-1", visitante: "51-4" },
+    { local: "51-3", visitante: "51-6" },
+    { local: "51-5", visitante: "51-8" },
+    { local: "51-7", visitante: "51-10" },
+    { local: "51-9", visitante: "51-12" },
+    { local: "51-11", visitante: "51-14" }
+  ]},
+  { fecha: 14, partidos: [
+    { local: "51-14", visitante: "51-1" },
+    { local: "51-16", visitante: "51-3" },
+    { local: "51-18", visitante: "51-5" },
+    { local: "51-2", visitante: "51-7" },
+    { local: "51-4", visitante: "51-9" },
+    { local: "51-6", visitante: "51-11" },
+    { local: "51-8", visitante: "51-13" },
+    { local: "51-10", visitante: "51-15" },
+    { local: "51-12", visitante: "51-17" }
+  ]},
+  { fecha: 15, partidos: [
+    { local: "51-15", visitante: "51-2" },
+    { local: "51-17", visitante: "51-4" },
+    { local: "51-1", visitante: "51-6" },
+    { local: "51-3", visitante: "51-8" },
+    { local: "51-5", visitante: "51-10" },
+    { local: "51-7", visitante: "51-12" },
+    { local: "51-9", visitante: "51-14" },
+    { local: "51-11", visitante: "51-16" },
+    { local: "51-13", visitante: "51-18" }
+  ]},
+  { fecha: 16, partidos: [
+    { local: "51-16", visitante: "51-7" },
+    { local: "51-18", visitante: "51-9" },
+    { local: "51-2", visitante: "51-11" },
+    { local: "51-4", visitante: "51-13" },
+    { local: "51-6", visitante: "51-15" },
+    { local: "51-8", visitante: "51-17" },
+    { local: "51-10", visitante: "51-1" },
+    { local: "51-12", visitante: "51-3" },
+    { local: "51-14", visitante: "51-5" }
+  ]},
+  { fecha: 17, partidos: [
+    { local: "51-17", visitante: "51-10" },
+    { local: "51-1", visitante: "51-12" },
+    { local: "51-3", visitante: "51-14" },
+    { local: "51-5", visitante: "51-16" },
+    { local: "51-7", visitante: "51-18" },
+    { local: "51-9", visitante: "51-2" },
+    { local: "51-11", visitante: "51-4" },
+    { local: "51-13", visitante: "51-6" },
+    { local: "51-15", visitante: "51-8" }
+  ]},
+];
 
   // Fixture Clausura: estructura similar al Apertura, partidos alternando localía
   fixtureClausura: [
-    // Completa este arreglo con el fixture completo absoluto de Clausura (como en Apertura),
-    // con partidos lógicamente invertidos para la localía o igual si así quieres.
+     { fecha: 1, partidos: [
+    { local: "51-2", visitante: "51-1" },
+    { local: "51-4", visitante: "51-3" },
+    { local: "51-6", visitante: "51-5" },
+    { local: "51-8", visitante: "51-7" },
+    { local: "51-10", visitante: "51-9" },
+    { local: "51-12", visitante: "51-11" },
+    { local: "51-14", visitante: "51-13" },
+    { local: "51-16", visitante: "51-15" },
+    { local: "51-18", visitante: "51-17" }
+  ]},
+  { fecha: 2, partidos: [
+    { local: "51-3", visitante: "51-2" },
+    { local: "51-5", visitante: "51-4" },
+    { local: "51-7", visitante: "51-6" },
+    { local: "51-9", visitante: "51-8" },
+    { local: "51-11", visitante: "51-10" },
+    { local: "51-13", visitante: "51-12" },
+    { local: "51-15", visitante: "51-14" },
+    { local: "51-17", visitante: "51-16" },
+    { local: "51-1", visitante: "51-18" }
+  ]},
+  { fecha: 3, partidos: [
+    { local: "51-1", visitante: "51-3" },
+    { local: "51-2", visitante: "51-5" },
+    { local: "51-4", visitante: "51-7" },
+    { local: "51-6", visitante: "51-9" },
+    { local: "51-8", visitante: "51-11" },
+    { local: "51-10", visitante: "51-13" },
+    { local: "51-12", visitante: "51-15" },
+    { local: "51-14", visitante: "51-17" },
+    { local: "51-16", visitante: "51-1" }
+  ]},
+  { fecha: 4, partidos: [
+    { local: "51-1", visitante: "51-11" },
+    { local: "51-14", visitante: "51-3" },
+    { local: "51-7", visitante: "51-9" },
+    { local: "51-6", visitante: "51-13" },
+    { local: "51-18", visitante: "51-5" },
+    { local: "51-10", visitante: "51-17" },
+    { local: "51-12", visitante: "51-2" },
+    { local: "51-52", visitante: "51-8" },
+    { local: "51-15", visitante: "51-16" }
+  ]},
+  { fecha: 5, partidos: [
+    { local: "51-6", visitante: "51-17" },
+    { local: "51-5", visitante: "51-1" },
+    { local: "51-7", visitante: "51-15" },
+    { local: "51-11", visitante: "51-12" },
+    { local: "51-13", visitante: "51-10" },
+    { local: "51-2", visitante: "51-18" },
+    { local: "51-3", visitante: "51-8" },
+    { local: "51-9", visitante: "51-52" },
+    { local: "51-16", visitante: "51-14" }
+  ]},
+  { fecha: 6, partidos: [
+    { local: "51-15", visitante: "51-8" },
+    { local: "51-11", visitante: "51-5" },
+    { local: "51-12", visitante: "51-7" },
+    { local: "51-1", visitante: "51-2" },
+    { local: "51-10", visitante: "51-13" },
+    { local: "51-18", visitante: "51-9" },
+    { local: "51-17", visitante: "51-16" },
+    { local: "51-52", visitante: "51-6" },
+    { local: "51-14", visitante: "51-3" }
+  ]},
+  { fecha: 7, partidos: [
+    { local: "51-1", visitante: "51-7" },
+    { local: "51-2", visitante: "51-9" },
+    { local: "51-3", visitante: "51-11" },
+    { local: "51-4", visitante: "51-13" },
+    { local: "51-5", visitante: "51-15" },
+    { local: "51-6", visitante: "51-17" },
+    { local: "51-8", visitante: "51-1" },
+    { local: "51-10", visitante: "51-3" },
+    { local: "51-12", visitante: "51-5" }
+  ]},
+  { fecha: 8, partidos: [
+    { local: "51-13", visitante: "51-8" },
+    { local: "51-15", visitante: "51-10" },
+    { local: "51-17", visitante: "51-12" },
+    { local: "51-1", visitante: "51-14" },
+    { local: "51-3", visitante: "51-16" },
+    { local: "51-5", visitante: "51-18" },
+    { local: "51-7", visitante: "51-2" },
+    { local: "51-9", visitante: "51-4" },
+    { local: "51-11", visitante: "51-6" }
+  ]},
+  { fecha: 9, partidos: [
+    { local: "51-14", visitante: "51-9" },
+    { local: "51-16", visitante: "51-11" },
+    { local: "51-18", visitante: "51-13" },
+    { local: "51-2", visitante: "51-15" },
+    { local: "51-4", visitante: "51-17" },
+    { local: "51-6", visitante: "51-1" },
+    { local: "51-8", visitante: "51-3" },
+    { local: "51-10", visitante: "51-5" },
+    { local: "51-12", visitante: "51-7" }
+  ]},
+  { fecha: 10, partidos: [
+    { local: "51-17", visitante: "51-10" },
+    { local: "51-1", visitante: "51-12" },
+    { local: "51-3", visitante: "51-14" },
+    { local: "51-5", visitante: "51-16" },
+    { local: "51-7", visitante: "51-18" },
+    { local: "51-9", visitante: "51-2" },
+    { local: "51-11", visitante: "51-4" },
+    { local: "51-13", visitante: "51-6" },
+    { local: "51-15", visitante: "51-8" }
+  ]},
+  { fecha: 11, partidos: [
+    { local: "51-18", visitante: "51-11" },
+    { local: "51-2", visitante: "51-13" },
+    { local: "51-4", visitante: "51-15" },
+    { local: "51-6", visitante: "51-17" },
+    { local: "51-8", visitante: "51-1" },
+    { local: "51-10", visitante: "51-3" },
+    { local: "51-12", visitante: "51-5" },
+    { local: "51-14", visitante: "51-7" },
+    { local: "51-16", visitante: "51-9" }
+  ]},
+  { fecha: 12, partidos: [
+    { local: "51-15", visitante: "51-12" },
+    { local: "51-17", visitante: "51-14" },
+    { local: "51-1", visitante: "51-16" },
+    { local: "51-3", visitante: "51-18" },
+    { local: "51-5", visitante: "51-2" },
+    { local: "51-7", visitante: "51-4" },
+    { local: "51-9", visitante: "51-6" },
+    { local: "51-11", visitante: "51-8" },
+    { local: "51-13", visitante: "51-10" }
+  ]},
+  { fecha: 13, partidos: [
+    { local: "51-16", visitante: "51-13" },
+    { local: "51-18", visitante: "51-15" },
+    { local: "51-2", visitante: "51-17" },
+    { local: "51-4", visitante: "51-1" },
+    { local: "51-6", visitante: "51-3" },
+    { local: "51-8", visitante: "51-5" },
+    { local: "51-10", visitante: "51-7" },
+    { local: "51-12", visitante: "51-9" },
+    { local: "51-14", visitante: "51-11" }
+  ]},
+  { fecha: 14, partidos: [
+    { local: "51-1", visitante: "51-14" },
+    { local: "51-3", visitante: "51-16" },
+    { local: "51-5", visitante: "51-18" },
+    { local: "51-7", visitante: "51-2" },
+    { local: "51-9", visitante: "51-4" },
+    { local: "51-11", visitante: "51-6" },
+    { local: "51-13", visitante: "51-8" },
+    { local: "51-15", visitante: "51-10" },
+    { local: "51-17", visitante: "51-12" }
+  ]},
+  { fecha: 15, partidos: [
+    { local: "51-2", visitante: "51-15" },
+    { local: "51-4", visitante: "51-17" },
+    { local: "51-6", visitante: "51-1" },
+    { local: "51-8", visitante: "51-3" },
+    { local: "51-10", visitante: "51-5" },
+    { local: "51-12", visitante: "51-7" },
+    { local: "51-14", visitante: "51-9" },
+    { local: "51-16", visitante: "51-11" },
+    { local: "51-18", visitante: "51-13" }
+  ]},
+  { fecha: 16, partidos: [
+    { local: "51-7", visitante: "51-16" },
+    { local: "51-9", visitante: "51-18" },
+    { local: "51-11", visitante: "51-2" },
+    { local: "51-13", visitante: "51-4" },
+    { local: "51-15", visitante: "51-6" },
+    { local: "51-17", visitante: "51-8" },
+    { local: "51-1", visitante: "51-10" },
+    { local: "51-3", visitante: "51-12" },
+    { local: "51-5", visitante: "51-14" }
+  ]},
+  { fecha: 17, partidos: [
+    { local: "51-10", visitante: "51-17" },
+    { local: "51-12", visitante: "51-1" },
+    { local: "51-14", visitante: "51-3" },
+    { local: "51-16", visitante: "51-5" },
+    { local: "51-18", visitante: "51-7" },
+    { local: "51-2", visitante: "51-9" },
+    { local: "51-4", visitante: "51-11" },
+    { local: "51-6", visitante: "51-13" },
+    { local: "51-8", visitante: "51-15" }
+  ]}
   ],
 
   // Lógica Playoffs / Campeón
