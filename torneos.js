@@ -30,6 +30,10 @@ function separarPorTorneos(clubes) {
            idNumero <= finNumero;
   }
 
+  // Obtener el club seleccionado desde localStorage
+  const clubSeleccionadoId = localStorage.getItem("selectedClub");
+  let torneoAsignado = null;
+
   // Recorremos cada torneo
   Object.keys(torneos).forEach(pais => {
     const torneo = torneos[pais];
@@ -55,13 +59,22 @@ function separarPorTorneos(clubes) {
       // Mostrar en consola
       console.log("ID:", club.id);
       console.log("Nombre:", club.nombre);
+      
+      // Verificar si el club seleccionado está en este torneo
+      if (club.id === clubSeleccionadoId) {
+        torneoAsignado = pais; // Asignar el torneo correspondiente
+      }
     });
     
     if (clubesDelTorneo.length === 0) {
       console.log("No se encontraron clubes para este torneo");
     }
   });
+
+  // Retornar el torneo asignado para el club seleccionado
+  return torneoAsignado;
 }
 
 // Ejecutar la función
-separarPorTorneos(clubes);
+const torneoDelClubSeleccionado = separarPorTorneos(clubes);
+console.log("Torneo asignado al club seleccionado:", torneoDelClubSeleccionado);
