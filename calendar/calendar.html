@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -53,7 +52,7 @@
     <script src="modules/lesiones-manager.js"></script>
     <script src="modules/events-manager.js"></script>
 
-    <!-- NUEVOS: Scripts de Liga Peruana (ORDEN IMPORTANTE) -->
+    <!-- Scripts de Liga Peruana (RUTAS CORREGIDAS) -->
     <script src="manger2/torneos/fixtures/fixtureApertura.js"></script>
     <script src="manger2/torneos/fixtures/fixtureClausura.js"></script>
     <script src="manger2/torneos/fixtures/fixturePlayoffs.js"></script>
@@ -94,16 +93,15 @@
             
             // Configurar música de fondo
             bgAudio.src = AUDIO_CONFIG.backgroundMusic;
-            bgAudio.volume = 0.2; // Volumen más bajo para música de fondo
+            bgAudio.volume = 0.2;
             
             // Configurar sonido de botones
             buttonAudio.src = AUDIO_CONFIG.buttonSound;
-            buttonAudio.volume = 0.4; // Volumen moderado para botones
+            buttonAudio.volume = 0.4;
             
             // Intentar reproducir música de fondo automáticamente
             bgAudio.play().catch(e => {
                 console.log('🎵 Autoplay bloqueado. Haz clic en cualquier lugar para activar audio.');
-                // Activar audio en el primer clic del usuario
                 document.addEventListener('click', () => {
                     bgAudio.play().then(() => {
                         console.log('🎵 Música de fondo activada');
@@ -129,11 +127,10 @@
         function playButtonSound() {
             const buttonAudio = document.getElementById('button-audio');
             if (buttonAudio) {
-                buttonAudio.currentTime = 0; // Reiniciar desde el inicio
+                buttonAudio.currentTime = 0;
                 buttonAudio.play().catch(e => console.log('❌ Error reproduciendo sonido de botón:', e));
             }
         }
     </script>
 </body>
 </html>
-
