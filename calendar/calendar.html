@@ -69,7 +69,7 @@
         };
         
         // Mostrar club seleccionado y configurar audio
-        document.addEventListener('DOMContentLoaded', () => {
+        window.addEventListener('load', () => {
             const clubSeleccionado = localStorage.getItem("selectedClub");
             const clubElement = document.getElementById('selected-club');
             if (clubSeleccionado && clubElement) {
@@ -80,6 +80,8 @@
             
             // Inicializar audio automáticamente
             initializeAudio();
+            // Ejecutar diagnóstico de partidos
+            diagnosticarPartidos();
         });
         
         function initializeAudio() {
