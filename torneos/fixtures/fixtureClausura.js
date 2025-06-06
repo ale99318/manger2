@@ -280,4 +280,5 @@ const fixtureClausura = {
   ]
 };
 
-export { fixtureClausura };
+// Por:
+window.fixtureClausura = fixtureClausura;
