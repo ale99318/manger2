@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -80,13 +81,16 @@
             
             // Inicializar audio automáticamente
             initializeAudio();
-            // Ejecutar diagnóstico de partidos
-            diagnosticarPartidos();
         });
         
         function initializeAudio() {
             const bgAudio = document.getElementById('bg-audio');
             const buttonAudio = document.getElementById('button-audio');
+            
+            if (!bgAudio || !buttonAudio) {
+                console.warn('Elementos de audio no encontrados');
+                return;
+            }
             
             // Configurar música de fondo
             bgAudio.src = AUDIO_CONFIG.backgroundMusic;
@@ -124,9 +128,12 @@
         
         function playButtonSound() {
             const buttonAudio = document.getElementById('button-audio');
-            buttonAudio.currentTime = 0; // Reiniciar desde el inicio
-            buttonAudio.play().catch(e => console.log('❌ Error reproduciendo sonido de botón:', e));
+            if (buttonAudio) {
+                buttonAudio.currentTime = 0; // Reiniciar desde el inicio
+                buttonAudio.play().catch(e => console.log('❌ Error reproduciendo sonido de botón:', e));
+            }
         }
     </script>
 </body>
 </html>
+
