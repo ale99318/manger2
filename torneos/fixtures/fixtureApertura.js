@@ -280,4 +280,5 @@ const fixtureApertura = {
   ]
 };
 
-export { fixtureApertura };
+// Por:
+window.fixtureApertura = fixtureApertura;
