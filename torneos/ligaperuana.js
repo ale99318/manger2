@@ -1,527 +1,153 @@
 // ligaperuana.js
 //
-// Archivo completo que contiene:
-// - Configuración y reglas de la Liga1 Te Apuesto 2025 (Apertura y Clausura)
-// - Fixture completo de ambas fases (por fechas, usando IDs de clubes)
-// - Lógica para playoffs: semifinales, final directa o campeón único
-// - Funciones para obtener fixture y partidos por fecha y torneo
-//  
-// Listo para integrarse a tu calendario o simulador con UI moderna, clara y elegante
+// Módulo con la lógica completa del torneo Liga1 Te Apuesto 2025
+// Incluye formato, reglas de puntuación, clasificación, playoffs y descensos
+// No incluye fixtures; estos se definiran en archivos separados.
+//
 
 const ligaPeruana = {
   nombre: "Liga1 Te Apuesto 2025",
   nombreComercial: "Liga1 2025",
   patrocinador: "Te Apuesto",
-  
   equipos: 19,
 
+  // Fechas oficiales para Apertura y Clausura
   fechas: {
     apertura: {
-      inicio: "2025-01-28", // último fin de semana de enero
-      fin: "2025-06-13"     // una semana antes del 20/06 Copa América
+      inicio: "2025-01-28",  // Último fin de semana de enero
+      fin: "2025-06-13"      // Una semana antes del inicio Copa América
     },
     clausura: {
-      inicio: "2025-07-15", // tras la final Copa América 14/07
+      inicio: "2025-07-15",  // Tras la final de Copa América
       fin: "2025-11-30"
     }
   },
 
-  formato: {
-    descripcion: `Dos torneos (Apertura y Clausura), cada uno todos contra todos a una vuelta.  
-      Playoffs con condiciones especiales, final directa si corresponde.  
-      Detalles detallados en "playoffs".`,
-
-    playoffs: {
-      condicionCampeonUnico: "Campeón directo si gana Apertura y Clausura",
-      condicionFinalDirecta: "Si campeones de Apertura y Clausura son 1° y 2° en la tabla acumulada, van directo a final",
-      formatoPlayoffs: [
-        "Semifinal ida y vuelta: 1° vs 4° y 2° vs 3°",
-        "Final ida y vuelta entre ganadores"
-      ]
-    }
+  // Puntuación para partidos
+  puntuacion: {
+    victoria: 3,
+    empate: 1,
+    derrota: 0
   },
 
-  copasInternacionales: {
-    copaLibertadores: {
-      cupos: 4,
-      clasificacion: [
-        "Campeón nacional",
-        "Subcampeón nacional",
-        "3° tabla acumulada",
-        "4° tabla acumulada"
-      ]
-    },
-    copaSudamericana: {
-      cupos: 4,
-      clasificacion: [
-        "5° tabla acumulada",
-        "6° tabla acumulada",
-        "7° tabla acumulada",
-        "8° tabla acumulada"
-      ]
-    }
+  // Formato general del torneo
+  formato: {
+    tipo: "doble torneo",
+    descripcion: `Dos torneos (Apertura y Clausura), todos contra todos a una vuelta.  
+    Los ganadores avanzan a playoffs siempre que estén entre los 7 mejores en el otro torneo.  
+    Los otros dos clasificados son los mejores en tabla acumulada.  
+    Si un equipo gana ambos torneos, es campeón directo.  
+    Si campeones Apertura y Clausura son 1º y 2º en acumulada, acceso directo a final.  
+    Playoffs con semifinales y final ida y vuelta.`
+  },
+
+  // Criterios para desempates en tablas
+  criteriosDesempate: [
+    "Diferencia de goles",
+    "Goles a favor",
+    "Fair Play (puntos descontados por tarjetas)",
+    "Sorteo determinado por la Liga"
+  ],
+
+  // Clasificación, tabla acumulada y descensos
+  tablaAcumulada: {
+    criterio: "Suma puntos Apertura + Clausura",
+    determina: [
+      "Descensos",
+      "Clasificación a copas internacionales",
+      "Playoffs (si aplica)"
+    ]
   },
 
   descensos: {
     cantidad: 2,
-    criterio: "Últimos dos de la tabla acumulada"
+    criterio: "Últimos 2 equipos de tabla acumulada descienden"
   },
 
-  // Fixture Apertura: fechas 1 a 17, partidos con IDs clubes (local, visitante)
-  fixtureApertura: [
-       { fecha: 1, partidos: [
-    { local: "51-1", visitante: "51-2" },
-    { local: "51-3", visitante: "51-4" },
-    { local: "51-5", visitante: "51-6" },
-    { local: "51-7", visitante: "51-8" },
-    { local: "51-9", visitante: "51-10" },
-    { local: "51-11", visitante: "51-12" },
-    { local: "51-13", visitante: "51-14" },
-    { local: "51-15", visitante: "51-16" },
-    { local: "51-17", visitante: "51-18" }
-  ]},
-  { fecha: 2, partidos: [
-    { local: "51-2", visitante: "51-3" },
-    { local: "51-4", visitante: "51-5" },
-    { local: "51-6", visitante: "51-7" },
-    { local: "51-8", visitante: "51-9" },
-    { local: "51-10", visitante: "51-11" },
-    { local: "51-12", visitante: "51-13" },
-    { local: "51-14", visitante: "51-15" },
-    { local: "51-16", visitante: "51-17" },
-    { local: "51-18", visitante: "51-1" }
-  ]},
-  { fecha: 3, partidos: [
-    { local: "51-3", visitante: "51-1" },
-    { local: "51-5", visitante: "51-2" },
-    { local: "51-7", visitante: "51-4" },
-    { local: "51-9", visitante: "51-6" },
-    { local: "51-11", visitante: "51-8" },
-    { local: "51-13", visitante: "51-10" },
-    { local: "51-15", visitante: "51-12" },
-    { local: "51-17", visitante: "51-14" },
-    { local: "51-1", visitante: "51-16" }
-  ]},
-  { fecha: 4, partidos: [
-    { local: "51-4", visitante: "51-3" },
-    { local: "51-6", visitante: "51-5" },
-    { local: "51-8", visitante: "51-7" },
-    { local: "51-10", visitante: "51-9" },
-    { local: "51-12", visitante: "51-11" },
-    { local: "51-14", visitante: "51-13" },
-    { local: "51-16", visitante: "51-15" },
-    { local: "51-18", visitante: "51-17" },
-    { local: "51-2", visitante: "51-1" }
-  ]},
-  { fecha: 5, partidos: [
-    { local: "51-5", visitante: "51-1" },
-    { local: "51-7", visitante: "51-3" },
-    { local: "51-9", visitante: "51-4" },
-    { local: "51-11", visitante: "51-6" },
-    { local: "51-13", visitante: "51-8" },
-    { local: "51-15", visitante: "51-10" },
-    { local: "51-17", visitante: "51-12" },
-    { local: "51-1", visitante: "51-14" },
-    { local: "51-3", visitante: "51-16" }
-  ]},
-  { fecha: 6, partidos: [
-    { local: "51-6", visitante: "51-7" },
-    { local: "51-8", visitante: "51-9" },
-    { local: "51-10", visitante: "51-11" },
-    { local: "51-12", visitante: "51-13" },
-    { local: "51-14", visitante: "51-15" },
-    { local: "51-16", visitante: "51-17" },
-    { local: "51-18", visitante: "51-1" },
-    { local: "51-2", visitante: "51-5" },
-    { local: "51-4", visitante: "51-3" }
-  ]},
-  { fecha: 7, partidos: [
-    { local: "51-7", visitante: "51-1" },
-    { local: "51-9", visitante: "51-2" },
-    { local: "51-11", visitante: "51-3" },
-    { local: "51-13", visitante: "51-4" },
-    { local: "51-15", visitante: "51-5" },
-    { local: "51-17", visitante: "51-6" },
-    { local: "51-1", visitante: "51-8" },
-    { local: "51-3", visitante: "51-10" },
-    { local: "51-5", visitante: "51-12" }
-  ]},
-  { fecha: 8, partidos: [
-    { local: "51-8", visitante: "51-13" },
-    { local: "51-10", visitante: "51-15" },
-    { local: "51-12", visitante: "51-17" },
-    { local: "51-14", visitante: "51-1" },
-    { local: "51-16", visitante: "51-3" },
-    { local: "51-18", visitante: "51-5" },
-    { local: "51-2", visitante: "51-7" },
-    { local: "51-4", visitante: "51-9" },
-    { local: "51-6", visitante: "51-11" }
-  ]},
-  { fecha: 9, partidos: [
-    { local: "51-9", visitante: "51-14" },
-    { local: "51-11", visitante: "51-16" },
-    { local: "51-13", visitante: "51-18" },
-    { local: "51-15", visitante: "51-2" },
-    { local: "51-17", visitante: "51-4" },
-    { local: "51-1", visitante: "51-6" },
-    { local: "51-3", visitante: "51-8" },
-    { local: "51-5", visitante: "51-10" },
-    { local: "51-7", visitante: "51-12" }
-  ]},
-  { fecha: 10, partidos: [
-    { local: "51-10", visitante: "51-17" },
-    { local: "51-12", visitante: "51-1" },
-    { local: "51-14", visitante: "51-3" },
-    { local: "51-16", visitante: "51-5" },
-    { local: "51-18", visitante: "51-7" },
-    { local: "51-2", visitante: "51-9" },
-    { local: "51-4", visitante: "51-11" },
-    { local: "51-6", visitante: "51-13" },
-    { local: "51-8", visitante: "51-15" }
-  ]},
-  { fecha: 11, partidos: [
-    { local: "51-11", visitante: "51-18" },
-    { local: "51-13", visitante: "51-2" },
-    { local: "51-15", visitante: "51-4" },
-    { local: "51-17", visitante: "51-6" },
-    { local: "51-1", visitante: "51-8" },
-    { local: "51-3", visitante: "51-10" },
-    { local: "51-5", visitante: "51-12" },
-    { local: "51-7", visitante: "51-14" },
-    { local: "51-9", visitante: "51-16" }
-  ]},
-  { fecha: 12, partidos: [
-    { local: "51-12", visitante: "51-15" },
-    { local: "51-14", visitante: "51-17" },
-    { local: "51-16", visitante: "51-1" },
-    { local: "51-18", visitante: "51-3" },
-    { local: "51-2", visitante: "51-5" },
-    { local: "51-4", visitante: "51-7" },
-    { local: "51-6", visitante: "51-9" },
-    { local: "51-8", visitante: "51-11" },
-    { local: "51-10", visitante: "51-13" }
-  ]},
-  { fecha: 13, partidos: [
-    { local: "51-13", visitante: "51-16" },
-    { local: "51-15", visitante: "51-18" },
-    { local: "51-17", visitante: "51-2" },
-    { local: "51-1", visitante: "51-4" },
-    { local: "51-3", visitante: "51-6" },
-    { local: "51-5", visitante: "51-8" },
-    { local: "51-7", visitante: "51-10" },
-    { local: "51-9", visitante: "51-12" },
-    { local: "51-11", visitante: "51-14" }
-  ]},
-  { fecha: 14, partidos: [
-    { local: "51-14", visitante: "51-1" },
-    { local: "51-16", visitante: "51-3" },
-    { local: "51-18", visitante: "51-5" },
-    { local: "51-2", visitante: "51-7" },
-    { local: "51-4", visitante: "51-9" },
-    { local: "51-6", visitante: "51-11" },
-    { local: "51-8", visitante: "51-13" },
-    { local: "51-10", visitante: "51-15" },
-    { local: "51-12", visitante: "51-17" }
-  ]},
-  { fecha: 15, partidos: [
-    { local: "51-15", visitante: "51-2" },
-    { local: "51-17", visitante: "51-4" },
-    { local: "51-1", visitante: "51-6" },
-    { local: "51-3", visitante: "51-8" },
-    { local: "51-5", visitante: "51-10" },
-    { local: "51-7", visitante: "51-12" },
-    { local: "51-9", visitante: "51-14" },
-    { local: "51-11", visitante: "51-16" },
-    { local: "51-13", visitante: "51-18" }
-  ]},
-  { fecha: 16, partidos: [
-    { local: "51-16", visitante: "51-7" },
-    { local: "51-18", visitante: "51-9" },
-    { local: "51-2", visitante: "51-11" },
-    { local: "51-4", visitante: "51-13" },
-    { local: "51-6", visitante: "51-15" },
-    { local: "51-8", visitante: "51-17" },
-    { local: "51-10", visitante: "51-1" },
-    { local: "51-12", visitante: "51-3" },
-    { local: "51-14", visitante: "51-5" }
-  ]},
-  { fecha: 17, partidos: [
-    { local: "51-17", visitante: "51-10" },
-    { local: "51-1", visitante: "51-12" },
-    { local: "51-3", visitante: "51-14" },
-    { local: "51-5", visitante: "51-16" },
-    { local: "51-7", visitante: "51-18" },
-    { local: "51-9", visitante: "51-2" },
-    { local: "51-11", visitante: "51-4" },
-    { local: "51-13", visitante: "51-6" },
-    { local: "51-15", visitante: "51-8" }
-  ]},
-];
+  clasificacionInternacional: {
+    copaLibertadores: {
+      cupos: 4,
+      posiciones: [
+        "Campeón nacional",
+        "Subcampeón nacional",
+        "3º tabla acumulada",
+        "4º tabla acumulada"
+      ]
+    },
+    copaSudamericana: {
+      cupos: 4,
+      posiciones: [
+        "5º tabla acumulada",
+        "6º tabla acumulada",
+        "7º tabla acumulada",
+        "8º tabla acumulada"
+      ]
+    }
+  },
 
-  // Fixture Clausura: estructura similar al Apertura, partidos alternando localía
-  fixtureClausura: [
-     { fecha: 1, partidos: [
-    { local: "51-2", visitante: "51-1" },
-    { local: "51-4", visitante: "51-3" },
-    { local: "51-6", visitante: "51-5" },
-    { local: "51-8", visitante: "51-7" },
-    { local: "51-10", visitante: "51-9" },
-    { local: "51-12", visitante: "51-11" },
-    { local: "51-14", visitante: "51-13" },
-    { local: "51-16", visitante: "51-15" },
-    { local: "51-18", visitante: "51-17" }
-  ]},
-  { fecha: 2, partidos: [
-    { local: "51-3", visitante: "51-2" },
-    { local: "51-5", visitante: "51-4" },
-    { local: "51-7", visitante: "51-6" },
-    { local: "51-9", visitante: "51-8" },
-    { local: "51-11", visitante: "51-10" },
-    { local: "51-13", visitante: "51-12" },
-    { local: "51-15", visitante: "51-14" },
-    { local: "51-17", visitante: "51-16" },
-    { local: "51-1", visitante: "51-18" }
-  ]},
-  { fecha: 3, partidos: [
-    { local: "51-1", visitante: "51-3" },
-    { local: "51-2", visitante: "51-5" },
-    { local: "51-4", visitante: "51-7" },
-    { local: "51-6", visitante: "51-9" },
-    { local: "51-8", visitante: "51-11" },
-    { local: "51-10", visitante: "51-13" },
-    { local: "51-12", visitante: "51-15" },
-    { local: "51-14", visitante: "51-17" },
-    { local: "51-16", visitante: "51-1" }
-  ]},
-  { fecha: 4, partidos: [
-    { local: "51-1", visitante: "51-11" },
-    { local: "51-14", visitante: "51-3" },
-    { local: "51-7", visitante: "51-9" },
-    { local: "51-6", visitante: "51-13" },
-    { local: "51-18", visitante: "51-5" },
-    { local: "51-10", visitante: "51-17" },
-    { local: "51-12", visitante: "51-2" },
-    { local: "51-52", visitante: "51-8" },
-    { local: "51-15", visitante: "51-16" }
-  ]},
-  { fecha: 5, partidos: [
-    { local: "51-6", visitante: "51-17" },
-    { local: "51-5", visitante: "51-1" },
-    { local: "51-7", visitante: "51-15" },
-    { local: "51-11", visitante: "51-12" },
-    { local: "51-13", visitante: "51-10" },
-    { local: "51-2", visitante: "51-18" },
-    { local: "51-3", visitante: "51-8" },
-    { local: "51-9", visitante: "51-52" },
-    { local: "51-16", visitante: "51-14" }
-  ]},
-  { fecha: 6, partidos: [
-    { local: "51-15", visitante: "51-8" },
-    { local: "51-11", visitante: "51-5" },
-    { local: "51-12", visitante: "51-7" },
-    { local: "51-1", visitante: "51-2" },
-    { local: "51-10", visitante: "51-13" },
-    { local: "51-18", visitante: "51-9" },
-    { local: "51-17", visitante: "51-16" },
-    { local: "51-52", visitante: "51-6" },
-    { local: "51-14", visitante: "51-3" }
-  ]},
-  { fecha: 7, partidos: [
-    { local: "51-1", visitante: "51-7" },
-    { local: "51-2", visitante: "51-9" },
-    { local: "51-3", visitante: "51-11" },
-    { local: "51-4", visitante: "51-13" },
-    { local: "51-5", visitante: "51-15" },
-    { local: "51-6", visitante: "51-17" },
-    { local: "51-8", visitante: "51-1" },
-    { local: "51-10", visitante: "51-3" },
-    { local: "51-12", visitante: "51-5" }
-  ]},
-  { fecha: 8, partidos: [
-    { local: "51-13", visitante: "51-8" },
-    { local: "51-15", visitante: "51-10" },
-    { local: "51-17", visitante: "51-12" },
-    { local: "51-1", visitante: "51-14" },
-    { local: "51-3", visitante: "51-16" },
-    { local: "51-5", visitante: "51-18" },
-    { local: "51-7", visitante: "51-2" },
-    { local: "51-9", visitante: "51-4" },
-    { local: "51-11", visitante: "51-6" }
-  ]},
-  { fecha: 9, partidos: [
-    { local: "51-14", visitante: "51-9" },
-    { local: "51-16", visitante: "51-11" },
-    { local: "51-18", visitante: "51-13" },
-    { local: "51-2", visitante: "51-15" },
-    { local: "51-4", visitante: "51-17" },
-    { local: "51-6", visitante: "51-1" },
-    { local: "51-8", visitante: "51-3" },
-    { local: "51-10", visitante: "51-5" },
-    { local: "51-12", visitante: "51-7" }
-  ]},
-  { fecha: 10, partidos: [
-    { local: "51-17", visitante: "51-10" },
-    { local: "51-1", visitante: "51-12" },
-    { local: "51-3", visitante: "51-14" },
-    { local: "51-5", visitante: "51-16" },
-    { local: "51-7", visitante: "51-18" },
-    { local: "51-9", visitante: "51-2" },
-    { local: "51-11", visitante: "51-4" },
-    { local: "51-13", visitante: "51-6" },
-    { local: "51-15", visitante: "51-8" }
-  ]},
-  { fecha: 11, partidos: [
-    { local: "51-18", visitante: "51-11" },
-    { local: "51-2", visitante: "51-13" },
-    { local: "51-4", visitante: "51-15" },
-    { local: "51-6", visitante: "51-17" },
-    { local: "51-8", visitante: "51-1" },
-    { local: "51-10", visitante: "51-3" },
-    { local: "51-12", visitante: "51-5" },
-    { local: "51-14", visitante: "51-7" },
-    { local: "51-16", visitante: "51-9" }
-  ]},
-  { fecha: 12, partidos: [
-    { local: "51-15", visitante: "51-12" },
-    { local: "51-17", visitante: "51-14" },
-    { local: "51-1", visitante: "51-16" },
-    { local: "51-3", visitante: "51-18" },
-    { local: "51-5", visitante: "51-2" },
-    { local: "51-7", visitante: "51-4" },
-    { local: "51-9", visitante: "51-6" },
-    { local: "51-11", visitante: "51-8" },
-    { local: "51-13", visitante: "51-10" }
-  ]},
-  { fecha: 13, partidos: [
-    { local: "51-16", visitante: "51-13" },
-    { local: "51-18", visitante: "51-15" },
-    { local: "51-2", visitante: "51-17" },
-    { local: "51-4", visitante: "51-1" },
-    { local: "51-6", visitante: "51-3" },
-    { local: "51-8", visitante: "51-5" },
-    { local: "51-10", visitante: "51-7" },
-    { local: "51-12", visitante: "51-9" },
-    { local: "51-14", visitante: "51-11" }
-  ]},
-  { fecha: 14, partidos: [
-    { local: "51-1", visitante: "51-14" },
-    { local: "51-3", visitante: "51-16" },
-    { local: "51-5", visitante: "51-18" },
-    { local: "51-7", visitante: "51-2" },
-    { local: "51-9", visitante: "51-4" },
-    { local: "51-11", visitante: "51-6" },
-    { local: "51-13", visitante: "51-8" },
-    { local: "51-15", visitante: "51-10" },
-    { local: "51-17", visitante: "51-12" }
-  ]},
-  { fecha: 15, partidos: [
-    { local: "51-2", visitante: "51-15" },
-    { local: "51-4", visitante: "51-17" },
-    { local: "51-6", visitante: "51-1" },
-    { local: "51-8", visitante: "51-3" },
-    { local: "51-10", visitante: "51-5" },
-    { local: "51-12", visitante: "51-7" },
-    { local: "51-14", visitante: "51-9" },
-    { local: "51-16", visitante: "51-11" },
-    { local: "51-18", visitante: "51-13" }
-  ]},
-  { fecha: 16, partidos: [
-    { local: "51-7", visitante: "51-16" },
-    { local: "51-9", visitante: "51-18" },
-    { local: "51-11", visitante: "51-2" },
-    { local: "51-13", visitante: "51-4" },
-    { local: "51-15", visitante: "51-6" },
-    { local: "51-17", visitante: "51-8" },
-    { local: "51-1", visitante: "51-10" },
-    { local: "51-3", visitante: "51-12" },
-    { local: "51-5", visitante: "51-14" }
-  ]},
-  { fecha: 17, partidos: [
-    { local: "51-10", visitante: "51-17" },
-    { local: "51-12", visitante: "51-1" },
-    { local: "51-14", visitante: "51-3" },
-    { local: "51-16", visitante: "51-5" },
-    { local: "51-18", visitante: "51-7" },
-    { local: "51-2", visitante: "51-9" },
-    { local: "51-4", visitante: "51-11" },
-    { local: "51-6", visitante: "51-13" },
-    { local: "51-8", visitante: "51-15" }
-  ]}
-  ],
+  // Función que verifica si un club ganó Apertura y Clausura y es campeón directo
+  esCampeonDirecto(campeonApertura, campeonClausura) {
+    return campeonApertura === campeonClausura;
+  },
 
-  // Lógica Playoffs / Campeón
+  // Función que verifica si ganadores de Apertura y Clausura están 1° y 2° en acumulada
+  esFinalDirecta(campeonApertura, campeonClausura, tablaAcumulada) {
+    if (!Array.isArray(tablaAcumulada) || tablaAcumulada.length < 2) return false;
+    const primerLugar = tablaAcumulada[0].clubId;
+    const segundoLugar = tablaAcumulada[1].clubId;
+    return (
+      (campeonApertura === primerLugar && campeonClausura === segundoLugar) ||
+      (campeonClausura === primerLugar && campeonApertura === segundoLugar)
+    );
+  },
 
-  /**
-   * Determina cómo se juegan playoffs o final directa según campeones y tabla acumulada
-   * @param {string} campeonApertura - ID club campeón Apertura
-   * @param {string} campeonClausura - ID club campeón Clausura
-   * @param {Array} tablaAcumulada - Array ordenado de clubes con propiedad clubId
-   * @returns {Object} esquema con tipo de playoff y partidos definidos
-   */
-  definirPlayoffs(campeonApertura, campeonClausura, tablaAcumulada) {
-    if(campeonApertura === campeonClausura) {
+  // Función que define la estructura de playoffs o campeón directo
+  obtenerEstructuraPlayoffs(campeonApertura, campeonClausura, tablaAcumulada) {
+    if (this.esCampeonDirecto(campeonApertura, campeonClausura)) {
       return {
         tipo: "campeonDirecto",
         campeon: campeonApertura,
-        descripcion: "Equipo ganó Apertura y Clausura, campeón directo sin playoffs",
+        descripcion: "Campeón directo: ganó Apertura y Clausura",
         partidos: []
       };
     }
 
-    const primerLugar = tablaAcumulada[0].clubId;
-    const segundoLugar = tablaAcumulada[1].clubId;
-
-    if( (campeonApertura === primerLugar && campeonClausura === segundoLugar) ||
-        (campeonClausura === primerLugar && campeonApertura === segundoLugar) ) {
+    if (this.esFinalDirecta(campeonApertura, campeonClausura, tablaAcumulada)) {
       return {
         tipo: "finalDirecta",
         finalistas: [campeonApertura, campeonClausura],
-        descripcion: "Campeones Apertura y Clausura 1° y 2° en acumulada van directo a final",
+        descripcion: "Final directa: campeones de Apertura y Clausura, primeros dos en acumulada",
         partidos: [
-          { local: campeonApertura, visitante: campeonClausura, idaVuelta: "ida" },
-          { local: campeonClausura, visitante: campeonApertura, idaVuelta: "vuelta" }
+          { local: campeonApertura, visitante: campeonClausura, partido: "ida" },
+          { local: campeonClausura, visitante: campeonApertura, partido: "vuelta" }
         ]
       };
     }
 
-    // Playoffs tradicionales con 4 equipos
+    // Playoffs normales: 4 participantes
     let participantes = [campeonApertura, campeonClausura];
-    tablaAcumulada.forEach(club => {
-      if(participantes.length < 4 && participantes.indexOf(club.clubId) === -1) {
+    tablaAcumulada.forEach((club) => {
+      if (participantes.length < 4 && !participantes.includes(club.clubId)) {
         participantes.push(club.clubId);
       }
     });
 
-    // Ordenamos según la tabla acumulada
-    participantes.sort( (a,b) => {
-      const posA = tablaAcumulada.findIndex(t => t.clubId === a);
-      const posB = tablaAcumulada.findIndex(t => t.clubId === b);
+    // Ordenar participantes según tabla acumulada
+    participantes.sort((a, b) => {
+      const posA = tablaAcumulada.findIndex((c) => c.clubId === a);
+      const posB = tablaAcumulada.findIndex((c) => c.clubId === b);
       return posA - posB;
     });
 
-    // Llaves semifinales (ida y vuelta)
     return {
       tipo: "playoffs",
-      descripcion: "Playoffs semifinales ida y vuelta y final ida y vuelta",
+      descripcion: "Playoffs con semifinales y final ida y vuelta",
       semifinales: [
         { local: participantes[0], visitante: participantes[3], idaVuelta: true },
         { local: participantes[1], visitante: participantes[2], idaVuelta: true }
       ],
-      final: null // se define tras semifinales
+      final: null // Se definirá tras semifinales
     };
-  },
-
-  // Funciones para obtener el fixture según torneo
-  obtenerFixture(tipo = "apertura") {
-    if(tipo.toLowerCase() === "apertura") return this.fixtureApertura;
-    if(tipo.toLowerCase() === "clausura") return this.fixtureClausura;
-    return [];
-  },
-
-  obtenerPartidosPorFecha(fecha, tipo = "apertura") {
-    const fixture = this.obtenerFixture(tipo);
-    const jornada = fixture.find(j => j.fecha === fecha);
-    return jornada ? jornada.partidos : [];
   }
 };
 
