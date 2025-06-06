@@ -1,4 +1,6 @@
 // ==================== CALENDARIO AUTOMÁTICO ====================
+import { ligaPeruana } from './manger2/torneos/ligaperuana.js';
+
 class AutoCalendar {
     constructor() {
         this.startDate = new Date(2025, 0, 1); // 1 de enero 2025
@@ -87,12 +89,79 @@ class AutoCalendar {
         
         this.processBirthdays(currentMonth, currentDay);
         this.processRetirements();
-        this.processRandomInjuries(); // Usa lesiones-manager.js
+        this.processRandomInjuries();
         this.processInjuryRecovery();
         this.applyDegradation();
-        this.processRandomEvents(); // Usa events-manager.js
+        this.processRandomEvents();
     }
 
+    // NUEVO MÉTODO: Obtener partidos de una fecha específica
+    getMatchesForDate(fecha) {
+        const partidos = [];
+        
+        // Buscar en Apertura
+        ligaPeruana.fixtures.apertura.fechas.forEach(fechaFixture => {
+            fechaFixture.partidos.forEach(partido => {
+                if (partido.fecha === fecha) {
+                    partidos.push({ ...partido, torneo: 'apertura', fechaNumero: fechaFixture.numero });
+                }
+            });
+        });
+        
+        // Buscar en Clausura
+        ligaPeruana.fixtures.clausura.fechas.forEach(fechaFixture => {
+            fechaFixture.partidos.forEach(partido => {
+                if (partido.fecha === fecha) {
+                    partidos.push({ ...partido, torneo: 'clausura', fechaNumero: fechaFixture.numero });
+                }
+            });
+        });
+        
+        // Buscar en Playoffs
+        const playoffs = ligaPeruana.fixtures.playoffs;
+        [...playoffs.semifinales.partidos, ...playoffs.final.partidos].forEach(partido => {
+            if (partido.fecha === fecha && partido.local && partido.visitante) {
+                partidos.push({ ...partido, torneo: 'playoffs' });
+            }
+        });
+        
+        return partidos;
+    }
+
+    // NUEVO MÉTODO: Convertir nombre de club a ID
+    getClubIdFromName(clubName) {
+        if (typeof clubes !== 'undefined') {
+            const club = clubes.find(c => c.nombre === clubName);
+            return club ? club.id : null;
+        }
+        return null;
+    }
+
+    // NUEVO MÉTODO: Convertir ID de club a nombre
+    getClubNameFromId(clubId) {
+        if (typeof clubes !== 'undefined') {
+            const club = clubes.find(c => c.id === clubId);
+            return club ? club.nombre : `Club ${clubId}`;
+        }
+        return `Club ${clubId}`;
+    }
+
+    // NUEVO MÉTODO: Obtener nombre del torneo
+    getTournamentName(partido) {
+        switch(partido.torneo) {
+            case 'apertura': return `Apertura - Fecha ${partido.fechaNumero}`;
+            case 'clausura': return `Clausura - Fecha ${partido.fechaNumero}`;
+            case 'playoffs': 
+                if (partido.fase === 'semifinal') {
+                    return `Semifinal ${partido.semifinal} - ${partido.partido}`;
+                } else if (partido.fase === 'final') {
+                    return `Final - ${partido.partido}`;
+                }
+                return 'Playoffs';
+            default: return 'Liga1';
+        }
+    }
+    
     processBirthdays(month, day) {
         const jugadoresData = localStorage.getItem("jugadoresPorClub");
         if (!jugadoresData) return;
@@ -250,7 +319,6 @@ class AutoCalendar {
     }
     
     processRandomEvents() {
-        // Usar el módulo de eventos para procesar eventos del día
         if (typeof eventsManager !== 'undefined') {
             const eventosDelDia = eventsManager.procesarEventosDelDia();
             
@@ -304,7 +372,7 @@ class AutoCalendar {
         
         const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
         
-        this.weekDaysElement.innerHTML = '';
+                this.weekDaysElement.innerHTML = '';
         
         for (let i = 0; i < 7; i++) {
             const dayDate = new Date(monday);
@@ -335,6 +403,16 @@ class AutoCalendar {
         } else if (isFuture) {
             dayElement.classList.add('future');
         }
+
+        // NUEVO: Verificar si hay partidos este día para mi club
+        const fechaStr = date.toISOString().split('T')[0];
+        const partidosDelDia = this.getMatchesForDate(fechaStr);
+        const clubSeleccionado = localStorage.getItem("selectedClub");
+        const clubSeleccionadoId = this.getClubIdFromName(clubSeleccionado);
+        
+        const partidoDelClub = partidosDelDia.find(partido => 
+            partido.local === clubSeleccionadoId || partido.visitante === clubSeleccionadoId
+        );
         
         const dayNameElement = document.createElement('div');
         dayNameElement.className = 'week-day-name';
@@ -346,6 +424,39 @@ class AutoCalendar {
         
         dayElement.appendChild(dayNameElement);
         dayElement.appendChild(dayNumberElement);
+        
+        // NUEVO: Si hay partido del club, mostrar información del rival
+        if (partidoDelClub) {
+            dayElement.classList.add('match-day');
+            
+            const rivalId = partidoDelClub.local === clubSeleccionadoId 
+                ? partidoDelClub.visitante 
+                : partidoDelClub.local;
+            
+            const rivalNombre = this.getClubNameFromId(rivalId);
+            const esLocal = partidoDelClub.local === clubSeleccionadoId;
+            
+            const matchInfoElement = document.createElement('div');
+            matchInfoElement.className = 'match-info';
+            
+            const rivalElement = document.createElement('div');
+            rivalElement.className = 'rival-name';
+            rivalElement.textContent = `${esLocal ? 'vs' : '@'} ${rivalNombre}`;
+            
+            const horaElement = document.createElement('div');
+            horaElement.className = 'match-time';
+            horaElement.textContent = partidoDelClub.hora;
+            
+            const torneoElement = document.createElement('div');
+            torneoElement.className = 'match-tournament';
+            torneoElement.textContent = this.getTournamentName(partidoDelClub);
+            
+            matchInfoElement.appendChild(rivalElement);
+            matchInfoElement.appendChild(horaElement);
+            matchInfoElement.appendChild(torneoElement);
+            
+            dayElement.appendChild(matchInfoElement);
+        }
         
         dayElement.setAttribute('data-date', date.toISOString().split('T')[0]);
         dayElement.setAttribute('data-day-name', dayName);
@@ -359,7 +470,7 @@ class AutoCalendar {
         weekDays.forEach((dayElement, index) => {
             dayElement.style.transitionDelay = `${index * 0.1}s`;
             dayElement.offsetHeight;
-                        dayElement.classList.add('animated');
+            dayElement.classList.add('animated');
         });
         
         setTimeout(() => {
