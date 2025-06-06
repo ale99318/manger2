@@ -1,5 +1,4 @@
 // ==================== CALENDARIO AUTOMÁTICO ====================
-import { ligaPeruana } from './manger2/torneos/ligaperuana.js';
 
 class AutoCalendar {
     constructor() {
@@ -99,31 +98,44 @@ class AutoCalendar {
     getMatchesForDate(fecha) {
         const partidos = [];
         
+        // Verificar si ligaPeruana está disponible
+        if (typeof ligaPeruana === 'undefined') {
+            return partidos;
+        }
+        
         // Buscar en Apertura
-        ligaPeruana.fixtures.apertura.fechas.forEach(fechaFixture => {
-            fechaFixture.partidos.forEach(partido => {
-                if (partido.fecha === fecha) {
-                    partidos.push({ ...partido, torneo: 'apertura', fechaNumero: fechaFixture.numero });
-                }
+        if (ligaPeruana.fixtures && ligaPeruana.fixtures.apertura && ligaPeruana.fixtures.apertura.fechas) {
+            ligaPeruana.fixtures.apertura.fechas.forEach(fechaFixture => {
+                fechaFixture.partidos.forEach(partido => {
+                    if (partido.fecha === fecha) {
+                        partidos.push({ ...partido, torneo: 'apertura', fechaNumero: fechaFixture.numero });
+                    }
+                });
             });
-        });
+        }
         
         // Buscar en Clausura
-        ligaPeruana.fixtures.clausura.fechas.forEach(fechaFixture => {
-            fechaFixture.partidos.forEach(partido => {
-                if (partido.fecha === fecha) {
-                    partidos.push({ ...partido, torneo: 'clausura', fechaNumero: fechaFixture.numero });
-                }
+        if (ligaPeruana.fixtures && ligaPeruana.fixtures.clausura && ligaPeruana.fixtures.clausura.fechas) {
+            ligaPeruana.fixtures.clausura.fechas.forEach(fechaFixture => {
+                fechaFixture.partidos.forEach(partido => {
+                    if (partido.fecha === fecha) {
+                        partidos.push({ ...partido, torneo: 'clausura', fechaNumero: fechaFixture.numero });
+                    }
+                });
             });
-        });
+        }
         
         // Buscar en Playoffs
-        const playoffs = ligaPeruana.fixtures.playoffs;
-        [...playoffs.semifinales.partidos, ...playoffs.final.partidos].forEach(partido => {
-            if (partido.fecha === fecha && partido.local && partido.visitante) {
-                partidos.push({ ...partido, torneo: 'playoffs' });
+        if (ligaPeruana.fixtures && ligaPeruana.fixtures.playoffs) {
+            const playoffs = ligaPeruana.fixtures.playoffs;
+            if (playoffs.semifinales && playoffs.final) {
+                [...playoffs.semifinales.partidos, ...playoffs.final.partidos].forEach(partido => {
+                    if (partido.fecha === fecha && partido.local && partido.visitante) {
+                        partidos.push({ ...partido, torneo: 'playoffs' });
+                    }
+                });
             }
-        });
+        }
         
         return partidos;
     }
@@ -200,14 +212,17 @@ class AutoCalendar {
         if (!jugadoresData) return;
         
         const jugadoresPorClub = JSON.parse(jugadoresData);
-        const retiredPlayers = retiroManager.checkRetirements(this.currentDate, jugadoresPorClub);
         
-        retiredPlayers.forEach(retiro => {
-            console.log(`👋 ${retiro.nombre} (${retiro.edad} años, ${retiro.posicion}) se retira: ${retiro.razon} - ${retiro.club}`);
-        });
-        
-        if (retiredPlayers.length > 0) {
-            localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+        if (typeof retiroManager !== 'undefined') {
+            const retiredPlayers = retiroManager.checkRetirements(this.currentDate, jugadoresPorClub);
+            
+            retiredPlayers.forEach(retiro => {
+                console.log(`👋 ${retiro.nombre} (${retiro.edad} años, ${retiro.posicion}) se retira: ${retiro.razon} - ${retiro.club}`);
+            });
+            
+            if (retiredPlayers.length > 0) {
+                localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+            }
         }
     }
     
@@ -362,7 +377,7 @@ class AutoCalendar {
     
     updateWeekCalendar() {
         if (!this.weekDaysElement) return;
-        
+                
         const currentDate = new Date(this.currentDate);
         const dayOfWeek = currentDate.getDay();
         const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
@@ -372,7 +387,7 @@ class AutoCalendar {
         
         const dayNames = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
         
-                this.weekDaysElement.innerHTML = '';
+        this.weekDaysElement.innerHTML = '';
         
         for (let i = 0; i < 7; i++) {
             const dayDate = new Date(monday);
