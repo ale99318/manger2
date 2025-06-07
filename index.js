@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
         // Si ya hay datos, redirigir directamente al calendario
         console.log("Redirigiendo al calendario porque ya hay datos guardados.");
         // Ruta relativa ajustada desde la raíz de manager2/
-        window.location.href = "calendar/calendar.html";
+        window.location.href = "/manger2/calendar/calendar.html";
     }
 
     // Si no hay datos, esperar a que el usuario haga clic en el botón
@@ -24,7 +24,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 window.location.href = "login.html";
             } else {
                 console.log("Redirigiendo al calendario desde el botón.");
-                window.location.href = "calendar/calendar.html";
+                window.location.href = "/manger2/calendar/calendar.html";
             }
         });
     }
