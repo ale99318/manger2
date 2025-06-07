@@ -35,17 +35,13 @@ function cargarPlantilla() {
         return;
     }
     
-    // Buscar específicamente el club seleccionado
+    // Buscar el ID del club usando clubes.js
     let jugadoresClub = [];
-    if (jugadoresPorClub[clubSeleccionado]) {
-        jugadoresClub = jugadoresPorClub[clubSeleccionado];
-    } else {
-        // Intentar buscar por nombre si no encuentra por ID
-        for (const clubId in jugadoresPorClub) {
-            if (clubId === clubSeleccionado && jugadoresPorClub[clubId].length > 0) {
-                jugadoresClub = jugadoresPorClub[clubId];
-                break;
-            }
+    
+    if (typeof clubes !== 'undefined') {
+        const club = clubes.find(c => c.nombre === clubSeleccionado);
+        if (club && jugadoresPorClub[club.id]) {
+            jugadoresClub = jugadoresPorClub[club.id];
         }
     }
     
@@ -91,7 +87,7 @@ function mostrarJugadores(jugadores) {
                         <h3>${nombre}</h3>
                         <p>${edad} años</p>
                     </div>
-                    <span class="posicion-badge posicion-${posicion.toLowerCase()}">${posicion}</span>
+                    <span class="posicion-badge posicion-${posicion}">${posicion}</span>
                 </div>
                 
                 <div class="jugador-stats">
