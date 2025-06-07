@@ -1,0 +1,31 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Plantilla</title>
+    <link rel="stylesheet" href="ver-plantilla.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>Mi Plantilla</h1>
+            <div id="club-info" class="club-info">
+                <span id="club-name">Cargando...</span>
+                <span id="total-jugadores">0 jugadores</span>
+            </div>
+        </header>
+
+        <div id="jugadores-container" class="jugadores-container"></div>
+
+        <div class="actions">
+            <button onclick="goBack()" class="btn-secondary">Volver</button>
+            <button onclick="refreshPlantilla()" class="btn">Actualizar</button>
+        </div>
+    </div>
+
+    <script src="ver-plantilla.js"></script>
+</body>
+</html>
+
