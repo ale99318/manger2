@@ -1,6 +1,6 @@
-// index.js o login.js
+// index.js
 document.addEventListener("DOMContentLoaded", () => {
-    const empezarBtn = document.getElementById("empezarBtn"); // Ajusta este ID si tu botón tiene otro nombre
+    const empezarBtn = document.getElementById("empezarBtn");
 
     // Verificar si ya hay un club seleccionado y jugadores generados
     const clubSeleccionado = localStorage.getItem("selectedClub");
@@ -9,7 +9,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (clubSeleccionado && jugadoresGenerados === "true" && jugadoresData) {
         // Si ya hay datos, redirigir directamente al calendario
-        window.location.href = "manger2/calendar/calendar.html";
+        console.log("Redirigiendo al calendario porque ya hay datos guardados.");
+        // Ruta relativa ajustada desde la raíz de manager2/
+        window.location.href = "calendar/calendar.html";
     }
 
     // Si no hay datos, esperar a que el usuario haga clic en el botón
@@ -17,9 +19,12 @@ document.addEventListener("DOMContentLoaded", () => {
         empezarBtn.addEventListener("click", () => {
             // Redirigir a la página de selección de club o creación de jugadores si no hay datos
             if (!clubSeleccionado || jugadoresGenerados !== "true" || !jugadoresData) {
-                window.location.href = "login.html"; // Ajusta esta ruta si la página siguiente es diferente
+                console.log("Redirigiendo a login porque no hay datos guardados.");
+                // Ruta asumiendo que login.html está en la raíz de manager2/
+                window.location.href = "login.html";
             } else {
-                window.location.href = "manger2/calendar/calendar.html";
+                console.log("Redirigiendo al calendario desde el botón.");
+                window.location.href = "calendar/calendar.html";
             }
         });
     }
