@@ -517,7 +517,7 @@ class AutoCalendar {
                 
                 const rivalElement = document.createElement('div');
                 rivalElement.className = 'rival-name';
-                rivalElement.textContent = `${esLocal ? 'vs' : '@'} ${rivalNombre}`;
+                rivalElement.textContent = `${esLocal ? 'vs' : ''} ${rivalNombre}`;
                 
                 // CORREGIDO: Validar que existe la hora
                 if (partidoDelClub.hora) {
