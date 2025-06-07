@@ -4,9 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mi Plantilla</title>
-    <link rel="stylesheet" href="plantilla.css">
-    <!-- Ruta corregida para clubes.js -->
-    <script src="../data/clubes.js" onerror="console.error('Error al cargar clubes.js. Verifica la ruta.');"></script>
+    <link rel="stylesheet" href="ver-plantilla.css">
+    <!-- Prueba estas rutas una por una comentando/descomentando -->
+    <!-- Opción 1: Ruta relativa si plantilla.html está en la raíz de manager2 -->
+    <script src="data/clubes.js" onerror="console.error('Error con ruta data/clubes.js');" onload="console.log('✅ clubes.js cargado con data/clubes.js');"></script>
+    <!-- Opción 2: Ruta relativa si plantilla.html está en un subdirectorio como html/ -->
+    <!-- <script src="../data/clubes.js" onerror="console.error('Error con ruta ../data/clubes.js');" onload="console.log('✅ clubes.js cargado con ../data/clubes.js');"></script> -->
+    <!-- Opción 3: Ruta relativa si plantilla.html está en un subdirectorio más profundo -->
+    <!-- <script src="../../data/clubes.js" onerror="console.error('Error con ruta ../../data/clubes.js');" onload="console.log('✅ clubes.js cargado con ../../data/clubes.js');"></script> -->
 </head>
 <body>
     <div class="container">
@@ -26,6 +31,6 @@
         </div>
     </div>
 
-    <script src="plantilla.js"></script>
+    <script src="ver-plantilla.js"></script>
 </body>
 </html>
