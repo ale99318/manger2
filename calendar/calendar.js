@@ -4,7 +4,11 @@ class AutoCalendar {
     constructor() {
         this.startDate = new Date(2025, 0, 1); // 1 de enero 2025
         this.endDate = new Date(2040, 11, 31); // 31 de diciembre 2040
-        this.currentDate = new Date(this.startDate);
+        
+        // Recuperar la fecha guardada de localStorage, si existe
+        const savedDate = localStorage.getItem("currentCalendarDate");
+        this.currentDate = savedDate ? new Date(savedDate) : new Date(this.startDate);
+        
         this.interval = null;
         this.isPaused = false;
         this.intervalTime = 3000; // 3 segundos por día
@@ -71,6 +75,8 @@ class AutoCalendar {
         if (this.pauseBtn) this.pauseBtn.textContent = 'Pausar';
         this.updateDisplay();
         this.start();
+        // Guardar la fecha inicial al resetear
+        localStorage.setItem("currentCalendarDate", this.currentDate.toISOString());
     }
     
     nextDay() {
@@ -81,6 +87,8 @@ class AutoCalendar {
         if (this.currentDate > this.endDate) {
             this.currentDate = new Date(this.startDate);
         }
+        // Guardar la fecha actual en localStorage después de cada día
+        localStorage.setItem("currentCalendarDate", this.currentDate.toISOString());
     }
     
     processDay() {
