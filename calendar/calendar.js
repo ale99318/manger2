@@ -103,11 +103,11 @@ class AutoCalendar {
         }
     }
 
-    // CORREGIDO: Obtener partidos de una fecha específica
+    // Obtener partidos de una fecha específica
     getMatchesForDate(fecha) {
         const partidos = [];
         
-        // CORREGIDO: Verificar si ligaPeruana está disponible
+        // Corregido: Verificar si ligaPeruana está definida y no es vacía
         if (typeof ligaPeruana === 'undefined' || !ligaPeruana) {
             return partidos;
         }
@@ -181,7 +181,7 @@ class AutoCalendar {
         return null;
     }
 
-    // UNIFICADO: Convertir ID de club a nombre
+    // Convertir ID de club a nombre
     getClubNameFromId(clubId) {
         if (typeof clubes !== 'undefined' && clubes) {
             const club = clubes.find(c => c.id === clubId);
@@ -358,7 +358,7 @@ class AutoCalendar {
             if (recoveries > 0) {
                 localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
             }
-                    } catch (error) {
+        } catch (error) {
             console.error('Error procesando recuperaciones:', error);
         }
     }
@@ -369,6 +369,7 @@ class AutoCalendar {
         
         try {
             const jugadoresPorClub = JSON.parse(jugadoresData);
+            let cambiosRealizados = false;
             
             Object.keys(jugadoresPorClub).forEach(clubId => {
                 const jugadoresClub = jugadoresPorClub[clubId];
@@ -376,16 +377,24 @@ class AutoCalendar {
                 if (Array.isArray(jugadoresClub)) {
                     jugadoresClub.forEach(jugador => {
                         const degradacion = jugador.general * 0.0005;
-                        jugador.general = Math.max(jugador.general - degradacion, jugador.general * 0.8);
+                        const nuevoGeneral = Math.max(jugador.general - degradacion, jugador.general * 0.8);
+                        
+                        if (nuevoGeneral !== jugador.general) {
+                            jugador.general = nuevoGeneral;
+                            cambiosRealizados = true;
+                        }
                         
                         if (jugador.cansancio > 0) {
                             jugador.cansancio = Math.max(jugador.cansancio - 1, 0);
+                            cambiosRealizados = true;
                         }
                     });
                 }
             });
             
-            localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+            if (cambiosRealizados) {
+                localStorage.setItem("jugadoresPorClub", JSON.stringify(jugadoresPorClub));
+            }
         } catch (error) {
             console.error('Error aplicando degradación:', error);
         }
@@ -479,7 +488,7 @@ class AutoCalendar {
             dayElement.classList.add('future');
         }
 
-        // CORREGIDO: Verificar si hay partidos este día para mi club
+        // Verificar si hay partidos este día para mi club
         try {
             const fechaStr = date.toISOString().split('T')[0];
             const partidosDelDia = this.getMatchesForDate(fechaStr);
@@ -501,7 +510,7 @@ class AutoCalendar {
             dayElement.appendChild(dayNameElement);
             dayElement.appendChild(dayNumberElement);
             
-            // CORREGIDO: Si hay partido del club, mostrar información del rival
+            // Si hay partido del club, mostrar información del rival
             if (partidoDelClub) {
                 dayElement.classList.add('match-day');
                 
@@ -519,7 +528,7 @@ class AutoCalendar {
                 rivalElement.className = 'rival-name';
                 rivalElement.textContent = `${esLocal ? 'vs' : ''} ${rivalNombre}`;
                 
-                // CORREGIDO: Validar que existe la hora
+                // Validar que existe la hora
                 if (partidoDelClub.hora) {
                     const horaElement = document.createElement('div');
                     horaElement.className = 'match-time';
