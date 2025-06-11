@@ -1,0 +1,255 @@
+/* Reset y tipografía */
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9fafb;
+    color: #222;
+    line-height: 1.5;
+}
+
+header {
+    background-color: #1e40af; /* azul intenso */
+    color: white;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.1);
+}
+
+header h1 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin: 0;
+}
+
+#btn-back {
+    font-size: 1rem;
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+    padding: 6px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+#btn-back:hover,
+#btn-back:focus {
+    background-color: white;
+    color: #1e40af;
+    outline: none;
+}
+
+/* Main container */
+main {
+    max-width: 960px;
+    margin: 24px auto;
+    padding: 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+}
+
+/* Entrenamientos disponibles */
+#entrenamientos-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 20px;
+}
+
+.entrenamiento-card {
+    background: white;
+    border-radius: 14px;
+    box-shadow: 0 4px 10px rgb(59 130 246 / 0.15);
+    padding: 20px;
+    cursor: pointer;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.entrenamiento-card:hover,
+.entrenamiento-card:focus {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 20px rgb(59 130 246 / 0.3);
+    border-color: #3b82f6;
+    outline: none;
+}
+
+.entrenamiento-card h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #1e3a8a;
+}
+
+.entrenamiento-card p {
+    margin: 5px 0;
+    font-size: 1rem;
+    color: #374151;
+}
+
+/* Asignación sección */
+#asignacion-entrenamiento {
+    background: white;
+    padding: 24px 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgb(0 0 0 / 0.07);
+    max-width: 560px;
+    margin: 0 auto 40px auto;
+}
+
+#asignacion-entrenamiento h2 {
+    margin-top: 0;
+    font-weight: 700;
+    color: #1e40af;
+    margin-bottom: 16px;
+}
+
+#entrenamiento-seleccionado {
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #2563eb;
+}
+
+label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+    color: #334155;
+}
+
+select {
+    width: 100%;
+    padding: 10px 14px;
+    font-size: 1rem;
+    border: 2px solid #cbd5e1;
+    border-radius: 10px;
+    transition: border-color 0.25s ease;
+    margin-bottom: 18px;
+}
+
+select:focus {
+    border-color: #3b82f6;
+    outline: none;
+}
+
+/* Botones asignar y cancelar */
+.btn-group {
+    display: flex;
+    gap: 12px;
+}
+
+#asignar-btn,
+#cancelar-btn {
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 12px 28px;
+    font-weight: 700;
+    border: none;
+    font-size: 1rem;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+#asignar-btn {
+    background-color: #2563eb;
+    color: white;
+}
+
+#asignar-btn:hover,
+#asignar-btn:focus {
+    background-color: #1d4ed8;
+    outline: none;
+}
+
+#cancelar-btn {
+    background-color: #e0e7ff;
+    color: #4f46e5;
+}
+
+#cancelar-btn:hover,
+#cancelar-btn:focus {
+    background-color: #c7d2fe;
+    outline: none;
+}
+
+/* Entrenamientos asignados */
+#entrenamientos-asignados {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgb(0 0 0 / 0.08);
+    padding: 25px 20px 30px;
+    max-width: 760px;
+    margin: 0 auto 60px auto;
+}
+
+#entrenamientos-asignados h2 {
+    margin-top: 0;
+    text-align: center;
+    font-weight: 700;
+    color: #1e3a8a;
+    margin-bottom: 22px;
+}
+
+/* Lista de asignaciones por jugador */
+#asignados-lista ul {
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 40px;
+    border-radius: 10px;
+    background: #f0f4ff;
+    padding: 14px 20px;
+    box-shadow: inset 0 0 6px rgb(49 130 206 / 0.1);
+    user-select: none;
+    line-height: 1.4;
+}
+
+#asignados-lista ul h3 {
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 8px;
+    color: #274261;
+    user-select: text;
+}
+
+#asignados-lista ul li {
+    padding: 8px 0;
+    font-size: 1rem;
+    color: #334155;
+    cursor: default;
+    user-select: text;
+    border-bottom: 1px solid #dbeafe;
+}
+
+#asignados-lista ul li:last-child {
+    border-bottom: none;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    main {
+        padding: 0 12px;
+        gap: 20px;
+    }
+
+    #entrenamientos-container {
+        grid-template-columns: 1fr;
+    }
+
+    #asignacion-entrenamiento,
+    #entrenamientos-asignados {
+        max-width: 100%;
+        margin-left: auto;
+        margin-right: auto;
+        padding: 20px 16px;
+    }
+}
