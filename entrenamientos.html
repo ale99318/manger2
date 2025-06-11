@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Entrenamientos</title>
+    <link rel="stylesheet" href="entrenamientos.css" />
+</head>
+<body>
+    <header>
+        <h1>Entrenamientos</h1>
+        <button id="btn-back" aria-label="Volver">Volver</button>
+    </header>
+
+    <main>
+        <section aria-label="Lista de entrenamientos disponibles">
+            <div id="entrenamientos-container"></div>
+        </section>
+
+        <section id="asignacion-entrenamiento" aria-label="Asignación de entrenamiento" aria-live="polite" style="display:none;">
+            <h2>Asignar Entrenamiento</h2>
+            <p id="entrenamiento-seleccionado"></p>
+            
+            <label for="jugador-seleccionado">Seleccionar Jugador:</label>
+            <select id="jugador-seleccionado" aria-required="true"></select>
+
+            <div class="btn-group">
+                <button id="asignar-btn" aria-label="Asignar entrenamiento">Asignar</button>
+                <button id="cancelar-btn" aria-label="Cancelar asignación">Cancelar</button>
+            </div>
+        </section>
+
+        <section id="entrenamientos-asignados" aria-label="Entrenamientos asignados">
+            <h2>Entrenamientos Asignados</h2>
+            <div id="asignados-lista"></div>
+        </section>
+    </main>
+
+    <script src="calendar.js"></script>
+    <script src="entrenamientos.js"></script>
+</body>
+</html>
+
