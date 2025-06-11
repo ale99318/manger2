@@ -68,7 +68,7 @@ function cargarJugadores() {
     jugadores = [];
     if (typeof clubes !== 'undefined') {
         const club = clubes.find(c => c.nombre === clubSeleccionado);
-        if (club && jugadoresPorClub[club.id]) {
+        if (club && jugadoresPorClub && jugadoresPorClub[club.id]) { // Añadida comprobación de jugadoresPorClub
             jugadores = jugadoresPorClub[club.id];
         }
     }
