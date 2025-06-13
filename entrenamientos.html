@@ -36,10 +36,11 @@
         </section>
     </main>
 
-    <!-- Incluye clubes.js ANTES de entrenamientos.js -->
-    <script src="calendar.js"></script>
-     <script src="../data/clubes.js"></script>
-    <script src="entrenamientos.js"></script>
-    <script src="debug-jugadores.js"></script>
+    <!-- ✅ Scripts corregidos -->
+    <script src="data/clubes.js"></script>                    <!-- ✅ Existe -->
+    <script src="calendar/calendar.js"></script>              <!-- ✅ Existe -->
+    <script src="calendar/modules/players-manager.js"></script> <!-- ✅ Si necesitas jugadores -->
+    <script src="entrenamientos.js"></script>                 <!-- ✅ Tu archivo principal -->
+    <!-- ❌ ELIMINADO: debug-jugadores.js (no existe) -->
 </body>
 </html>
