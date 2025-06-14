@@ -36,8 +36,114 @@ document.addEventListener('DOMContentLoaded', () => {
     cargarEntrenamientos();
     cargarJugadores();
     cargarAsignaciones();
+    limpiarEntrenamientosExpirados(); // NUEVO: Limpiar entrenamientos expirados
     actualizarEntrenamientosAsignados();
+    
+    // NUEVO: Configurar actualización automática cada 5 segundos
+    setInterval(() => {
+        limpiarEntrenamientosExpirados();
+        actualizarEntrenamientosAsignados();
+    }, 5000);
 });
+
+// NUEVA FUNCIÓN: Obtener fecha actual del calendario
+function obtenerFechaActualCalendario() {
+    // Intentar obtener la fecha del calendario automático
+    if (window.autoCalendar && window.autoCalendar.currentDate) {
+        return new Date(window.autoCalendar.currentDate);
+    }
+    
+    // Fallback: obtener de localStorage
+    const savedDate = localStorage.getItem("currentCalendarDate");
+    if (savedDate) {
+        return new Date(savedDate);
+    }
+    
+    // Último fallback: fecha actual del sistema
+    console.warn('No se pudo obtener fecha del calendario, usando fecha del sistema');
+    return new Date();
+}
+
+// NUEVA FUNCIÓN: Limpiar entrenamientos expirados
+function limpiarEntrenamientosExpirados() {
+    const fechaActual = obtenerFechaActualCalendario();
+    let entrenamientosEliminados = 0;
+    let cambiosRealizados = false;
+    
+    // Normalizar fecha actual (solo fecha, sin horas)
+    const fechaActualNormalizada = new Date(fechaActual.getFullYear(), fechaActual.getMonth(), fechaActual.getDate());
+    
+    for (const jugadorId in asignaciones) {
+        const entrenamientosJugador = asignaciones[jugadorId];
+        
+        // Filtrar entrenamientos que no han expirado
+        const entrenamientosActivos = entrenamientosJugador.filter(asignacion => {
+            const fechaFin = new Date(asignacion.fechaFin);
+            const fechaFinNormalizada = new Date(fechaFin.getFullYear(), fechaFin.getMonth(), fechaFin.getDate());
+            
+            // Si la fecha actual es mayor que la fecha fin, el entrenamiento ha expirado
+            if (fechaActualNormalizada > fechaFinNormalizada) {
+                entrenamientosEliminados++;
+                
+                // Buscar nombre del jugador para el log
+                const jugador = jugadores.find(j => j.id == jugadorId);
+                const nombreJugador = jugador ? jugador.nombre : `Jugador ID ${jugadorId}`;
+                
+                console.log(`🏁 Entrenamiento "${asignacion.entrenamientoNombre}" de ${nombreJugador} ha finalizado`);
+                return false; // Eliminar este entrenamiento
+            }
+            return true; // Mantener este entrenamiento
+        });
+        
+        // Actualizar asignaciones del jugador
+        if (entrenamientosActivos.length !== entrenamientosJugador.length) {
+            if (entrenamientosActivos.length === 0) {
+                delete asignaciones[jugadorId]; // Eliminar jugador si no tiene entrenamientos
+            } else {
+                asignaciones[jugadorId] = entrenamientosActivos;
+            }
+            cambiosRealizados = true;
+        }
+    }
+    
+    // Guardar cambios si se eliminaron entrenamientos
+    if (cambiosRealizados) {
+        guardarAsignaciones();
+        
+        if (entrenamientosEliminados > 0) {
+            console.log(`🧹 Se eliminaron ${entrenamientosEliminados} entrenamientos expirados`);
+            
+            // Mostrar notificación visual si estamos en la página de entrenamientos
+            if (containerEntrenamientos) {
+                mostrarInfo(`Se completaron ${entrenamientosEliminados} entrenamientos`);
+            }
+        }
+    }
+}
+
+// NUEVA FUNCIÓN: Mostrar mensajes informativos
+function mostrarInfo(mensaje) {
+    const infoDiv = document.createElement('div');
+    infoDiv.className = 'info-message';
+    infoDiv.style.cssText = `
+        background: #2196F3;
+        color: white;
+        padding: 10px;
+        margin: 10px 0;
+        border-radius: 5px;
+        text-align: center;
+    `;
+    infoDiv.textContent = mensaje;
+    
+    const container = containerEntrenamientos || document.body;
+    container.insertBefore(infoDiv, container.firstChild);
+    
+    setTimeout(() => {
+        if (infoDiv.parentNode) {
+            infoDiv.parentNode.removeChild(infoDiv);
+        }
+    }, 4000);
+}
 
 // ✅ Nueva función para verificar elementos DOM
 function verificarElementosDOM() {
@@ -232,19 +338,10 @@ function asignarEntrenamiento() {
         return;
     }
 
-    // ✅ Verificación mejorada del calendario
-    let fechaInicio, fechaFin;
-    
-    if (window.autoCalendar && window.autoCalendar.currentDate) {
-        fechaInicio = new Date(window.autoCalendar.currentDate);
-    } else {
-        // Fallback a fecha actual si no hay calendario
-        fechaInicio = new Date();
-        console.warn('Calendario no disponible, usando fecha actual');
-    }
-    
-    fechaFin = new Date(fechaInicio);
-    fechaFin.setDate(fechaInicio.getDate() + 6); // 7 días de entrenamiento
+    // ✅ Usar fecha del calendario automático
+    const fechaInicio = obtenerFechaActualCalendario();
+    const fechaFin = new Date(fechaInicio);
+       fechaFin.setDate(fechaInicio.getDate() + 6); // 7 días de entrenamiento
 
     // Inicializar asignaciones para el jugador si no existe
     if (!asignaciones[jugadorId]) {
@@ -345,7 +442,7 @@ function guardarAsignaciones() {
     }
 }
 
-// Actualizar visualización de entrenamientos asignados (continuación)
+// MODIFICADO: Actualizar visualización con estado de entrenamientos
 function actualizarEntrenamientosAsignados() {
     if (!asignadosLista) {
         console.error('Lista de asignados no encontrada');
@@ -362,6 +459,8 @@ function actualizarEntrenamientosAsignados() {
         asignadosLista.appendChild(mensajeVacio);
         return;
     }
+
+    const fechaActual = obtenerFechaActualCalendario();
 
     for (const jugadorId in asignaciones) {
         const jugador = jugadores.find(j => j.id == jugadorId);
@@ -387,11 +486,32 @@ function actualizarEntrenamientosAsignados() {
             const li = document.createElement('li');
             li.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;';
             
-            const fechaIni = new Date(asignacion.fechaInicio).toLocaleDateString();
-            const fechaFin = new Date(asignacion.fechaFin).toLocaleDateString();
+            const fechaIni = new Date(asignacion.fechaInicio);
+            const fechaFin = new Date(asignacion.fechaFin);
+            
+            // NUEVO: Calcular estado del entrenamiento
+            const esActivo = fechaActual >= fechaIni && fechaActual <= fechaFin;
+            const esFuturo = fechaActual < fechaIni;
+            const diasRestantes = Math.ceil((fechaFin - fechaActual) / (1000 * 60 * 60 * 24));
             
             const infoSpan = document.createElement('span');
-            infoSpan.textContent = `${asignacion.entrenamientoNombre} (${fechaIni} - ${fechaFin})`;
+            let estadoTexto = '';
+            let colorEstado = '#666';
+            
+            if (esFuturo) {
+                estadoTexto = ' (Próximo)';
+                colorEstado = '#2196F3';
+            } else if (esActivo) {
+                estadoTexto = ` (Activo - ${diasRestantes} días restantes)`;
+                colorEstado = '#4CAF50';
+            }
+            
+            infoSpan.innerHTML = `
+                ${asignacion.entrenamientoNombre} 
+                <small style="color: ${colorEstado};">${estadoTexto}</small>
+                <br>
+                <small>(${fechaIni.toLocaleDateString()} - ${fechaFin.toLocaleDateString()})</small>
+            `;
             infoSpan.style.cssText = 'flex: 1;';
             
             // Botón eliminar mejorado
@@ -556,9 +676,12 @@ if (typeof window !== 'undefined') {
         limpiarTodo: limpiarTodasAsignaciones,
         exportar: exportarAsignaciones,
         validar: validarDatos,
+        obtenerFecha: obtenerFechaActualCalendario,
+        limpiarExpirados: limpiarEntrenamientosExpirados,
         recargar: () => {
             cargarJugadores();
             cargarAsignaciones();
+            limpiarEntrenamientosExpirados();
             actualizarEntrenamientosAsignados();
         }
     };
