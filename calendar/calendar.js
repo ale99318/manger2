@@ -213,6 +213,53 @@ class AutoCalendar {
             default: return 'Liga1';
         }
     }
+
+    // NUEVO MÉTODO: Obtener entrenamientos asignados para una fecha específica
+    getEntrenamientosForDate(date) {
+        const entrenamientosAsignados = JSON.parse(localStorage.getItem('entrenamientosAsignados')) || {};
+        const entrenamientosDelDia = [];
+        const clubSeleccionado = localStorage.getItem("selectedClub");
+
+        for (const jugadorId in entrenamientosAsignados) {
+            entrenamientosAsignados[jugadorId].forEach(asignacion => {
+                const fechaInicio = new Date(asignacion.fechaInicio);
+                const fechaFin = new Date(asignacion.fechaFin);
+
+                // Normalizamos fechas para comparar solo la fecha (sin horas)
+                const fechaCompare = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+                const inicioCompare = new Date(fechaInicio.getFullYear(), fechaInicio.getMonth(), fechaInicio.getDate());
+                const finCompare = new Date(fechaFin.getFullYear(), fechaFin.getMonth(), fechaFin.getDate());
+
+                if (fechaCompare >= inicioCompare && fechaCompare <= finCompare) {
+                    // Solo incluir entrenamientos de jugadores del club seleccionado
+                    const jugadoresData = localStorage.getItem("jugadoresPorClub");
+                    if (jugadoresData) {
+                        try {
+                            const jugadoresPorClub = JSON.parse(jugadoresData);
+                            for (const clubId in jugadoresPorClub) {
+                                const jugadoresClub = jugadoresPorClub[clubId];
+                                if (Array.isArray(jugadoresClub)) {
+                                    const jugador = jugadoresClub.find(j => j.id == jugadorId);
+                                    if (jugador && this.getClubNameFromId(clubId) === clubSeleccionado) {
+                                        entrenamientosDelDia.push({
+                                            jugadorId,
+                                            jugadorNombre: jugador.nombre,
+                                            entrenamientoNombre: asignacion.entrenamientoNombre
+                                        });
+                                        break;
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error('Error procesando entrenamientos:', error);
+                        }
+                    }
+                }
+            });
+        }
+
+        return entrenamientosDelDia;
+    }
     
     processBirthdays(month, day) {
         const jugadoresData = localStorage.getItem("jugadoresPorClub");
@@ -534,7 +581,7 @@ class AutoCalendar {
                 
                 const rivalElement = document.createElement('div');
                 rivalElement.className = 'rival-name';
-                rivalElement.textContent = `${esLocal ? 'vs' : ''} ${rivalNombre}`;
+                rivalElement.textContent = `${esLocal ? 'vs' : '@'} ${rivalNombre}`;
                 
                 // Validar que existe la hora
                 if (partidoDelClub.hora) {
@@ -554,13 +601,46 @@ class AutoCalendar {
                 dayElement.appendChild(matchInfoElement);
             }
             
-            dayElement.setAttribute('data-date', date.toISOString().split('T')[0]);
+            // NUEVO: Verificar si hay entrenamientos asignados para ese día
+            const entrenamientosDelDia = this.getEntrenamientosForDate(date);
+            if (entrenamientosDelDia.length > 0) {
+                dayElement.classList.add('training-day');
+                
+                // Crear ícono imagen del cono de entrenamiento
+                const trainingIcon = document.createElement('img');
+                trainingIcon.src = 'photos/cone.png';
+                trainingIcon.alt = `Entrenamientos asignados: ${entrenamientosDelDia.map(e => e.jugadorNombre).join(', ')}`;
+                trainingIcon.className = 'training-icon';
+                trainingIcon.style.cssText = `
+                    width: 20px;
+                    height: 20px;
+                    position: absolute;
+                    top: 4px;
+                    right: 4px;
+                    pointer-events: none;
+                    z-index: 2;
+                    opacity: 0.8;
+                `;
+                trainingIcon.title = `Entrenamientos: ${entrenamientosDelDia.length} jugador(es)`;
+                
+                // Hacer el elemento contenedor posición relativa para el ícono absoluto
+                dayElement.style.position = 'relative';
+                dayElement.appendChild(trainingIcon);
+                
+                // Agregar información de entrenamientos como tooltip
+                const entrenamientosInfo = entrenamientosDelDia.map(e => 
+                    `${e.jugadorNombre}: ${e.entrenamientoNombre}`
+                ).join('\n');
+                dayElement.title = `Entrenamientos del día:\n${entrenamientosInfo}`;
+            }
+            
+            dayElement.setAttribute('data-date', fechaStr);
             dayElement.setAttribute('data-day-name', dayName);
             
         } catch (error) {
             console.error('Error creando elemento del día:', error);
             
-            // Fallback: crear elemento básico sin información de partidos
+            // Fallback: crear elemento básico sin información de partidos ni entrenamientos
             const dayNameElement = document.createElement('div');
             dayNameElement.className = 'week-day-name';
             dayNameElement.textContent = dayName;
@@ -645,3 +725,4 @@ window.addEventListener('beforeunload', () => {
         window.autoCalendar.destroy();
     }
 });
+
