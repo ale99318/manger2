@@ -60,8 +60,14 @@
     <script src="../torneos/fixtures/fixturePlayoffs.js"></script>
     <script src="../torneos/ligaperuana.js"></script>
 
-    <!-- Script principal del calendario -->
-    <script src="calendar.js"></script>
+    <!-- Scripts del calendario modular (ORDEN IMPORTANTE) -->
+    <script src="calendar.js"></script>                    <!-- Tu calendario básico -->
+    <script src="js/calendar-core.js"></script>           <!-- Clase AutoCalendar básica -->
+    <script src="js/calendar-utils.js"></script>          <!-- Utilidades (requeridas por otros módulos) -->
+    <script src="js/calendar-matches.js"></script>        <!-- Funcionalidad de partidos -->
+    <script src="js/calendar-training.js"></script>       <!-- Funcionalidad de entrenamientos -->
+    <script src="js/calendar-events.js"></script>         <!-- Funcionalidad de eventos -->
+    <script src="js/calendar-ui.js"></script>            <!-- Funcionalidad de UI (último porque usa otros módulos) -->
     
     <script>
         // URLs de audio desde GitHub
