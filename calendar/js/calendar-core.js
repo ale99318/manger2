@@ -1,4 +1,4 @@
-// ==================== CALENDARIO AUTOMÁTICO - CORE ====================
+// ==================== CALENDARIO AUTOMÁTICO - NÚCLEO ====================
 
 class AutoCalendar {
     constructor() {
@@ -147,57 +147,5 @@ class AutoCalendar {
             this.resetBtn.removeEventListener('click', this.reset);
         }
     }
-    
-    // Métodos placeholder que serán implementados en otros archivos
-    processBirthdays(month, day) {
-        // Implementado en calendar-events.js
-    }
-    
-    processRetirements() {
-        // Implementado en calendar-events.js
-    }
-    
-    processRandomInjuries() {
-        // Implementado en calendar-events.js
-    }
-    
-    processInjuryRecovery() {
-        // Implementado en calendar-events.js
-    }
-    
-    applyDegradation() {
-        // Implementado en calendar-events.js
-    }
-    
-    processRandomEvents() {
-        // Implementado en calendar-events.js
-    }
-    
-    updateWeekCalendar() {
-        // Implementado en calendar-ui.js
-    }
 }
 
-// ==================== INICIADOR DEL CALENDARIO ====================
-document.addEventListener('DOMContentLoaded', () => {
-    // Verificar elementos requeridos
-    const requiredElements = ['current-date-full', 'year-month', 'week-days'];
-    const missingElements = requiredElements.filter(id => !document.getElementById(id));
-    
-    if (missingElements.length > 0) {
-        console.warn('Elementos faltantes para el calendario:', missingElements);
-    }
-    
-    try {
-        window.autoCalendar = new AutoCalendar();
-    } catch (error) {
-        console.error('Error inicializando AutoCalendar:', error);
-    }
-});
-
-// Limpiar cuando se cierre la página
-window.addEventListener('beforeunload', () => {
-    if (window.autoCalendar) {
-        window.autoCalendar.destroy();
-    }
-});
