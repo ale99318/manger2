@@ -13,8 +13,8 @@
             <h2 id="year-month">Cargando...</h2>
             <div class="controls">
                 <button id="pause-btn">Pausar</button>
-             <button onclick="window.location.href='/manger2/plantilla.html'">Ver Plantilla</button>
-                 <button onclick="window.location.href='/manger2/entrenamientos.html'">entrenamientos</button>
+                <button onclick="window.location.href='/manger2/plantilla.html'">Ver Plantilla</button>
+                <button onclick="window.location.href='/manger2/entrenamientos.html'">entrenamientos</button>
                 <button id="reset-btn">Reiniciar</button>
             </div>
         </div>
@@ -36,11 +36,215 @@
                 <p>🎮 Los eventos se muestran en la consola (F12)</p>
             </div>
         </div>
+
+        <!-- FIFA STYLE DASHBOARD -->
+        <div class="fifa-dashboard">
+            <!-- Barra de pestañas superior -->
+            <div class="fifa-tabs">
+                <div class="tab-item active" data-tab="gestion" onclick="switchTab('gestion')">
+                    <span class="tab-icon">⚽</span>
+                    <span class="tab-text">Gestión</span>
+                </div>
+                <div class="tab-item" data-tab="competicion" onclick="switchTab('competicion')">
+                    <span class="tab-icon">🏆</span>
+                    <span class="tab-text">Competición</span>
+                </div>
+                <div class="tab-item" data-tab="desarrollo" onclick="switchTab('desarrollo')">
+                    <span class="tab-icon">📈</span>
+                    <span class="tab-text">Desarrollo</span>
+                </div>
+                <div class="tab-item" data-tab="mercado" onclick="switchTab('mercado')">
+                    <span class="tab-icon">💰</span>
+                    <span class="tab-text">Mercado</span>
+                </div>
+            </div>
+
+            <!-- Contenedor de tiles/mosaicos -->
+            <div class="fifa-tiles-container">
+                <!-- Tab: Gestión -->
+                <div class="fifa-tiles-grid" data-content="gestion">
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('plantilla')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/b64de208-b070-4e7e-8fcd-53640ab17f28.png" alt="Plantilla del equipo con jugadores en formación táctica sobre césped verde" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Plantilla</h3>
+                            <p>Gestiona tu equipo y formaciones</p>
+                            <div class="tile-status">
+                                <span class="status-indicator success"></span>
+                                <span class="status-text">25 jugadores</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('entrenamientos')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/0d76689d-8bdc-47e6-b9d0-a0d3b8b28a4a.png" alt="Campo de entrenamiento con conos y pelotas de fútbol para sesiones de práctica" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Entrenamientos</h3>
+                            <p>Planifica sesiones de entrenamiento</p>
+                            <div class="tile-status">
+                                <span class="status-indicator warning"></span>
+                                <span class="status-text">Próxima sesión</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('tacticas')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/08b3e6d3-c1a1-4681-ae67-38527e10ef4e.png" alt="Pizarra táctica con formación 4-4-2 y flechas indicando movimientos de jugadores" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Tácticas</h3>
+                            <p>Define tu estrategia de juego</p>
+                            <div class="tile-status">
+                                <span class="status-indicator active"></span>
+                                <span class="status-text">4-4-2 activa</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('instalaciones')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/bf8daf36-95c6-46ca-98e5-9cc2b9310fc2.png" alt="Centro de entrenamiento moderno con campos de césped y edificios deportivos" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Instalaciones</h3>
+                            <p>Mejora las instalaciones del club</p>
+                            <div class="tile-status">
+                                <span class="status-indicator info"></span>
+                                <span class="status-text">Nivel 3</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Competición -->
+                <div class="fifa-tiles-grid hidden" data-content="competicion">
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('partidos')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/9b6c7ecc-8f41-4b2b-8e2c-c19f8edeb6d4.png" alt="Estadio lleno con partido de fútbol en progreso bajo luces nocturnas" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Próximos Partidos</h3>
+                            <p>Calendario de competiciones</p>
+                            <div class="tile-status">
+                                <span class="status-indicator urgent"></span>
+                                <span class="status-text">3 días</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('resultados')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/6b2c0eb6-af24-4bd6-bf32-a3509c659fef.png" alt="Tablero de resultados con estadísticas de victoria y goles marcados" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Resultados</h3>
+                            <p>Historial de partidos jugados</p>
+                            <div class="tile-status">
+                                <span class="status-indicator success"></span>
+                                <span class="status-text">W-W-L-W</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('tabla')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/e3c07f64-b19e-4cf1-92e5-9d6c0eb68666.png" alt="Tabla de posiciones de liga con equipos clasificados por puntos" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Tabla de Posiciones</h3>
+                            <p>Clasificación de la liga</p>
+                            <div class="tile-status">
+                                <span class="status-indicator info"></span>
+                                <span class="status-text">5° posición</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Desarrollo -->
+                <div class="fifa-tiles-grid hidden" data-content="desarrollo">
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('estadisticas')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/dbbedd3d-fad2-4807-9df8-dc55238267d4.png" alt="Gráficos y estadísticas de rendimiento con barras y números de progreso" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Estadísticas</h3>
+                            <p>Rendimiento del equipo</p>
+                            <div class="tile-status">
+                                <span class="status-indicator active"></span>
+                                <span class="status-text">Análisis semanal</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('objetivos')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/0b55ca79-e9a6-4984-82ba-3a4dd68f8854.png" alt="Lista de objetivos de temporada con metas y porcentajes de cumplimiento" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Objetivos</h3>
+                            <p>Metas de la temporada</p>
+                            <div class="tile-status">
+                                <span class="status-indicator warning"></span>
+                                <span class="status-text">70% completado</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+                </div>
+
+                <!-- Tab: Mercado -->
+                <div class="fifa-tiles-grid hidden" data-content="mercado">
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('transferencias')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/711b8f5e-f5bf-48f3-b8f0-bb2925b1d8e4.png" alt="Mercado de transferencias con jugadores disponibles y precios" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Transferencias</h3>
+                            <p>Mercado de fichajes</p>
+                            <div class="tile-status">
+                                <span class="status-indicator active"></span>
+                                <span class="status-text">Ventana abierta</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+
+                    <div class="fifa-tile" onclick="selectTile(this); navigateTo('finanzas')">
+                        <div class="tile-image">
+                            <img src="https://storage.googleapis.com/workspace-0f70711f-8b4e-4d94-86f1-2a93ccde5887/image/3a6f04a9-263e-4bc2-82c6-7863f6c8be85.png" alt="Gráfico financiero con presupuesto del club y gastos mensuales" />
+                        </div>
+                        <div class="tile-content">
+                            <h3>Finanzas</h3>
+                            <p>Presupuesto del club</p>
+                            <div class="tile-status">
+                                <span class="status-indicator success"></span>
+                                <span class="status-text">$2.5M disponible</span>
+                            </div>
+                        </div>
+                        <div class="tile-active-indicator"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Audio elements (hidden) -->
     <audio id="bg-audio" loop></audio>
     <audio id="button-audio"></audio>
+    <audio id="tile-select-audio"></audio>
 
     <!-- Scripts de datos estáticos -->
     <script src="../data/nombres.js"></script>
@@ -61,20 +265,103 @@
     <script src="../torneos/ligaperuana.js"></script>
 
     <!-- Scripts del calendario modular (ORDEN IMPORTANTE) -->
-    <script src="calendar.js"></script>                    <!-- Tu calendario básico -->
-    <script src="js/calendar-core.js"></script>           <!-- Clase AutoCalendar básica -->
-    <script src="js/calendar-utils.js"></script>          <!-- Utilidades (requeridas por otros módulos) -->
-    <script src="js/calendar-matches.js"></script>        <!-- Funcionalidad de partidos -->
-    <script src="js/calendar-training.js"></script>       <!-- Funcionalidad de entrenamientos -->
-    <script src="js/calendar-events.js"></script>         <!-- Funcionalidad de eventos -->
-    <script src="js/calendar-ui.js"></script>            <!-- Funcionalidad de UI (último porque usa otros módulos) -->
+    <script src="calendar.js"></script>
+    <script src="js/calendar-core.js"></script>
+    <script src="js/calendar-utils.js"></script>
+    <script src="js/calendar-matches.js"></script>
+    <script src="js/calendar-training.js"></script>
+    <script src="js/calendar-events.js"></script>
+    <script src="js/calendar-ui.js"></script>
     
     <script>
         // URLs de audio desde GitHub
         const AUDIO_CONFIG = {
             backgroundMusic: "../audio/background-music.mp3",
-            buttonSound: "../audio/button-sound.mp3"
+            buttonSound: "../audio/button-sound.mp3",
+            tileSound: "../audio/tile-select.mp3"
         };
+
+        // Variables para el dashboard FIFA
+        let activeTile = null;
+        let currentTab = 'gestion';
+
+        // Función para cambiar pestañas
+        function switchTab(tabName) {
+            // Actualizar pestañas activas
+            document.querySelectorAll('.tab-item').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-tab="${tabName}"]`).classList.add('active');
+
+            // Mostrar contenido correspondiente
+            document.querySelectorAll('.fifa-tiles-grid').forEach(grid => {
+                grid.classList.add('hidden');
+            });
+            document.querySelector(`[data-content="${tabName}"]`).classList.remove('hidden');
+
+            currentTab = tabName;
+            playButtonSound();
+        }
+
+        // Función para seleccionar tile
+        function selectTile(tile) {
+            // Remover selección previa
+            if (activeTile) {
+                activeTile.classList.remove('selected');
+            }
+
+            // Agregar selección actual
+            tile.classList.add('selected');
+            activeTile = tile;
+
+            // Reproducir sonido de selección
+            playTileSound();
+        }
+
+        // Función de navegación
+        function navigateTo(section) {
+            console.log(`Navegando a: ${section}`);
+            
+            setTimeout(() => {
+                switch(section) {
+                    case 'plantilla':
+                        window.location.href = '/manger2/plantilla.html';
+                        break;
+                    case 'entrenamientos':
+                        window.location.href = '/manger2/entrenamientos.html';
+                        break;
+                    case 'tacticas':
+                        window.location.href = '/manger2/tacticas.html';
+                        break;
+                    case 'instalaciones':
+                        window.location.href = '/manger2/instalaciones.html';
+                        break;
+                    case 'partidos':
+                        window.location.href = '/manger2/partidos.html';
+                        break;
+                    case 'resultados':
+                        window.location.href = '/manger2/resultados.html';
+                        break;
+                    case 'tabla':
+                        window.location.href = '/manger2/tabla.html';
+                        break;
+                    case 'estadisticas':
+                        window.location.href = '/manger2/estadisticas.html';
+                        break;
+                    case 'objetivos':
+                        window.location.href = '/manger2/objetivos.html';
+                        break;
+                    case 'transferencias':
+                        window.location.href = '/manger2/transferencias.html';
+                        break;
+                    case 'finanzas':
+                        window.location.href = '/manger2/finanzas.html';
+                        break;
+                    default:
+                        alert(`Sección ${section} en desarrollo`);
+                }
+            }, 200); // Pequeño delay para la animación
+        }
         
         // Mostrar club seleccionado y configurar audio
         window.addEventListener('load', () => {
@@ -93,6 +380,7 @@
         function initializeAudio() {
             const bgAudio = document.getElementById('bg-audio');
             const buttonAudio = document.getElementById('button-audio');
+            const tileAudio = document.getElementById('tile-select-audio');
             
             if (!bgAudio || !buttonAudio) {
                 console.warn('Elementos de audio no encontrados');
@@ -106,6 +394,12 @@
             // Configurar sonido de botones
             buttonAudio.src = AUDIO_CONFIG.buttonSound;
             buttonAudio.volume = 0.4;
+
+            // Configurar sonido de tiles
+            if (tileAudio) {
+                tileAudio.src = AUDIO_CONFIG.tileSound;
+                tileAudio.volume = 0.3;
+            }
             
             // Intentar reproducir música de fondo automáticamente
             bgAudio.play().catch(e => {
@@ -139,6 +433,52 @@
                 buttonAudio.play().catch(e => console.log('❌ Error reproduciendo sonido de botón:', e));
             }
         }
+
+        function playTileSound() {
+            const tileAudio = document.getElementById('tile-select-audio');
+            if (tileAudio) {
+                tileAudio.currentTime = 0;
+                tileAudio.play().catch(e => console.log('❌ Error reproduciendo sonido de tile:', e));
+            }
+        }
+
+        // Navegación con teclado (estilo FIFA)
+        document.addEventListener('keydown', function(e) {
+            const tiles = document.querySelectorAll('.fifa-tile:not(.hidden)');
+            if (tiles.length === 0) return;
+
+            let currentIndex = Array.from(tiles).findIndex(tile => tile.classList.contains('selected'));
+            
+            switch(e.key) {
+                case 'ArrowRight':
+                    e.preventDefault();
+                    currentIndex = (currentIndex + 1) % tiles.length;
+                    selectTile(tiles[currentIndex]);
+                    break;
+                case 'ArrowLeft':
+                    e.preventDefault();
+                    currentIndex = currentIndex <= 0 ? tiles.length - 1 : currentIndex - 1;
+                    selectTile(tiles[currentIndex]);
+                    break;
+                case 'ArrowDown':
+                    e.preventDefault();
+                    currentIndex = (currentIndex + 2) % tiles.length;
+                    selectTile(tiles[currentIndex]);
+                    break;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    currentIndex = currentIndex < 2 ? tiles.length - (2 - currentIndex) : currentIndex - 2;
+                    selectTile(tiles[currentIndex]);
+                    break;
+                case 'Enter':
+                    e.preventDefault();
+                    if (activeTile) {
+                        activeTile.click();
+                    }
+                    break;
+            }
+        });
     </script>
 </body>
 </html>
+
