@@ -1,6 +1,6 @@
-// ==================== CALENDARIO AUTOMÁTICO - EVENTS ====================
+// ==================== CALENDARIO - EVENTOS Y PROCESOS ====================
 
-// Extender la clase AutoCalendar con métodos de eventos
+// Extender AutoCalendar con funcionalidades de eventos
 Object.assign(AutoCalendar.prototype, {
     
     processBirthdays(month, day) {
